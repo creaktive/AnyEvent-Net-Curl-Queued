@@ -182,7 +182,7 @@ On the other hand, download agents with higher request rate are more likely to r
 
 The script F<eg/benchmark.pl> compares L<AnyEvent::Net::Curl::Queued> (A.K.A. L<YADA>) against several other download agents.
 Only L<AnyEvent::Net::Curl::Queued> itself, L<AnyEvent::Curl::Multi>, L<Parallel::Downloader>, L<Mojo::UserAgent> and L<lftp|http://lftp.yar.ru/> support concurrent downloads natively;
-thus, L<Parallel::ForkManager> is used to reproduce the same behaviour for the remaining agents, while L<taskset> avoids the skew on multiprocessor systems.
+thus, L<Parallel::ForkManager> is used to reproduce the same behaviour for the remaining agents, while L<taskset|http://linux.die.net/man/1/taskset> avoids the skew on multiprocessor systems.
 
 The download target is a copy of the L<Apache documentation|http://httpd.apache.org/docs/2.2/> on a local Apache server.
 The test platform configuration:
