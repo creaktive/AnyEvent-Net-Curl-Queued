@@ -5,7 +5,7 @@ package Multi::Event;
 use base qw(Net::Curl::Multi);
 use common::sense;
 
-use AE;
+use AnyEvent;
 use Net::Curl::Multi qw(/^CURL_POLL_/ /^CURL_CSELECT_/);
 
 BEGIN {
@@ -22,8 +22,8 @@ sub new {
     # we'll use the default hash
     my $multi = $class->SUPER::new;
 
-    $multi->setopt(Net::Curl::Multi::CURLMOPT_SOCKETFUNCTION, \&_cb_socket);
-    $multi->setopt(Net::Curl::Multi::CURLMOPT_TIMERFUNCTION, \&_cb_timer);
+    $multi->setopt(Net::Curl::Multi::CURLMOPT_SOCKETFUNCTION    => \&_cb_socket);
+    $multi->setopt(Net::Curl::Multi::CURLMOPT_TIMERFUNCTION     => \&_cb_timer);
 
     return $multi;
 }
@@ -41,8 +41,8 @@ sub _cb_socket {
     # and not $easy.
 
     # deregister old io events
-    delete $multi->{"r$socket"};
-    delete $multi->{"w$socket"};
+    delete $multi->{pool}->{"r$socket"};
+    delete $multi->{pool}->{"w$socket"};
 
     # AnyEvent does not support registering a socket for both
     # reading and writing. This is rarely used so there is no
@@ -50,14 +50,14 @@ sub _cb_socket {
 
     # register read event
     if (($poll == CURL_POLL_IN) or ($poll == CURL_POLL_INOUT)) {
-        $multi->{"r$socket"} = AE::io $socket, 'r', sub {
+        $multi->{pool}->{"r$socket"} = AE::io $socket, 'r', sub {
             $multi->socket_action($socket, CURL_CSELECT_IN);
         };
     }
 
     # register write event
     if (($poll == CURL_POLL_OUT) or ($poll == CURL_POLL_INOUT)) {
-        $multi->{"w$socket"} = AE::io $socket, 'w', sub {
+        $multi->{pool}->{"w$socket"} = AE::io $socket, 'w', sub {
             $multi->socket_action($socket, CURL_CSELECT_OUT);
         };
     }
@@ -182,7 +182,7 @@ sub finish {
 
 package Queue::Event;
 
-use AE;
+use AnyEvent;
 use Moose;
 use Net::Curl::Share qw(:constants);
 
@@ -279,7 +279,6 @@ close $fh;
 
 my $q = Queue::Event->new({ max => 8 });
 $q->enqueue($_) for shuffle @urls;
-#$q->enqueue("file://$RealBin/jacotei_livro.xml");
 $q->start;
 
 p Net::Curl::version_info;
