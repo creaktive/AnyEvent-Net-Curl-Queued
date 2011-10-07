@@ -146,15 +146,26 @@ sub socket_action {
 
 package Easy::Event;
 
-use base qw(Net::Curl::Easy);
 use common::sense;
+
+use Moose;
+use MooseX::NonMoose;
+extends 'Net::Curl::Easy';
 
 use Net::Curl::Easy qw(/^CURLOPT_/);
 
-sub new {
-    my ($class, $uri, $share, $cb) = @_;
+has cb          => (is => 'rw', isa => 'CodeRef');
+has data        => (is => 'rw');    #, isa => 'Ref');
+has header      => (is => 'rw');    #, isa => 'Ref');
+has uri         => (is => 'rw', isa => 'Str');
 
-    my $easy = $class->SUPER::new({ uri => $uri, body => '', cb => $cb });
+#$sub new {
+#    my ($class, $uri, $share, $cb) = @_;
+
+#    my $easy = $class->SUPER::new({ uri => $uri, body => '', cb => $cb });
+
+sub BUILD {
+    my ($easy) = @_;
 
     $easy->setopt(CURLOPT_AUTOREFERER,      1);
     $easy->setopt(CURLOPT_ENCODING,         '');
@@ -162,20 +173,28 @@ sub new {
     $easy->setopt(CURLOPT_FOLLOWLOCATION,   1);
     $easy->setopt(CURLOPT_MAXREDIRS,        5);
     $easy->setopt(CURLOPT_NOSIGNAL,         1);
-    $easy->setopt(CURLOPT_SHARE,            $share);
+    #$easy->setopt(CURLOPT_SHARE,            $share);
     $easy->setopt(CURLOPT_TIMEOUT,          10);
     $easy->setopt(CURLOPT_UNRESTRICTED_AUTH,1);
-    $easy->setopt(CURLOPT_URL,              $uri);
+    $easy->setopt(CURLOPT_URL,              $easy->uri);
     $easy->setopt(CURLOPT_USERAGENT,        'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0)');
     #$easy->setopt(CURLOPT_VERBOSE,          1);
-    $easy->setopt(CURLOPT_WRITEDATA,        \$easy->{body});
-    $easy->setopt(CURLOPT_WRITEHEADER,      \$easy->{headers});
 
-    return $easy;
+    my $data;
+    $easy->setopt(CURLOPT_WRITEDATA,        \$data);
+    $easy->data(\$data);
+
+    my $header;
+    $easy->setopt(CURLOPT_WRITEHEADER,      \$header);
+    $easy->header(\$header);
 }
 
+#    return $easy;
+#}
+
 sub finish {
-    $_[0]->{cb}->(@_);
+    my ($self) = @_;
+    $self->cb->(@_);
 }
 
 1;
@@ -240,19 +259,19 @@ sub add {
 
     $self->cv->begin;
     $self->multi->add_handle(
-        Easy::Event->new(
-            $url,
-            $self->share,
-            sub {
+        Easy::Event->new({
+            uri     => $url,
+            share   => $self->share,
+            cb      => sub {
                 my ($easy, $result) = @_;
-                printf "%-20s finished downloading %s: %d bytes\n", $result, $easy->{uri}, length $easy->{body};
+                printf "%-20s finished downloading %s: %d bytes\n", $result, $easy->uri, length ${$easy->data};
                 # process...                
                 $self->cv->end;
 
                 $self->dec_active;
                 $self->feed;
             }
-        )
+        })
     );
 }
 
