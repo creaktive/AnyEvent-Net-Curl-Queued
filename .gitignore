@@ -1,6 +1,7 @@
 .build/*
 AnyEvent-Net-Curl-Queued-*/*
 blib/*
+*.bak
 *.gz
 Makefile
 pm_to_blib
