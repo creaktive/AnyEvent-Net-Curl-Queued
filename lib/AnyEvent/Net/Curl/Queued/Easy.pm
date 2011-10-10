@@ -165,10 +165,13 @@ You are supposed to build your own stuff after/around/before this method using L
 sub clone {
     my ($self) = @_;
 
-    return ($self->meta->class_precedence_list)[0]->new({
-        initial_url     => $self->initial_url,
-        retry           => $self->retry - 1,
-    });
+    my $class = ($self->meta->class_precedence_list)[0];
+    my $param = {
+        initial_url => $self->initial_url,
+        retry       => $self->retry - 1,
+    };
+
+    return sub { $class->new($param) };
 }
 
 =head1 SEE ALSO
