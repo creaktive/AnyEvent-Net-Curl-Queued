@@ -2,7 +2,6 @@ package AnyEvent::Net::Curl::Queued::Stats;
 use common::sense;
 
 use Moose;
-
 use Net::Curl::Easy qw(/^CURLOPT_/);
 
 has stamp       => (is => 'rw', isa => 'Int', default => time);
@@ -32,9 +31,9 @@ sub sum {
     foreach my $type (keys %{$self->stats}) {
         my $val = 0;
 
-        if (ref($from) ne __PACKAGE__) {
+        if ($from->isa('AnyEvent::Net::Curl::Queued::Easy')) {
             eval '$val = $from->getinfo(Net::Curl::Easy::CURLINFO_' . uc($type) . ')';  ## no critic
-        } else {
+        } elsif (ref($from) eq __PACKAGE__) {
             $val = $from->stats->{$type};
         }
 
@@ -42,6 +41,7 @@ sub sum {
     }
 
     $self->stamp(time);
+
     return 1;
 }
 

@@ -1,13 +1,13 @@
 package AnyEvent::Net::Curl::Queued::Multi;
 use common::sense;
 
+use AnyEvent;
+use Carp qw(confess);
 use Moose;
 use MooseX::NonMoose;
+use Net::Curl::Multi qw(/^CURL_POLL_/ /^CURL_CSELECT_/);
 
 extends 'Net::Curl::Multi';
-
-use AnyEvent;
-use Net::Curl::Multi qw(/^CURL_POLL_/ /^CURL_CSELECT_/);
 
 has pool        => (is => 'ro', isa => 'HashRef[Ref]', default => sub { {} });
 has timer       => (is => 'rw', isa => 'Any');
@@ -15,6 +15,9 @@ has timeout     => (is => 'ro', isa => 'Num', default => 10.0);
 
 sub BUILD {
     my ($self) = @_;
+
+    confess 'Net::Curl::Multi is missing timer callback, rebuild Net::Curl with libcurl 7.16.0 or newer'
+        unless $self->can('CURLMOPT_TIMERFUNCTION');
 
     $self->setopt(Net::Curl::Multi::CURLMOPT_SOCKETFUNCTION    => \&_cb_socket);
     $self->setopt(Net::Curl::Multi::CURLMOPT_TIMERFUNCTION     => \&_cb_timer);
@@ -24,7 +27,6 @@ sub BUILD {
 # socket must be updated
 sub _cb_socket {
     my ($self, $easy, $socket, $poll) = @_;
-    #warn "on_socket($socket => $poll)\n";
 
     # Right now $socket belongs to that $easy, but it can be
     # shared with another easy handle if server supports persistent
@@ -62,7 +64,6 @@ sub _cb_socket {
 # on sockets. This will allow curl to trigger timeout events.
 sub _cb_timer {
     my ($self, $timeout_ms) = @_;
-    #warn "on_timer($timeout_ms)\n";
 
     # deregister old timer
     $self->timer(undef);
@@ -103,7 +104,7 @@ around socket_action => sub {
             $self->remove_handle($easy);
             $easy->finish($result);
         } else {
-            die "I don't know what to do with message $msg.\n";
+            confess "I don't know what to do with message $msg";
         }
     }
 };
@@ -111,7 +112,8 @@ around socket_action => sub {
 # add one handle and kickstart download
 sub add_handle {
     my ($self, $easy) = @_;
-    die "easy cannot finish()\n"
+
+    confess "Can't finish()"
         unless $easy->can('finish');
 
     # Calling socket_action with default arguments will trigger

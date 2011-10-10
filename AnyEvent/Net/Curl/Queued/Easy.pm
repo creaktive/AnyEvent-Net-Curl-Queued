@@ -4,10 +4,9 @@ use common::sense;
 use Digest::SHA;
 use Moose;
 use MooseX::NonMoose;
+use Net::Curl::Easy qw(/^CURLOPT_/);
 
 extends 'Net::Curl::Easy';
-
-use Net::Curl::Easy qw(/^CURLOPT_/);
 
 use AnyEvent::Net::Curl::Queued::Stats;
 
@@ -20,8 +19,6 @@ has queue       => (is => 'rw', isa => 'Ref');
 has retry       => (is => 'rw', isa => 'Int', default => 5);
 has sha         => (is => 'ro', isa => 'Digest::SHA', default => sub { new Digest::SHA(256) }, lazy => 1);
 has stats       => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Stats', default => sub { AnyEvent::Net::Curl::Queued::Stats->new }, lazy => 1);
-
-use overload '""' => \&unique, fallback => 1;
 
 sub unique {
     my ($self) = @_;

@@ -4,10 +4,9 @@ package MyDownloader;
 use common::sense;
 
 use Moose;
+use Net::Curl::Easy qw(/^CURLOPT_/);
 
 extends 'AnyEvent::Net::Curl::Queued::Easy';
-
-use Net::Curl::Easy qw(/^CURLOPT_/);
 
 after init => sub {
     my ($self) = @_;
@@ -26,16 +25,17 @@ after init => sub {
 after finish => sub {
     my ($self, $result) = @_;
 
+    return if $self->has_error;
+
     printf "%d %-30s finished downloading %s: %d bytes\n", $self->retry, $result, $self->final_url, length ${$self->data};
 };
 
-around clone => sub {
+around has_error => sub {
     my $orig = shift;
     my $self = shift;
 
-    my $clone = $self->$orig(@_);
-
-    return $clone;
+    return 1 if $self->$orig(@_);
+    return 1 if $self->getinfo(Net::Curl::Easy::CURLINFO_RESPONSE_CODE) =~ m{^5[0-9]{2}$};
 };
 
 no Moose;
