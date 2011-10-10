@@ -10,38 +10,55 @@ extends 'Net::Curl::Easy';
 
 use AnyEvent::Net::Curl::Queued::Stats;
 
+# return code
 has curl_result => (is => 'rw', isa => 'Net::Curl::Easy::Code');
+
+# receive buffers
 has data        => (is => 'rw', isa => 'Ref');
-has final_url   => (is => 'rw', isa => 'Str');
 has header      => (is => 'rw', isa => 'Ref');
+
+# URLs
 has initial_url => (is => 'ro', isa => 'Str', required => 1);
+has final_url   => (is => 'rw', isa => 'Str');
+
+# queue back-reference
 has queue       => (is => 'rw', isa => 'Ref');
-has retry       => (is => 'rw', isa => 'Int', default => 5);
+
+# uniqueness detection helper
 has sha         => (is => 'ro', isa => 'Digest::SHA', default => sub { new Digest::SHA(256) }, lazy => 1);
+
+# accumulators
+has retry       => (is => 'rw', isa => 'Int', default => 5);
 has stats       => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Stats', default => sub { AnyEvent::Net::Curl::Queued::Stats->new }, lazy => 1);
 
 sub unique {
     my ($self) = @_;
 
-    return $self->sha->clone->b64digest;
+    # return the signature
+    return $self->sha->clone->b64digest =~ tr{+/}{-_}r;
 }
 
 sub sign {
     my ($self, $str) = @_;
 
+    # add entropy to the signature
     $self->sha->add($str);
 }
 
 sub init {
     my ($self) = @_;
 
-    $self->sign(__PACKAGE__);
+    # salt
+    $self->sign(($self->meta->class_precedence_list)[0]);
+    # URL; GET parameters included
     $self->sign($self->initial_url);
 
+    # common parameters
     $self->setopt(CURLOPT_SHARE,            $self->queue->share);
     $self->setopt(CURLOPT_TIMEOUT,          $self->queue->timeout);
     $self->setopt(CURLOPT_URL,              $self->initial_url);
 
+    # buffers
     my $data;
     $self->setopt(CURLOPT_WRITEDATA,        \$data);
     $self->data(\$data);
@@ -54,37 +71,39 @@ sub init {
 sub has_error {
     my ($self) = @_;
 
+    # very bad error
     return ($self->curl_result == Net::Curl::Easy::CURLE_OK) ? 0 : 1;
 }
 
 sub finish {
     my ($self, $result) = @_;
 
+    # populate results
     $self->curl_result($result);
     $self->final_url($self->getinfo(Net::Curl::Easy::CURLINFO_EFFECTIVE_URL));
 
+    # inactivate worker
     $self->queue->cv->end;
-
     $self->queue->dec_active;
 
+    # reenqueue the request
     if ($self->has_error and $self->retry > 0) {
         $self->queue->unique->{$self->unique} = 0;
         $self->queue->queue_push($self->clone);
-    } else {
-        $self->stats->sum($self);
-        $self->queue->stats->sum($self);
     }
 
+    # update stats
+    $self->stats->sum($self);
+    $self->queue->stats->sum($self);
+
+    # move queue
     $self->queue->start;
 }
 
 sub clone {
     my ($self) = @_;
 
-    my @class = $self->meta->class_precedence_list;
-    my $class = shift @class;
-
-    return $class->new({
+    return ($self->meta->class_precedence_list)[0]->new({
         initial_url     => $self->initial_url,
         retry           => $self->retry - 1,
     });

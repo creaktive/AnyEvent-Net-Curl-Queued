@@ -3,7 +3,6 @@
 package MyDownloader;
 use common::sense;
 
-use File::Slurp;
 use Moose;
 use Net::Curl::Easy qw(/^CURLOPT_/);
 
@@ -26,14 +25,11 @@ after init => sub {
 after finish => sub {
     my ($self, $result) = @_;
 
-    return if $self->has_error;
-
-    my $file = $self->unique;
-    $file =~ tr{+/}{-_};
-
-    write_file("data/${file}.html", $self->data);
-
-    printf "%s finished downloading %s: %d bytes\n", $file, $self->final_url, length ${$self->data};
+    if ($self->has_error) {
+        say "ERROR";
+    } else {
+        printf "%s finished downloading %s: %d bytes\n", $self->unique, $self->final_url, length ${$self->data};
+    }
 };
 
 around has_error => sub {

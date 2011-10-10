@@ -3,10 +3,12 @@ use common::sense;
 
 use AnyEvent;
 use Moose;
+use Moose::Util::TypeConstraints;
 use Net::Curl::Share qw(:constants);
 
 use AnyEvent::Net::Curl::Queued::Multi;
 
+# active sessions counter
 has active      => (
     traits      => ['Counter'],
     is          => 'ro',
@@ -17,9 +19,20 @@ has active      => (
         dec_active  dec
     }},
 );
+
+# AnyEvent condition variable
 has cv          => (is => 'ro', isa => 'AnyEvent::CondVar', default => sub { AE::cv }, lazy => 1);
-has max         => (is => 'ro', isa => 'Int', default => 4);
+
+# max parallel connections
+subtype 'MaxConn'
+    => as Int
+    => where { $_ >= 2 };
+has max         => (is => 'ro', isa => 'MaxConn', default => 4);
+
+# Net::Curl::Multi object
 has multi       => (is => 'rw', isa => 'AnyEvent::Net::Curl::Queued::Multi');
+
+# our queue
 has queue       => (
     traits      => ['Array'],
     is          => 'ro',
@@ -32,9 +45,17 @@ has queue       => (
         count           count
     }},
 );
+
+# Net::Curl::Share object
 has share       => (is => 'ro', isa => 'Net::Curl::Share', default => sub { Net::Curl::Share->new }, lazy => 1);
+
+# stats accumulator
 has stats       => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Stats', default => sub { AnyEvent::Net::Curl::Queued::Stats->new }, lazy => 1);
+
+# default timeout
 has timeout     => (is => 'ro', isa => 'Num', default => 10.0);
+
+# prevent repeated accesses
 has unique      => (is => 'ro', isa => 'HashRef[Str]', default => sub { {} });
 
 sub BUILD {
@@ -53,6 +74,7 @@ sub BUILD {
 sub start {
     my ($self) = @_;
 
+    # populate queue
     $self->add($self->dequeue)
         while
             $self->count
@@ -62,19 +84,22 @@ sub start {
 sub add {
     my ($self, $worker) = @_;
 
+    # vivify the worker
     $worker = $worker->()
         if ref($worker) eq 'CODE';
 
+    # self-reference & warmup
     $worker->queue($self);
     $worker->init;
 
+    # check if already processed
     if (my $unique = $worker->unique) {
         return if ++$self->unique->{$unique} > 1;
     }
 
+    # fire
     $self->inc_active;
     $self->cv->begin;
-
     $self->multi->add_handle($worker);
 }
 

@@ -110,7 +110,7 @@ around socket_action => sub {
 };
 
 # add one handle and kickstart download
-sub add_handle {
+override add_handle => sub {
     my ($self, $easy) = @_;
 
     confess "Can't finish()"
@@ -131,8 +131,8 @@ sub add_handle {
         $self->socket_action;
     };
 
-    $self->SUPER::add_handle($easy);
-}
+    super($easy);
+};
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
