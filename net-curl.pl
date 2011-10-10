@@ -79,15 +79,15 @@ $reader = AE::io $fh, 0, sub {
 
         #$url =~ s/localhost/localhost:8888/;
 
-        $q->prepend(
+        $q->prepend(sub {
             MyDownloader->new({
                 initial_url => $url,
             })
-        );
+        });
     }
 };
 
 $cv->wait;
 
 p $q->stats->stats;
-p Net::Curl::version_info;
+#p Net::Curl::version_info;

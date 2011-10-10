@@ -62,6 +62,9 @@ sub start {
 sub add {
     my ($self, $worker) = @_;
 
+    $worker = $worker->()
+        if ref($worker) eq 'CODE';
+
     $worker->queue($self);
     $worker->init;
 
