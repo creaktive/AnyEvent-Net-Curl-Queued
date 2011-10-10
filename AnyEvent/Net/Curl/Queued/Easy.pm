@@ -9,6 +9,8 @@ extends 'Net::Curl::Easy';
 
 use Net::Curl::Easy qw(/^CURLOPT_/);
 
+use AnyEvent::Net::Curl::Queued::Stats;
+
 has curl_result => (is => 'rw', isa => 'Net::Curl::Easy::Code');
 has data        => (is => 'rw', isa => 'Ref');
 has final_url   => (is => 'rw', isa => 'Str');
@@ -17,16 +19,9 @@ has initial_url => (is => 'ro', isa => 'Str', required => 1);
 has queue       => (is => 'rw', isa => 'Ref');
 has retry       => (is => 'rw', isa => 'Int', default => 5);
 has sha         => (is => 'ro', isa => 'Digest::SHA', default => sub { new Digest::SHA(256) }, lazy => 1);
-has share       => (is => 'rw', isa => 'Net::Curl::Share');
-has timeout     => (is => 'rw', isa => 'Num', default => 10.0);
+has stats       => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Stats', default => sub { AnyEvent::Net::Curl::Queued::Stats->new }, lazy => 1);
 
 use overload '""' => \&unique, fallback => 1;
-
-#sub BUILD {
-#    my ($self) = @_;
-#
-#    $self->init;
-#}
 
 sub unique {
     my ($self) = @_;
@@ -46,8 +41,8 @@ sub init {
     $self->sign(__PACKAGE__);
     $self->sign($self->initial_url);
 
-    $self->setopt(CURLOPT_SHARE,            $self->share);
-    $self->setopt(CURLOPT_TIMEOUT,          $self->timeout);
+    $self->setopt(CURLOPT_SHARE,            $self->queue->share);
+    $self->setopt(CURLOPT_TIMEOUT,          $self->queue->timeout);
     $self->setopt(CURLOPT_URL,              $self->initial_url);
 
     my $data;
@@ -61,6 +56,7 @@ sub init {
 
 sub has_error {
     my ($self) = @_;
+
     return ($self->curl_result == Net::Curl::Easy::CURLE_OK) ? 0 : 1;
 }
 
@@ -77,6 +73,9 @@ sub finish {
     if ($self->has_error and $self->retry > 0) {
         $self->queue->unique->{$self->unique} = 0;
         $self->queue->queue_push($self->clone);
+    } else {
+        $self->stats->sum($self);
+        $self->queue->stats->sum($self);
     }
 
     $self->queue->start;

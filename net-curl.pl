@@ -2,6 +2,7 @@
 
 package MyDownloader;
 use common::sense;
+
 use Moose;
 
 extends 'AnyEvent::Net::Curl::Queued::Easy';
@@ -82,4 +83,5 @@ $reader = AE::io $fh, 0, sub {
 
 $cv->wait;
 
+p $q->stats->stats;
 p Net::Curl::version_info;

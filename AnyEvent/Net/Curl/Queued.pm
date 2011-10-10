@@ -33,6 +33,7 @@ has queue       => (
     }},
 );
 has share       => (is => 'ro', isa => 'Net::Curl::Share', default => sub { Net::Curl::Share->new }, lazy => 1);
+has stats       => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Stats', default => sub { AnyEvent::Net::Curl::Queued::Stats->new }, lazy => 1);
 has timeout     => (is => 'ro', isa => 'Num', default => 10.0);
 has unique      => (is => 'ro', isa => 'HashRef[Str]', default => sub { {} });
 
@@ -62,9 +63,6 @@ sub add {
     my ($self, $worker) = @_;
 
     $worker->queue($self);
-    $worker->share($self->share);
-    $worker->timeout($self->timeout);
-
     $worker->init;
 
     if (my $unique = $worker->unique) {
