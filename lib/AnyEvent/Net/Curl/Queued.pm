@@ -1,4 +1,16 @@
 package AnyEvent::Net::Curl::Queued;
+# ABSTRACT: Moose wrapper for queued downloads via Net::Curl & AnyEvent
+
+=head1 SYNOPSIS
+
+    ...
+
+=head1 DESCRIPTION
+
+    ...
+
+=cut
+
 use common::sense;
 
 use AnyEvent;
@@ -7,6 +19,8 @@ use Moose::Util::TypeConstraints;
 use Net::Curl::Share qw(:constants);
 
 use AnyEvent::Net::Curl::Queued::Multi;
+
+# VERSION
 
 # active sessions counter
 has active      => (
@@ -71,6 +85,12 @@ sub BUILD {
     $self->share->setopt(CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS);      # 3
 }
 
+=method start()
+
+Populate empty request slots with workers from the queue.
+
+=cut
+
 sub start {
     my ($self) = @_;
 
@@ -80,6 +100,12 @@ sub start {
             $self->count
             and ($self->active < $self->max);
 }
+
+=method add($worker)
+
+Activate a worker.
+
+=cut
 
 sub add {
     my ($self, $worker) = @_;
@@ -103,6 +129,12 @@ sub add {
     $self->multi->add_handle($worker);
 }
 
+=method append($worker)
+
+Put the worker at the end of the queue.
+
+=cut
+
 sub append {
     my ($self, $worker) = @_;
 
@@ -110,12 +142,29 @@ sub append {
     $self->start;
 }
 
+=method prepend($worker)
+
+Put the worker at the beginning of the queue.
+
+=cut
+
 sub prepend {
     my ($self, $worker) = @_;
 
     $self->queue_unshift($worker);
     $self->start;
 }
+
+=head1 SEE ALSO
+
+=for :list
+* L<AnyEvent>
+* L<Moose>
+* L<Net::Curl>
+* L<WWW::Curl>
+* L<AnyEvent::Curl::Multi>
+
+=cut
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

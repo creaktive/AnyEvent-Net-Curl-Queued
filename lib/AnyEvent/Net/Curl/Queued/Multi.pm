@@ -1,4 +1,5 @@
 package AnyEvent::Net::Curl::Queued::Multi;
+# ABSTRACT: Net::Curl::Multi wrapped by Moose
 use common::sense;
 
 use AnyEvent;
@@ -13,6 +14,8 @@ has pool        => (is => 'ro', isa => 'HashRef[Ref]', default => sub { {} });
 has timer       => (is => 'rw', isa => 'Any');
 has timeout     => (is => 'ro', isa => 'Num', default => 10.0);
 
+# VERSION
+
 sub BUILD {
     my ($self) = @_;
 
@@ -26,7 +29,7 @@ sub BUILD {
 # socket callback: will be called by curl any time events on some
 # socket must be updated
 sub _cb_socket {
-    my ($self, $easy, $socket, $poll) = @_;
+    my ($self, undef, $socket, $poll) = @_;
 
     # Right now $socket belongs to that $easy, but it can be
     # shared with another easy handle if server supports persistent
