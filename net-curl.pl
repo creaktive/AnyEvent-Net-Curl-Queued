@@ -17,10 +17,7 @@ after init => sub {
     $self->setopt(CURLOPT_FOLLOWLOCATION,   1);
     $self->setopt(CURLOPT_MAXREDIRS,        5);
     $self->setopt(CURLOPT_NOSIGNAL,         1);
-    $self->setopt(CURLOPT_SHARE,            $self->share);
-    $self->setopt(CURLOPT_TIMEOUT,          10);
     $self->setopt(CURLOPT_UNRESTRICTED_AUTH,1);
-    $self->setopt(CURLOPT_URL,              $self->url);
     $self->setopt(CURLOPT_USERAGENT,        'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0)');
     #$self->setopt(CURLOPT_VERBOSE,          1);
 };
@@ -28,7 +25,16 @@ after init => sub {
 after finish => sub {
     my ($self, $result) = @_;
 
-    printf "%-30s finished downloading %s: %d bytes\n", $result, $self->url, length ${$self->data};
+    printf "%d %-30s finished downloading %s: %d bytes\n", $self->retry, $result, $self->final_url, length ${$self->data};
+};
+
+around clone => sub {
+    my $orig = shift;
+    my $self = shift;
+
+    my $clone = $self->$orig(@_);
+
+    return $clone;
 };
 
 no Moose;
@@ -48,6 +54,7 @@ my $cv = AE::cv;
 my $q = AnyEvent::Net::Curl::Queued->new({
     cv      => $cv,
     max     => 16,
+    #retry   => 10,
 });
 
 open(my $fh, '<', 'localhost.txt') or die "erro: $!";
@@ -63,9 +70,11 @@ $reader = AE::io $fh, 0, sub {
         my $url = <$fh>;
         chomp $url;
 
+        #$url =~ s/localhost/localhost:8888/;
+
         $q->prepend(
             MyDownloader->new({
-                url     => $url,
+                initial_url => $url,
             })
         );
     }

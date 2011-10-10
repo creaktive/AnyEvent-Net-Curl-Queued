@@ -1,5 +1,4 @@
 package AnyEvent::Net::Curl::Queued::Multi;
-
 use common::sense;
 
 use Moose;
@@ -10,8 +9,9 @@ extends 'Net::Curl::Multi';
 use AnyEvent;
 use Net::Curl::Multi qw(/^CURL_POLL_/ /^CURL_CSELECT_/);
 
-has pool    => (is => 'ro', isa => 'HashRef[Ref]', default => sub { {} });
-has timer   => (is => 'rw', isa => 'Any');
+has pool        => (is => 'ro', isa => 'HashRef[Ref]', default => sub { {} });
+has timer       => (is => 'rw', isa => 'Any');
+has timeout     => (is => 'ro', isa => 'Num', default => 10.0);
 
 sub BUILD {
     my ($self) = @_;
@@ -82,7 +82,7 @@ sub _cb_timer {
         # must not wait too long (more than a few seconds perhaps)
         # before you call curl_multi_perform() again.
 
-        $self->timer(AE::timer 10, 10, $cb)
+        $self->timer(AE::timer $self->timeout, $self->timeout, $cb)
             if $self->handles;
     } else {
         # This will trigger timeouts if there are any.

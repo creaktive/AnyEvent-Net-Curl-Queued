@@ -1,4 +1,5 @@
 package AnyEvent::Net::Curl::Queued;
+use common::sense;
 
 use AnyEvent;
 use Moose;
@@ -18,7 +19,7 @@ has active      => (
 );
 has cv          => (is => 'ro', isa => 'AnyEvent::CondVar', default => sub { AE::cv }, lazy => 1);
 has max         => (is => 'ro', isa => 'Int', default => 4);
-has multi       => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Multi', default => sub { AnyEvent::Net::Curl::Queued::Multi->new }, lazy => 1);
+has multi       => (is => 'rw', isa => 'AnyEvent::Net::Curl::Queued::Multi');
 has queue       => (
     traits      => ['Array'],
     is          => 'ro',
@@ -32,10 +33,17 @@ has queue       => (
     }},
 );
 has share       => (is => 'ro', isa => 'Net::Curl::Share', default => sub { Net::Curl::Share->new }, lazy => 1);
+has timeout     => (is => 'ro', isa => 'Num', default => 10.0);
 has unique      => (is => 'ro', isa => 'HashRef[Str]', default => sub { {} });
 
 sub BUILD {
     my ($self) = @_;
+
+    $self->multi(
+        AnyEvent::Net::Curl::Queued::Multi->new({
+            timeout     => $self->timeout,
+        })
+    );
 
     $self->share->setopt(CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE);   # 2
     $self->share->setopt(CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS);      # 3
@@ -53,12 +61,15 @@ sub start {
 sub add {
     my ($self, $worker) = @_;
 
-    if ($worker->unique) {
-        return if ++$self->unique->{$worker->unique} > 1;
-    }
-
     $worker->queue($self);
     $worker->share($self->share);
+    $worker->timeout($self->timeout);
+
+    $worker->init;
+
+    if (my $unique = $worker->unique) {
+        return if ++$self->unique->{$unique} > 1;
+    }
 
     $self->inc_active;
     $self->cv->begin;
