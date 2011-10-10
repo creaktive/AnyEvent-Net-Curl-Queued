@@ -1,8 +1,22 @@
 package AnyEvent::Net::Curl::Queued::Stats;
+# ABSTRACT: Connection statistics for AnyEvent::Net::Curl::Queued::Easy
+
+=head1 SYNOPSIS
+
+    ...
+
+=head1 DESCRIPTION
+
+    ...
+
+=cut
+
 use common::sense;
 
 use Moose;
 use Net::Curl::Easy qw(/^CURLOPT_/);
+
+# VERSION
 
 has stamp       => (is => 'rw', isa => 'Int', default => time);
 has stats       => (
@@ -25,6 +39,13 @@ has stats       => (
     } },
 );
 
+=method sum($from)
+
+Aggregate attributes from the C<$from> object.
+It is supposed to be an instance of L<AnyEvent::Net::Curl::Queued::Easy> or L<AnyEvent::Net::Curl::Queued::Stats>.
+
+=cut
+
 sub sum {
     my ($self, $from) = @_;
 
@@ -44,6 +65,14 @@ sub sum {
 
     return 1;
 }
+
+=head1 SEE ALSO
+
+=for :list
+* L<AnyEvent::Net::Curl::Queued::Easy>
+* L<AnyEvent::Net::Curl::Queued>
+
+=cut
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
