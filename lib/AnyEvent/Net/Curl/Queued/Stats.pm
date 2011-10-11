@@ -35,6 +35,7 @@ has stats       => (
         size_download       => 0,
         size_upload         => 0,
         starttransfer_time  => 0,
+        total               => 0,
         total_time          => 0,
     } },
 );
