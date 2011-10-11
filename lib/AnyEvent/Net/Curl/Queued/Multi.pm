@@ -1,5 +1,21 @@
 package AnyEvent::Net::Curl::Queued::Multi;
 # ABSTRACT: Net::Curl::Multi wrapped by Moose
+
+=head1 SYNOPSIS
+
+    use AnyEvent::Net::Curl::Queued::Multi;
+
+    my $multi = AnyEvent::Net::Curl::Queued::Multi->new({
+        max     => 10,
+        timeout => 30,
+    });
+
+=head1 DESCRIPTION
+
+This module extends the L<Net::Curl::Multi> class through L<MooseX::NonMoose> and adds L<AnyEvent> handlers.
+
+=cut
+
 use common::sense;
 
 use AnyEvent;
@@ -10,9 +26,36 @@ use Net::Curl::Multi qw(/^CURL_POLL_/ /^CURL_CSELECT_/);
 
 extends 'Net::Curl::Multi';
 
+=attr pool
+
+Sockets pool.
+
+=cut
+
 has pool        => (is => 'ro', isa => 'HashRef[Ref]', default => sub { {} });
+
+=attr timer
+
+L<AnyEvent> C<timer()> handler.
+
+=cut
+
 has timer       => (is => 'rw', isa => 'Any');
+
+=attr max
+
+Maximum parallel connections limit (default: 4).
+
+=cut
+
 has max         => (is => 'ro', isa => 'Num', default => 4);
+
+=attr timeout
+
+Timeout threshold, in seconds (default: 10).
+
+=cut
+
 has timeout     => (is => 'ro', isa => 'Num', default => 10.0);
 
 # VERSION
@@ -98,6 +141,12 @@ sub _cb_timer {
     return 1;
 }
 
+=method socket_action(...)
+
+Wrapper around the C<socket_action()> from L<Net::Curl::Multi>.
+
+=cut
+
 around socket_action => sub {
     my $orig = shift;
     my $self = shift;
@@ -114,7 +163,13 @@ around socket_action => sub {
     }
 };
 
-# add one handle and kickstart download
+=method add_handle(...)
+
+Overrides the C<add_handle()> from L<Net::Curl::Multi>.
+Add one handle and kickstart download.
+
+=cut
+
 override add_handle => sub {
     my ($self, $easy) = @_;
 
@@ -138,6 +193,16 @@ override add_handle => sub {
 
     super($easy);
 };
+
+=head1 SEE ALSO
+
+=for :list
+* L<AnyEvent>
+* L<AnyEvent::Net::Curl::Queued>
+* L<MooseX::NonMoose>
+* L<Net::Curl::Multi>
+
+=cut
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
