@@ -156,6 +156,18 @@ sub prepend {
     $self->start;
 }
 
+=method wait()
+
+Shortcut to C<$queue-E<gt>cv-E<gt>wait>.
+
+=cut
+
+sub wait {
+    my ($self) = @_;
+
+    $self->cv->wait;
+}
+
 =head1 SEE ALSO
 
 =for :list

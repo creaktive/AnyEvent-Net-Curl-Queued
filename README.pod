@@ -34,6 +34,10 @@ Put the worker at the end of the queue.
 
 Put the worker at the beginning of the queue.
 
+=head2 wait()
+
+Shortcut to C<$queue-E<gt>cv-E<gt>wait>.
+
 =head1 SEE ALSO
 
 =over 4

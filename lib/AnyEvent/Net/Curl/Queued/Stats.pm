@@ -61,6 +61,7 @@ sub sum {
         $self->stats->{$type} += $val;
     }
 
+    ++$self->stats->{total};
     $self->stamp(time);
 
     return 1;

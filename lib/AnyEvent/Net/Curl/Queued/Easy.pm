@@ -140,8 +140,8 @@ sub finish {
     $self->queue->cv->end;
     $self->queue->dec_active;
 
-    # reenqueue the request
-    if ($self->has_error and $self->retry > 0) {
+    # re-enqueue the request
+    if ($self->has_error and $self->retry > 1) {
         $self->queue->unique->{$self->unique} = 0;
         $self->queue->queue_push($self->clone);
     }

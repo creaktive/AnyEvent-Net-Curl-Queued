@@ -26,7 +26,7 @@ after finish => sub {
     my ($self, $result) = @_;
 
     if ($self->has_error) {
-        say "ERROR";
+        say "ERROR: $result";
     } else {
         printf "%s finished downloading %s: %d bytes\n", $self->unique, $self->final_url, length ${$self->data};
     }
@@ -49,43 +49,29 @@ package main;
 use common::sense;
 use lib qw(lib);
 
-use AnyEvent;
 use Data::Printer;
 
 use AnyEvent::Net::Curl::Queued;
 
-my $cv = AE::cv;
 my $q = AnyEvent::Net::Curl::Queued->new({
-    cv      => $cv,
     max     => 8,
     timeout => 30,
 });
 
 open(my $fh, '<', 'localhost.txt') or die "erro: $!";
+while (my $url = <$fh>) {
+    chomp $url;
 
-$cv->begin;
-my $reader;
-$reader = AE::io $fh, 0, sub {
-    if (eof($fh)) {
-        close $fh;
-        undef $reader;
-        $cv->end;
-    } else {
-        my $url = <$fh>;
-        chomp $url;
+    #$url =~ s/localhost/localhost:8888/;
 
-        #$url =~ s/localhost/localhost:8888/;
-
-        $q->prepend(sub {
-            MyDownloader->new({
-                initial_url => $url,
-                retry       => 10,
-            })
-        });
-    }
-};
-
-$cv->wait;
+    $q->append(sub {
+        MyDownloader->new({
+            initial_url => $url,
+            retry       => 10,
+        })
+    });
+}
+$q->wait;
 
 p $q->stats->stats;
 #p Net::Curl::version_info;
