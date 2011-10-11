@@ -12,6 +12,7 @@ extends 'Net::Curl::Multi';
 
 has pool        => (is => 'ro', isa => 'HashRef[Ref]', default => sub { {} });
 has timer       => (is => 'rw', isa => 'Any');
+has max         => (is => 'ro', isa => 'Num', default => 4);
 has timeout     => (is => 'ro', isa => 'Num', default => 10.0);
 
 # VERSION
@@ -22,8 +23,9 @@ sub BUILD {
     confess 'Net::Curl::Multi is missing timer callback, rebuild Net::Curl with libcurl 7.16.0 or newer'
         unless $self->can('CURLMOPT_TIMERFUNCTION');
 
-    $self->setopt(Net::Curl::Multi::CURLMOPT_SOCKETFUNCTION    => \&_cb_socket);
-    $self->setopt(Net::Curl::Multi::CURLMOPT_TIMERFUNCTION     => \&_cb_timer);
+    $self->setopt(Net::Curl::Multi::CURLMOPT_MAXCONNECTS        => $self->max);
+    $self->setopt(Net::Curl::Multi::CURLMOPT_SOCKETFUNCTION     => \&_cb_socket);
+    $self->setopt(Net::Curl::Multi::CURLMOPT_TIMERFUNCTION      => \&_cb_timer);
 }
 
 # socket callback: will be called by curl any time events on some

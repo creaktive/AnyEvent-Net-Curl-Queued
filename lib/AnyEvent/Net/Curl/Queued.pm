@@ -77,6 +77,7 @@ sub BUILD {
 
     $self->multi(
         AnyEvent::Net::Curl::Queued::Multi->new({
+            max         => $self->max,
             timeout     => $self->timeout,
         })
     );
