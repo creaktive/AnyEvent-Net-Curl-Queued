@@ -7,7 +7,7 @@ package AnyEvent::Net::Curl::Queued;
 
 =head1 DESCRIPTION
 
-    ...
+...
 
 =cut
 

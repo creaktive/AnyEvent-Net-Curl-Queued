@@ -31,6 +31,8 @@ can_ok($easy, qw(
 
 $easy->init;
 
+ok($easy->retry == 5, 'default retry()');
+
 ok($easy->sign('TEST'), 'sign()');
 ok($easy->unique eq 'iNmIrn-mUqH6CA6Ee78z1Sek5Rl5zXzO5Hc9j127_1s', 'URL uniqueness signature: ' . $easy->unique);
 ok($easy->perform == Net::Curl::Easy::CURLE_OK, 'perform()');
@@ -42,4 +44,4 @@ ok($easy->stats->sum($easy), 'stats sum()');
 ok($easy->stats->stats->{header_size} == length ${$easy->header}, 'headers size match');
 ok($easy->stats->stats->{size_download} == length ${$easy->data}, 'body size match');
 
-done_testing(11);
+done_testing(12);
