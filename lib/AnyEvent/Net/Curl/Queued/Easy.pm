@@ -108,7 +108,7 @@ L<AnyEvent::Net::Curl::Queued> circular reference.
 
 =cut
 
-has queue       => (is => 'rw', isa => 'Ref');
+has queue       => (is => 'rw', isa => 'Ref', weak_ref => 1);
 
 =attr sha
 
