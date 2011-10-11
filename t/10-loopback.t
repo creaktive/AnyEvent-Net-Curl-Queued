@@ -52,8 +52,7 @@ for my $i (1 .. $n) {
             cb          => sub {
                 my ($self, $result) = @_;
 
-                isa_ok($self, 'MyDownloader');
-                isa_ok($self, 'AnyEvent::Net::Curl::Queued::Easy');
+                isa_ok($self, qw(MyDownloader AnyEvent::Net::Curl::Queued::Easy));
 
                 can_ok($self, qw(
                     data
@@ -74,4 +73,4 @@ for my $i (1 .. $n) {
 }
 $q->cv->wait;
 
-done_testing(5 + 7 * $n);
+done_testing(5 + 6 * $n);

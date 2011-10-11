@@ -91,8 +91,10 @@ sub init {
     $self->sign($self->initial_url);
 
     # common parameters
-    $self->setopt(CURLOPT_SHARE,        $self->queue->share);
-    $self->setopt(CURLOPT_TIMEOUT,      $self->queue->timeout);
+    if ($self->queue) {
+        $self->setopt(CURLOPT_SHARE,    $self->queue->share);
+        $self->setopt(CURLOPT_TIMEOUT,  $self->queue->timeout);
+    }
     $self->setopt(CURLOPT_URL,          $self->initial_url);
 
     # buffers
