@@ -3,11 +3,20 @@ package AnyEvent::Net::Curl::Queued::Stats;
 
 =head1 SYNOPSIS
 
-    ...
+    use AnyEvent::Net::Curl::Queued;
+    use Data::Printer;
+
+    my $q = AnyEvent::Net::Curl::Queued->new;
+    ...;
+    $q->wait;
+
+    p $q->stats;
+
+    $q->stats->sum(AnyEvent::Net::Curl::Queued::Stats->new);
 
 =head1 DESCRIPTION
 
-    ...
+Tracks statistics for L<AnyEvent::Net::Curl::Queued> and L<AnyEvent::Net::Curl::Queued::Easy>.
 
 =cut
 
@@ -18,7 +27,37 @@ use Net::Curl::Easy qw(/^CURLOPT_/);
 
 # VERSION
 
+=attr stamp
+
+Unix timestamp for statistics update.
+
+=cut
+
 has stamp       => (is => 'rw', isa => 'Int', default => time);
+
+=attr stats
+
+C<HashRef[Num]> with statistics:
+
+    appconnect_time
+    connect_time
+    header_size
+    namelookup_time
+    num_connects
+    pretransfer_time
+    redirect_count
+    redirect_time
+    request_size
+    size_download
+    size_upload
+    starttransfer_time
+    total
+    total_time
+
+Variable names are from respective L<curl_easy_getinfo()|http://curl.haxx.se/libcurl/c/curl_easy_getinfo.html> accessors.
+
+=cut
+
 has stats       => (
     is          => 'ro',
     isa         => 'HashRef[Num]',

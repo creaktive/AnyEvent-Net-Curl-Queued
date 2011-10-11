@@ -73,5 +73,5 @@ while (my $url = <$fh>) {
 }
 $q->wait;
 
-p $q->stats->stats;
+p $q->stats;
 #p Net::Curl::version_info;

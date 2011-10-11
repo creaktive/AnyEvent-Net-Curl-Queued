@@ -24,25 +24,76 @@ use AnyEvent::Net::Curl::Queued::Stats;
 
 # VERSION
 
-# return code
+=attr curl_result
+
+libcurl return code (C<Net::Curl::Easy::Code>).
+
+=cut
+
 has curl_result => (is => 'rw', isa => 'Net::Curl::Easy::Code');
 
-# receive buffers
+=attr data
+
+Receive buffer.
+
+=cut
+
 has data        => (is => 'rw', isa => 'Ref');
+
+=attr header
+
+Header buffer.
+
+=cut
+
 has header      => (is => 'rw', isa => 'Ref');
 
-# URLs
+=attr initial_url
+
+URL to fetch (string).
+
+=cut
+
 has initial_url => (is => 'ro', isa => 'Str', required => 1);
+
+=attr final_url
+
+Final URL (after redirections).
+
+=cut
+
 has final_url   => (is => 'rw', isa => 'Str');
 
-# queue back-reference
+=attr queue
+
+L<AnyEvent::Net::Curl::Queued> circular reference.
+
+=cut
+
 has queue       => (is => 'rw', isa => 'Ref');
 
-# uniqueness detection helper
+=attr sha
+
+Uniqueness detection helper.
+
+=cut
+
 has sha         => (is => 'ro', isa => 'Digest::SHA', default => sub { new Digest::SHA(256) }, lazy => 1);
 
-# accumulators
+=attr retry
+
+Number of retries (default: 5).
+
+=cut
+
 has retry       => (is => 'rw', isa => 'Int', default => 5);
+
+=attr stats
+
+L<AnyEvent::Net::Curl::Queued::Stats> instance.
+
+=cut
+
 has stats       => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Stats', default => sub { AnyEvent::Net::Curl::Queued::Stats->new }, lazy => 1);
 
 =method unique()
