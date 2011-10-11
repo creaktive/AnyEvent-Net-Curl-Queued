@@ -3,11 +3,49 @@ package AnyEvent::Net::Curl::Queued::Easy;
 
 =head1 SYNOPSIS
 
-    ...
+    package MyIEDownloader;
+    use common::sense;
+
+    use Moose;
+    use Net::Curl::Easy qw(/^CURLOPT_/);
+
+    extends 'AnyEvent::Net::Curl::Queued::Easy';
+
+    after init => sub {
+        my ($self) = @_;
+
+        $self->setopt(CURLOPT_ENCODING,         '');
+        $self->setopt(CURLOPT_FOLLOWLOCATION,   1);
+        $self->setopt(CURLOPT_USERAGENT,        'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0)');
+        $self->setopt(CURLOPT_VERBOSE,          1);
+    };
+
+    after finish => sub {
+        my ($self, $result) = @_;
+
+        if ($self->has_error) {
+            printf "error downloading %s: %s\n", $self->final_url, $result;
+        } else {
+            printf "finished downloading %s: %d bytes\n", $self->final_url, length ${$self->data};
+        }
+    };
+
+    around has_error => sub {
+        my $orig = shift;
+        my $self = shift;
+
+        return 1 if $self->$orig(@_);
+        return 1 if $self->getinfo(Net::Curl::Easy::CURLINFO_RESPONSE_CODE) =~ m{^5[0-9]{2}$};
+    };
+
+    no Moose;
+    __PACKAGE__->meta->make_immutable;
+
+    1;
 
 =head1 DESCRIPTION
 
-    ...
+The class you should overload to fetch stuff your own way.
 
 =cut
 
