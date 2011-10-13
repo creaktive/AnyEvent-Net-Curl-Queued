@@ -315,30 +315,103 @@ around setopt => sub {
             my $param = shift;
             %param = %{$param};
         } else {
-            carp "setopt() expects option/value pair, option/value hash or hashref!";
+            carp "setopt() expects OPTION/VALUE pair, OPTION/VALUE hash or hashref!";
         }
 
         while (my ($key, $val) = each %param) {
-            if (looks_like_number($key)) {
-                $self->$orig($key, $val);
-            } elsif ($key =~ m{^\w+$}) {
-                $key =~ s{^Net::Curl::Easy::}{}i;
-                $key = uc $key;
-                $key = 'CURLOPT_' . $key unless $key =~ m{^CURLOPT_};
+            $key = _curl_const($key, 'CURLOPT');
+            $self->$orig($key, $val) if defined $key;
+        }
+    } else {
+        carp "Specify at least one OPTION/VALUE pair!";
+    }
+};
 
-                eval "\$key = Net::Curl::Easy::$key;";  ## no critic
+=method getinfo
 
-                if ($@) {
-                    carp "setopt($key, ...): $@";
-                } else {
-                    $self->$orig($key, $val);
-                }
-            } else {
-                carp "Bad SETOPT_* name: '$key'";
+Extends L<Net::Curl::Easy> C<getinfo()> so it is able to get several variables at once;
+C<HashRef> parameter under void context will fill respective values in the C<HashRef>:
+
+    my $x = {
+        content_type    => 0,
+        speed_download  => 0,
+        primary_ip      => 0,
+    };
+    $self->getinfo($x);
+
+C<HashRef> parameter will return another C<HashRef>:
+
+    my $x = $self->getinfo({
+        content_type    => 0,
+        speed_download  => 0,
+        primary_ip      => 0,
+    });
+
+C<ArrayRef> parameter will return a list:
+
+    my ($content_type, $speed_download, $primary_ip) =
+        $self->getinfo([qw(content_type speed_download primary_ip)]);
+
+=cut
+
+around getinfo => sub {
+    my $orig = shift;
+    my $self = shift;
+
+    given (ref($_[0])) {
+        when ('ARRAY') {
+            my @val;
+            for my $name (@{$_[0]}) {
+                my $const = _curl_const($name, 'CURLINFO');
+                next unless defined $const;
+                push @val, $self->$orig($const);
             }
+            return @val;
+        } when ('HASH') {
+            my %val;
+            for my $name (keys %{$_[0]}) {
+                my $const = _curl_const($name, 'CURLINFO');
+                next unless defined $const;
+                $val{$name} = $self->$orig($const);
+            }
+
+            # write back to HashRef if called under void context
+            unless (defined wantarray) {
+                while (my ($k, $v) = each %val) {
+                    $_[0]->{$k} = $v;
+                }
+                return;
+            } else {
+                return \%val;
+            }
+        } when ('') {
+            my $const = _curl_const($_[0], 'CURLINFO');
+            return defined $const ? $self->$orig($const) : $const;
+        } default {
+            carp "getinfo() expects array/hash reference or string!";
+            return;
         }
     }
 };
+
+sub _curl_const {
+    my ($key, $suffix) = @_;
+
+    return $key if looks_like_number($key);
+
+    $key =~ s{^Net::Curl::Easy::}{}i;
+    $key =~ y{-}{_};
+    $key =~ s{\W}{}g;
+    $key = uc $key;
+    $key = "${suffix}_${key}" if $key !~ m{^${suffix}_};
+
+    my $val;
+    eval "\$val = Net::Curl::Easy::$key;";  ## no critic
+    carp "Invalid libcurl constant: $key" if $@;
+
+    return $val;
+}
+
 
 =head1 SEE ALSO
 

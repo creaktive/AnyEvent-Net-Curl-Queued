@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-package ApacheCrawl;
+package CrawlApache;
 use common::sense;
 
 use HTML::LinkExtor;
@@ -22,7 +22,10 @@ after finish => sub {
 
     say $result . "\t" . $self->final_url;
 
-    unless ($self->has_error) {
+    if (
+        not $self->has_error
+        and $self->getinfo('content_type') =~ m{^text/html}
+    ) {
         my @links;
 
         HTML::LinkExtor->new(sub {
@@ -34,7 +37,7 @@ after finish => sub {
 
         for my $link (@links) {
             $self->queue->prepend(sub {
-                ApacheCrawl->new({ initial_url => $link });
+                CrawlApache->new({ initial_url => $link });
             });
         }
     }
@@ -54,7 +57,7 @@ use AnyEvent::Net::Curl::Queued;
 
 my $q = AnyEvent::Net::Curl::Queued->new;
 $q->append(sub {
-    ApacheCrawl->new({ initial_url => 'http://localhost/manual/' })
+    CrawlApache->new({ initial_url => 'http://localhost/manual/' })
 });
 $q->wait;
 

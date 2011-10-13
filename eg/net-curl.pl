@@ -4,7 +4,6 @@ package MyDownloader;
 use common::sense;
 
 use Moose;
-use Net::Curl::Easy;
 
 extends 'AnyEvent::Net::Curl::Queued::Easy';
 
@@ -38,7 +37,7 @@ around has_error => sub {
     my $self = shift;
 
     return 1 if $self->$orig(@_);
-    return 1 if $self->getinfo(Net::Curl::Easy::CURLINFO_RESPONSE_CODE) =~ m{^5[0-9]{2}$};
+    return 1 if $self->getinfo('response_code') =~ m{^5[0-9]{2}$};
 };
 
 no Moose;
