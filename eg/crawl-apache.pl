@@ -27,8 +27,7 @@ after finish => sub {
         HTML::LinkExtor->new(sub {
             my ($tag, %links) = @_;
             push @links,
-                grep { m{^http://localhost/manual/}i }
-                map { $_->as_string =~ s/#.*$//r }
+                grep { $_->scheme eq 'http' and $_->host eq 'localhost' }
                 values %links;
         }, $self->final_url)->parse(${$self->data});
 

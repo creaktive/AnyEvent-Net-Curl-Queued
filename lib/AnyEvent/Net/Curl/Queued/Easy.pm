@@ -53,14 +53,29 @@ use common::sense;
 
 use Digest::SHA;
 use Moose;
+use Moose::Util::TypeConstraints;
 use MooseX::NonMoose;
 use Net::Curl::Easy qw(/^CURLOPT_/);
+use URI;
 
 extends 'Net::Curl::Easy';
 
 use AnyEvent::Net::Curl::Queued::Stats;
 
 # VERSION
+
+subtype 'AnyEvent::Net::Curl::Queued::Easy::URI'
+    => as class_type('URI');
+
+coerce 'AnyEvent::Net::Curl::Queued::Easy::URI'
+    => from 'Object'
+        => via {
+            $_->isa('URI')
+                ? $_
+                : Params::Coerce::coerce('URI', $_);
+        }
+    => from 'Str'
+        => via { URI->new($_) };
 
 =attr curl_result
 
@@ -92,7 +107,7 @@ URL to fetch (string).
 
 =cut
 
-has initial_url => (is => 'ro', isa => 'Str', required => 1);
+has initial_url => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Easy::URI', coerce => 1, required => 1);
 
 =attr final_url
 
@@ -100,7 +115,7 @@ Final URL (after redirections).
 
 =cut
 
-has final_url   => (is => 'rw', isa => 'Str');
+has final_url   => (is => 'rw', isa => 'AnyEvent::Net::Curl::Queued::Easy::URI', coerce => 1);
 
 =attr queue
 
@@ -174,17 +189,21 @@ You are supposed to build your own stuff after/around/before this method using L
 sub init {
     my ($self) = @_;
 
+    # fragment mangling
+    my $url = $self->initial_url->clone;
+    $url->fragment(undef);
+    $self->setopt(CURLOPT_URL,          $url->as_string);
+
     # salt
     $self->sign(($self->meta->class_precedence_list)[0]);
     # URL; GET parameters included
-    $self->sign($self->initial_url);
+    $self->sign($url->as_string);
 
     # common parameters
     if ($self->queue) {
         $self->setopt(CURLOPT_SHARE,    $self->queue->share);
         $self->setopt(CURLOPT_TIMEOUT,  $self->queue->timeout);
     }
-    $self->setopt(CURLOPT_URL,          $self->initial_url);
 
     # buffers
     my $data;
