@@ -25,7 +25,7 @@ Initialized automatically, unless you specify your own.
 
 =head2 max
 
-Maximum number of parallel connections (default: 4; minimum value: 2).
+Maximum number of parallel connections (default: 4; minimum value: 1).
 
 =head2 multi
 

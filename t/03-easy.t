@@ -16,10 +16,12 @@ can_ok($easy, qw(
     finish
     has_error
     header
+    http_response
     init
     initial_url
     new
     queue
+    res
     retry
     sha
     sign

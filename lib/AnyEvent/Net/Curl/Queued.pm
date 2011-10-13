@@ -33,13 +33,13 @@ has cv          => (is => 'ro', isa => 'AnyEvent::CondVar', default => sub { AE:
 
 =attr max
 
-Maximum number of parallel connections (default: 4; minimum value: 2).
+Maximum number of parallel connections (default: 4; minimum value: 1).
 
 =cut
 
 subtype 'MaxConn'
     => as Int
-    => where { $_ >= 2 };
+    => where { $_ >= 1 };
 has max         => (is => 'ro', isa => 'MaxConn', default => 4);
 
 =attr multi

@@ -53,6 +53,7 @@ use common::sense;
 
 use Carp qw(carp confess);
 use Digest::SHA;
+use HTTP::Response;
 use Moose;
 use Moose::Util::TypeConstraints;
 use MooseX::NonMoose;
@@ -102,6 +103,14 @@ Header buffer.
 
 has header      => (is => 'rw', isa => 'Ref');
 
+=attr http_response
+
+Optionally encapsulate the response in L<HTTP::Response>.
+
+=cut
+
+has http_response => (is => 'ro', isa => 'Bool', default => 0);
+
 =attr initial_url
 
 URL to fetch (string).
@@ -133,6 +142,14 @@ Uniqueness detection helper.
 =cut
 
 has sha         => (is => 'ro', isa => 'Digest::SHA', default => sub { new Digest::SHA(256) }, lazy => 1);
+
+=attr res
+
+Encapsulated L<HTTP::Response> instance, if L</http_response> was set.
+
+=cut
+
+has res         => (is => 'rw', isa => 'HTTP::Response');
 
 =attr retry
 
@@ -246,6 +263,21 @@ sub finish {
     # populate results
     $self->curl_result($result);
     $self->final_url($self->getinfo(Net::Curl::Easy::CURLINFO_EFFECTIVE_URL));
+
+    # optionally encapsulate with HTTP::Response
+    if ($self->http_response) {
+        $self->res(
+            HTTP::Response->parse(
+                ${$self->header}
+                . ${$self->data}
+            )
+        );
+
+        my $msg = $self->res->message;
+        $msg =~ s/^\s+//s;
+        $msg =~ s/\s+$//s;
+        $self->res->message($msg);
+    }
 
     # re-enqueue the request
     if ($self->has_error and $self->retry > 1) {
