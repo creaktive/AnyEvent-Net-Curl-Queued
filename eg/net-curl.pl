@@ -4,22 +4,22 @@ package MyDownloader;
 use common::sense;
 
 use Moose;
-use Net::Curl::Easy qw(/^CURLOPT_/);
 
 extends 'AnyEvent::Net::Curl::Queued::Easy';
 
 after init => sub {
     my ($self) = @_;
 
-    $self->setopt(CURLOPT_AUTOREFERER,      1);
-    $self->setopt(CURLOPT_ENCODING,         '');
-    $self->setopt(CURLOPT_FILETIME,         1);
-    $self->setopt(CURLOPT_FOLLOWLOCATION,   1);
-    $self->setopt(CURLOPT_MAXREDIRS,        5);
-    #$self->setopt(CURLOPT_NOSIGNAL,         1);
-    $self->setopt(CURLOPT_UNRESTRICTED_AUTH,1);
-    $self->setopt(CURLOPT_USERAGENT,        'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0)');
-    $self->setopt(CURLOPT_VERBOSE,          1);
+    $self->setopt(
+        autoreferer         => 1,
+        encoding            => '',
+        filetime            => 1,
+        followlocation      => 1,
+        maxredirs           => 5,
+        unrestricted_auth   => 1,
+        useragent           => 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0)',
+        verbose             => 1,
+    );
 };
 
 after finish => sub {

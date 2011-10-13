@@ -51,11 +51,13 @@ The class you should overload to fetch stuff your own way.
 
 use common::sense;
 
+use Carp qw(carp confess);
 use Digest::SHA;
 use Moose;
 use Moose::Util::TypeConstraints;
 use MooseX::NonMoose;
 use Net::Curl::Easy qw(/^CURLOPT_/);
+use Scalar::Util qw(looks_like_number);
 use URI;
 
 extends 'Net::Curl::Easy';
@@ -269,16 +271,74 @@ You are supposed to build your own stuff after/around/before this method using L
 =cut
 
 sub clone {
-    my ($self) = @_;
+    my ($self, $param) = @_;
+
+    $param //= {};
 
     my $class = ($self->meta->class_precedence_list)[0];
-    my $param = {
-        initial_url => $self->initial_url,
-        retry       => $self->retry - 1,
-    };
+    $param->{initial_url}   = $self->initial_url;
+    $param->{retry}         = $self->retry - 1;
 
     return sub { $class->new($param) };
 }
+
+=method setopt(OPTION => VALUE, [OPTION => VALUE])
+
+Extends L<Net::Curl::Easy> C<setopt()>, allowing option lists:
+
+    $self->setopt(
+        CURLOPT_ENCODING,         '',
+        CURLOPT_FOLLOWLOCATION,   1,
+        CURLOPT_USERAGENT,        'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0)',
+        CURLOPT_VERBOSE,          1,
+    );
+
+Or even shorter:
+
+    $self->setopt(
+        encoding            => '',
+        followlocation      => 1,
+        useragent           => 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0)',
+        verbose             => 1,
+    );
+
+=cut
+
+around setopt => sub {
+    my $orig = shift;
+    my $self = shift;
+
+    if (@_) {
+        my %param;
+        if (scalar @_ % 2 == 0) {
+            %param = @_;
+        } elsif (ref($_[0]) eq 'HASH') {
+            my $param = shift;
+            %param = %{$param};
+        } else {
+            carp "setopt() expects option/value pair, option/value hash or hashref!";
+        }
+
+        while (my ($key, $val) = each %param) {
+            if (looks_like_number($key)) {
+                $self->$orig($key, $val);
+            } elsif ($key =~ m{^\w+$}) {
+                $key = uc $key;
+                $key = 'CURLOPT_' . $key unless $key =~ m{^CURLOPT_};
+
+                eval "\$key = $key;";   ## no critic
+
+                if ($@) {
+                    carp "setopt($key, ...): $@";
+                } else {
+                    $self->$orig($key, $val);
+                }
+            } else {
+                carp "Bad SETOPT_* name: '$key'";
+            }
+        }
+    }
+};
 
 =head1 SEE ALSO
 

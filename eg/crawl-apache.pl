@@ -5,15 +5,16 @@ use common::sense;
 
 use HTML::LinkExtor;
 use Moose;
-use Net::Curl::Easy qw(/^CURLOPT_/);
 
 extends 'AnyEvent::Net::Curl::Queued::Easy';
 
 after init => sub {
     my ($self) = @_;
 
-    $self->setopt(CURLOPT_FOLLOWLOCATION, 1);
-    #$self->setopt(CURLOPT_VERBOSE, 1);
+    $self->setopt(
+        followlocation  => 1,
+        #verbose         => 1,
+    );
 };
 
 after finish => sub {
