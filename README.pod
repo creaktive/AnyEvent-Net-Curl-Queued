@@ -16,6 +16,62 @@ version 0.001
 
 ...
 
+=head1 ATTRIBUTES
+
+=head2 cv
+
+L<AnyEvent> condition variable.
+Initialized automatically, unless you specify your own.
+
+=head2 max
+
+Maximum number of parallel connections (default: 4; minimum value: 2).
+
+=head2 multi
+
+L<Net::Curl::Multi> instance.
+
+=head2 queue
+
+C<ArrayRef> to the queue.
+Has the following helper methods:
+
+=over 4
+
+=item *
+
+queue_push: append item at the end of the queue;
+
+=item *
+
+queue_unshift: prepend item at the top of the queue;
+
+=item *
+
+dequeue: shift item from the top of the queue;
+
+=item *
+
+count: number of items in queue.
+
+=back
+
+=head2 share
+
+L<Net::Curl::Share> instance.
+
+=head2 stats
+
+L<AnyEvent::Net::Curl::Queued::Stats> instance.
+
+=head2 timeout
+
+Timeout (default: 10 seconds).
+
+=head2 unique
+
+C<HashRef> to store request unique identifiers to prevent repeated accesses.
+
 =head1 METHODS
 
 =head2 start()

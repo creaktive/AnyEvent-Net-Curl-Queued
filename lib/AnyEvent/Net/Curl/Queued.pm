@@ -22,19 +22,47 @@ use AnyEvent::Net::Curl::Queued::Multi;
 
 # VERSION
 
-# AnyEvent condition variable
+=attr cv
+
+L<AnyEvent> condition variable.
+Initialized automatically, unless you specify your own.
+
+=cut
+
 has cv          => (is => 'ro', isa => 'AnyEvent::CondVar', default => sub { AE::cv }, lazy => 1);
 
-# max parallel connections
+=attr max
+
+Maximum number of parallel connections (default: 4; minimum value: 2).
+
+=cut
+
 subtype 'MaxConn'
     => as Int
     => where { $_ >= 2 };
 has max         => (is => 'ro', isa => 'MaxConn', default => 4);
 
-# Net::Curl::Multi object
+=attr multi
+
+L<Net::Curl::Multi> instance.
+
+=cut
+
 has multi       => (is => 'rw', isa => 'AnyEvent::Net::Curl::Queued::Multi');
 
-# our queue
+=attr queue
+
+C<ArrayRef> to the queue.
+Has the following helper methods:
+
+=for :list
+* queue_push: append item at the end of the queue;
+* queue_unshift: prepend item at the top of the queue;
+* dequeue: shift item from the top of the queue;
+* count: number of items in queue.
+
+=cut
+
 has queue       => (
     traits      => ['Array'],
     is          => 'ro',
@@ -48,16 +76,36 @@ has queue       => (
     }},
 );
 
-# Net::Curl::Share object
+=attr share
+
+L<Net::Curl::Share> instance.
+
+=cut
+
 has share       => (is => 'ro', isa => 'Net::Curl::Share', default => sub { Net::Curl::Share->new }, lazy => 1);
 
-# stats accumulator
+=attr stats
+
+L<AnyEvent::Net::Curl::Queued::Stats> instance.
+
+=cut
+
 has stats       => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Stats', default => sub { AnyEvent::Net::Curl::Queued::Stats->new }, lazy => 1);
 
-# default timeout
+=attr timeout
+
+Timeout (default: 10 seconds).
+
+=cut
+
 has timeout     => (is => 'ro', isa => 'Num', default => 10.0);
 
-# prevent repeated accesses
+=attr unique
+
+C<HashRef> to store request unique identifiers to prevent repeated accesses.
+
+=cut
+
 has unique      => (is => 'ro', isa => 'HashRef[Str]', default => sub { {} });
 
 sub BUILD {
