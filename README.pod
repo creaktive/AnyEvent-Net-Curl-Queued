@@ -22,6 +22,10 @@ version 0.001
 
 Populate empty request slots with workers from the queue.
 
+=head2 empty()
+
+Check if there are active requests or requests in queue.
+
 =head2 add($worker)
 
 Activate a worker.
@@ -36,7 +40,7 @@ Put the worker at the beginning of the queue.
 
 =head2 wait()
 
-Shortcut to C<$queue-E<gt>cv-E<gt>wait>.
+Shortcut to C<$queue-E<gt>cv-E<gt>recv>.
 
 =head1 SEE ALSO
 

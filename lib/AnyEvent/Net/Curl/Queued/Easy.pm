@@ -228,7 +228,6 @@ sub finish {
     $self->final_url($self->getinfo(Net::Curl::Easy::CURLINFO_EFFECTIVE_URL));
 
     # inactivate worker
-    $self->queue->cv->end;
     $self->queue->dec_active;
 
     # re-enqueue the request

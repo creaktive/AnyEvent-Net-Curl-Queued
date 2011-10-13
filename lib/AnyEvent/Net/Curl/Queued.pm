@@ -100,7 +100,24 @@ sub start {
         while
             $self->count
             and ($self->active < $self->max);
+
+    # check if queue is empty
+    $self->empty;
 }
+
+=method empty()
+
+Check if there are active requests or requests in queue.
+
+=cut
+
+sub empty {
+    my ($self) = @_;
+
+    $self->cv->send
+        if $self->count == 0 and $self->active == 0;
+}
+
 
 =method add($worker)
 
@@ -126,7 +143,6 @@ sub add {
 
     # fire
     $self->inc_active;
-    $self->cv->begin;
     $self->multi->add_handle($worker);
 }
 
@@ -158,14 +174,14 @@ sub prepend {
 
 =method wait()
 
-Shortcut to C<$queue-E<gt>cv-E<gt>wait>.
+Shortcut to C<$queue-E<gt>cv-E<gt>recv>.
 
 =cut
 
 sub wait {
     my ($self) = @_;
 
-    $self->cv->wait;
+    $self->cv->recv;
 }
 
 =head1 SEE ALSO
