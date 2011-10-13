@@ -10,11 +10,110 @@ version 0.001
 
 =head1 SYNOPSIS
 
-    ...
+    #!/usr/bin/env perl
+
+    package CrawlApache;
+    use common::sense;
+
+    use HTML::LinkExtor;
+    use Moose;
+
+    extends 'AnyEvent::Net::Curl::Queued::Easy';
+
+    after finish => sub {
+        my ($self, $result) = @_;
+
+        say $result . "\t" . $self->final_url;
+
+        if (
+            not $self->has_error
+            and $self->getinfo('content_type') =~ m{^text/html}
+        ) {
+            my @links;
+
+            HTML::LinkExtor->new(sub {
+                my ($tag, %links) = @_;
+                push @links,
+                    grep { $_->scheme eq 'http' and $_->host eq 'localhost' }
+                    values %links;
+            }, $self->final_url)->parse(${$self->data});
+
+            for my $link (@links) {
+                $self->queue->prepend(sub {
+                    CrawlApache->new({ initial_url => $link });
+                });
+            }
+        }
+    };
+
+    no Moose;
+    __PACKAGE__->meta->make_immutable;
+
+    1;
+
+    package main;
+    use common::sense;
+
+    use AnyEvent::Net::Curl::Queued;
+
+    my $q = AnyEvent::Net::Curl::Queued->new;
+    $q->append(sub {
+        CrawlApache->new({ initial_url => 'http://localhost/manual/' })
+    });
+    $q->wait;
 
 =head1 DESCRIPTION
 
-...
+Efficient and flexible batch downloader with a straight-forward interface:
+
+=over 4
+
+=item *
+
+create a queue;
+
+=item *
+
+append/prepend URLs;
+
+=item *
+
+wait for downloads to end (retry on errors).
+
+=back
+
+Download init/finish/error handling is defined through L<Moose's method modifiers|Moose::Manual::MethodModifiers>.
+
+=head2 MOTIVATION
+
+I am very unhappy with the performance of L<LWP>.
+It's almost perfect for properly handling HTTP headers, cookies & stuff, but it comes at the cost of I<speed>.
+While this doesn't matter when you make single downloads, batch downloading becomes a real pain.
+
+When I download large batch of documents, I don't care about cookies or headers, only content and proper redirection matters.
+And, as it is clearly an I/O bottleneck operation, I want to make as many parallel requests as possible.
+
+So, this is what L<CPAN> offers to fulfill my needs:
+
+=over 4
+
+=item *
+
+L<Net::Curl>: Perl interface to the all-mighty L<libcurl|http://curl.haxx.se/libcurl/>, is well-documented (opposite to L<WWW::Curl>);
+
+=item *
+
+L<AnyEvent>: the L<DBI> of event loops. L<Net::Curl> also provides a nice and well-documented example of L<AnyEvent> usage (L<03-multi-event.pl|Net::Curl::examples/Multi::Event>);
+
+=item *
+
+L<MooseX::NonMoose>: L<Net::Curl> uses a Pure-Perl object implementation, which is lightweight, but a bit messy for my L<Moose>-based projects. L<MooseX::NonMoose> patches this gap.
+
+=back
+
+L<AnyEvent::Net::Curl::Queued> is a glue module to wrap it all together.
+It offers no callbacks and (almost) no default handlers.
+It's up to you to extend the base class L<AnyEvent::Net::Curl::Queued::Easy> so it will actually download something and store it somewhere.
 
 =head1 ATTRIBUTES
 
@@ -88,11 +187,21 @@ Activate a worker.
 
 =head2 append($worker)
 
-Put the worker at the end of the queue.
+Put the worker (instance of L<AnyEvent::Net::Curl::Queued::Easy>) at the end of the queue.
+For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you do with the L<Moose> C<default =E<gt> sub { ... }>:
+
+    $queue->append(sub {
+        AnyEvent::Net::Curl::Queued::Easy->new({ initial_url => 'http://.../' })
+    });
 
 =head2 prepend($worker)
 
-Put the worker at the beginning of the queue.
+Put the worker (instance of L<AnyEvent::Net::Curl::Queued::Easy>) at the beginning of the queue.
+For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you do with the L<Moose> C<default =E<gt> sub { ... }>:
+
+    $queue->prepend(sub {
+        AnyEvent::Net::Curl::Queued::Easy->new({ initial_url => 'http://.../' })
+    });
 
 =head2 wait()
 
