@@ -56,7 +56,6 @@ use Digest::SHA;
 use Moose;
 use Moose::Util::TypeConstraints;
 use MooseX::NonMoose;
-use Net::Curl::Easy qw(/^CURLOPT_/);
 use Scalar::Util qw(looks_like_number);
 use URI;
 
@@ -194,7 +193,7 @@ sub init {
     # fragment mangling
     my $url = $self->initial_url->clone;
     $url->fragment(undef);
-    $self->setopt(CURLOPT_URL,          $url->as_string);
+    $self->setopt(Net::Curl::Easy::CURLOPT_URL,         $url->as_string);
 
     # salt
     $self->sign(($self->meta->class_precedence_list)[0]);
@@ -203,17 +202,17 @@ sub init {
 
     # common parameters
     if ($self->queue) {
-        $self->setopt(CURLOPT_SHARE,    $self->queue->share);
-        $self->setopt(CURLOPT_TIMEOUT,  $self->queue->timeout);
+        $self->setopt(Net::Curl::Easy::CURLOPT_SHARE,   $self->queue->share);
+        $self->setopt(Net::Curl::Easy::CURLOPT_TIMEOUT, $self->queue->timeout);
     }
 
     # buffers
     my $data;
-    $self->setopt(CURLOPT_WRITEDATA,    \$data);
+    $self->setopt(Net::Curl::Easy::CURLOPT_WRITEDATA,   \$data);
     $self->data(\$data);
 
     my $header;
-    $self->setopt(CURLOPT_WRITEHEADER,  \$header);
+    $self->setopt(Net::Curl::Easy::CURLOPT_WRITEHEADER, \$header);
     $self->header(\$header);
 }
 
@@ -323,10 +322,11 @@ around setopt => sub {
             if (looks_like_number($key)) {
                 $self->$orig($key, $val);
             } elsif ($key =~ m{^\w+$}) {
+                $key =~ s{^Net::Curl::Easy::}{}i;
                 $key = uc $key;
                 $key = 'CURLOPT_' . $key unless $key =~ m{^CURLOPT_};
 
-                eval "\$key = $key;";   ## no critic
+                eval "\$key = Net::Curl::Easy::$key;";  ## no critic
 
                 if ($@) {
                     carp "setopt($key, ...): $@";

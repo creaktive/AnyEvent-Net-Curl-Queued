@@ -22,7 +22,7 @@ use AnyEvent;
 use Carp qw(confess);
 use Moose;
 use MooseX::NonMoose;
-use Net::Curl::Multi qw(/^CURL_POLL_/ /^CURL_CSELECT_/);
+use Net::Curl::Multi;
 
 extends 'Net::Curl::Multi';
 
@@ -91,16 +91,16 @@ sub _cb_socket {
     # harm in separating the events.
 
     # register read event
-    if (($poll == CURL_POLL_IN) or ($poll == CURL_POLL_INOUT)) {
+    if (($poll == Net::Curl::Multi::CURL_POLL_IN) or ($poll == Net::Curl::Multi::CURL_POLL_INOUT)) {
         $self->pool->{"r$socket"} = AE::io $socket, 0, sub {
-            $self->socket_action($socket, CURL_CSELECT_IN);
+            $self->socket_action($socket, Net::Curl::Multi::CURL_CSELECT_IN);
         };
     }
 
     # register write event
-    if (($poll == CURL_POLL_OUT) or ($poll == CURL_POLL_INOUT)) {
+    if (($poll == Net::Curl::Multi::CURL_POLL_OUT) or ($poll == Net::Curl::Multi::CURL_POLL_INOUT)) {
         $self->pool->{"w$socket"} = AE::io $socket, 1, sub {
-            $self->socket_action($socket, CURL_CSELECT_OUT);
+            $self->socket_action($socket, Net::Curl::Multi::CURL_CSELECT_OUT);
         };
     }
 

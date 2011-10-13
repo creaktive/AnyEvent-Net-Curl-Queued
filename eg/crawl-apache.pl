@@ -48,6 +48,8 @@ __PACKAGE__->meta->make_immutable;
 package main;
 use common::sense;
 
+use Data::Printer;
+
 use AnyEvent::Net::Curl::Queued;
 
 my $q = AnyEvent::Net::Curl::Queued->new;
@@ -55,3 +57,5 @@ $q->append(sub {
     ApacheCrawl->new({ initial_url => 'http://localhost/manual/' })
 });
 $q->wait;
+
+p $q->stats;

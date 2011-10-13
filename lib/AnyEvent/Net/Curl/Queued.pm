@@ -16,7 +16,7 @@ use common::sense;
 use AnyEvent;
 use Moose;
 use Moose::Util::TypeConstraints;
-use Net::Curl::Share qw(:constants);
+use Net::Curl::Share;
 
 use AnyEvent::Net::Curl::Queued::Multi;
 
@@ -118,8 +118,8 @@ sub BUILD {
         })
     );
 
-    $self->share->setopt(CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE);   # 2
-    $self->share->setopt(CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS);      # 3
+    $self->share->setopt(Net::Curl::Share::CURLSHOPT_SHARE, Net::Curl::Share::CURL_LOCK_DATA_COOKIE);   # 2
+    $self->share->setopt(Net::Curl::Share::CURLSHOPT_SHARE, Net::Curl::Share::CURL_LOCK_DATA_DNS);      # 3
 }
 
 =method start()

@@ -22,8 +22,9 @@ Tracks statistics for L<AnyEvent::Net::Curl::Queued> and L<AnyEvent::Net::Curl::
 
 use common::sense;
 
+use Carp qw(confess);
 use Moose;
-use Net::Curl::Easy qw(/^CURLOPT_/);
+use Net::Curl::Easy;
 
 # VERSION
 
@@ -90,10 +91,12 @@ sub sum {
     my ($self, $from) = @_;
 
     foreach my $type (keys %{$self->stats}) {
+        next if $type eq 'total';
         my $val = 0;
 
         if ($from->isa('AnyEvent::Net::Curl::Queued::Easy')) {
             eval '$val = $from->getinfo(Net::Curl::Easy::CURLINFO_' . uc($type) . ')';  ## no critic
+            confess "Unable to getinfo(CURLINFO_\U$type\E): $@" if $@;
         } elsif (ref($from) eq __PACKAGE__) {
             $val = $from->stats->{$type};
         }

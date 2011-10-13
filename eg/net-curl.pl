@@ -4,6 +4,7 @@ package MyDownloader;
 use common::sense;
 
 use Moose;
+use Net::Curl::Easy;
 
 extends 'AnyEvent::Net::Curl::Queued::Easy';
 
