@@ -26,12 +26,17 @@ after finish => sub {
 
         HTML::LinkExtor->new(sub {
             my ($tag, %links) = @_;
-            push @links, map { "$_" } values %links;
+            push @links,
+                grep { m{^http://localhost/manual/}i }
+                map { $_->as_string =~ s/#.*$//r }
+                values %links;
         }, $self->final_url)->parse(${$self->data});
 
-        $self->queue->prepend(sub {
-            ApacheCrawl->new({ initial_url => $_ });
-        }) for @links;
+        for my $link (@links) {
+            $self->queue->prepend(sub {
+                ApacheCrawl->new({ initial_url => $link });
+            });
+        }
     }
 };
 

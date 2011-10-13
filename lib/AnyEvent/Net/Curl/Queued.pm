@@ -22,18 +22,6 @@ use AnyEvent::Net::Curl::Queued::Multi;
 
 # VERSION
 
-# active sessions counter
-has active      => (
-    traits      => ['Counter'],
-    is          => 'ro',
-    isa         => 'Int',
-    default     => 0,
-    handles     => {qw{
-        inc_active  inc
-        dec_active  dec
-    }},
-);
-
 # AnyEvent condition variable
 has cv          => (is => 'ro', isa => 'AnyEvent::CondVar', default => sub { AE::cv }, lazy => 1);
 
@@ -99,7 +87,7 @@ sub start {
     $self->add($self->dequeue)
         while
             $self->count
-            and ($self->active < $self->max);
+            and ($self->multi->handles < $self->max);
 
     # check if queue is empty
     $self->empty;
@@ -115,7 +103,10 @@ sub empty {
     my ($self) = @_;
 
     $self->cv->send
-        if $self->count == 0 and $self->active == 0;
+        if
+            $self->stats->stats->{total} > 1
+            and $self->count == 0
+            and $self->multi->handles == 0;
 }
 
 
@@ -142,7 +133,6 @@ sub add {
     }
 
     # fire
-    $self->inc_active;
     $self->multi->add_handle($worker);
 }
 

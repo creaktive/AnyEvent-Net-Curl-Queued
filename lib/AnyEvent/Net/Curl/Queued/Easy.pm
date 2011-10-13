@@ -227,9 +227,6 @@ sub finish {
     $self->curl_result($result);
     $self->final_url($self->getinfo(Net::Curl::Easy::CURLINFO_EFFECTIVE_URL));
 
-    # inactivate worker
-    $self->queue->dec_active;
-
     # re-enqueue the request
     if ($self->has_error and $self->retry > 1) {
         $self->queue->unique->{$self->unique} = 0;

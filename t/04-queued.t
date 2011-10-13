@@ -15,14 +15,12 @@ my $q = new AnyEvent::Net::Curl::Queued;
 isa_ok($q, qw(Net::Curl::Easy AnyEvent::Net::Curl::Queued));
 
 can_ok($q, qw(
-    active
     add
     append
     count
     cv
-    dec_active
     dequeue
-    inc_active
+    empty
     max
     multi
     prepend
