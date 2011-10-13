@@ -8,15 +8,6 @@ use Moose;
 
 extends 'AnyEvent::Net::Curl::Queued::Easy';
 
-after init => sub {
-    my ($self) = @_;
-
-    $self->setopt(
-        followlocation  => 1,
-        #verbose         => 1,
-    );
-};
-
 after finish => sub {
     my ($self, $result) = @_;
 
