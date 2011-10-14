@@ -177,8 +177,12 @@ By default, the signature is derived from L<Digest::SHA> of the C<initial_url>.
 sub unique {
     my ($self) = @_;
 
+    # make URL-friendly Base64
+    my $digest = $self->sha->clone->b64digest;
+    $digest =~ tr{+/}{-_};
+
     # return the signature
-    return $self->sha->clone->b64digest =~ tr{+/}{-_}r;
+    return $digest;
 }
 
 =method sign($str)
@@ -313,7 +317,7 @@ sub clone {
     return sub { $class->new($param) };
 }
 
-=method setopt(OPTION => VALUE, [OPTION => VALUE])
+=method setopt(OPTION => VALUE [, OPTION => VALUE])
 
 Extends L<Net::Curl::Easy> C<setopt()>, allowing option lists:
 
@@ -332,6 +336,8 @@ Or even shorter:
         useragent           => 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0)',
         verbose             => 1,
     );
+
+Complete list of options: L<http://curl.haxx.se/libcurl/c/curl_easy_setopt.html>
 
 =cut
 
@@ -359,7 +365,7 @@ around setopt => sub {
     }
 };
 
-=method getinfo
+=method getinfo(VAR_NAME [, VAR_NAME])
 
 Extends L<Net::Curl::Easy> C<getinfo()> so it is able to get several variables at once;
 C<HashRef> parameter under void context will fill respective values in the C<HashRef>:
@@ -383,6 +389,8 @@ C<ArrayRef> parameter will return a list:
 
     my ($content_type, $speed_download, $primary_ip) =
         $self->getinfo([qw(content_type speed_download primary_ip)]);
+
+Complete list of options: L<http://curl.haxx.se/libcurl/c/curl_easy_getinfo.html>
 
 =cut
 
@@ -438,7 +446,11 @@ sub _curl_const {
     $key = "${suffix}_${key}" if $key !~ m{^${suffix}_};
 
     my $val;
-    eval "\$val = Net::Curl::Easy::$key;";  ## no critic
+    eval {
+        no strict 'refs';   ## no critic
+        my $const_name = 'Net::Curl::Easy::' . $key;
+        $val = *$const_name->();
+    };
     carp "Invalid libcurl constant: $key" if $@;
 
     return $val;

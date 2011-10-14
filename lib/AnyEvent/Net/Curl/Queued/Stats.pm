@@ -95,7 +95,11 @@ sub sum {
         my $val = 0;
 
         if ($from->isa('AnyEvent::Net::Curl::Queued::Easy')) {
-            eval '$val = $from->getinfo(Net::Curl::Easy::CURLINFO_' . uc($type) . ')';  ## no critic
+            eval {
+                no strict 'refs';   ## no critic
+                my $const_name = 'Net::Curl::Easy::CURLINFO_' . uc($type);
+                $val = $from->getinfo(*$const_name->());
+            };
             confess "Unable to getinfo(CURLINFO_\U$type\E): $@" if $@;
         } elsif (ref($from) eq __PACKAGE__) {
             $val = $from->stats->{$type};

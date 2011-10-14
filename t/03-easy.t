@@ -14,6 +14,7 @@ can_ok($easy, qw(
     data
     final_url
     finish
+    getinfo
     has_error
     header
     http_response
@@ -23,6 +24,7 @@ can_ok($easy, qw(
     queue
     res
     retry
+    setopt
     sha
     sign
     stats
