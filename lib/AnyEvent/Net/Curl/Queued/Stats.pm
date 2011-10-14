@@ -7,7 +7,7 @@ package AnyEvent::Net::Curl::Queued::Stats;
     use Data::Printer;
 
     my $q = AnyEvent::Net::Curl::Queued->new;
-    ...;
+    #...
     $q->wait;
 
     p $q->stats;
