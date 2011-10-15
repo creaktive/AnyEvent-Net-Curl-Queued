@@ -156,7 +156,7 @@ around socket_action => sub {
     while (my ($msg, $easy, $result) = $self->info_read) {
         if ($msg == Net::Curl::Multi::CURLMSG_DONE) {
             $self->remove_handle($easy);
-            $easy->finish($result);
+            $easy->_finish($result);
         } else {
             confess "I don't know what to do with message $msg";
         }
@@ -173,8 +173,8 @@ Add one handle and kickstart download.
 override add_handle => sub {
     my ($self, $easy) = @_;
 
-    confess "Can't finish()"
-        unless $easy->can('finish');
+    confess "Can't _finish()"
+        unless $easy->can('_finish');
 
     # Calling socket_action with default arguments will trigger
     # socket callback and register IO events.

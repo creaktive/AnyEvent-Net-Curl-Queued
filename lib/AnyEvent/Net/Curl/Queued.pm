@@ -229,7 +229,7 @@ sub empty {
 
     $self->cv->send
         if
-            $self->stats->stats->{total} > 1
+            $self->stats->stats->{total} > 0
             and $self->count == 0
             and $self->multi->handles == 0;
 }

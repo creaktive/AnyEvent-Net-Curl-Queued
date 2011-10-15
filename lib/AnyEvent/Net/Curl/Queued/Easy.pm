@@ -261,7 +261,7 @@ You are supposed to build your own stuff after/around/before this method using L
 
 =cut
 
-sub finish {
+sub _finish {
     my ($self, $result) = @_;
 
     # populate results
@@ -283,6 +283,9 @@ sub finish {
         $self->res->message($msg);
     }
 
+    # wrap around the extendible interface
+    $self->finish($result);
+
     # re-enqueue the request
     if ($self->has_error and $self->retry > 1) {
         $self->queue->unique->{$self->unique} = 0;
@@ -295,6 +298,12 @@ sub finish {
 
     # move queue
     $self->queue->start;
+}
+
+sub finish {
+    my ($self, $result) = @_;
+
+    # dummy
 }
 
 =method clone()
