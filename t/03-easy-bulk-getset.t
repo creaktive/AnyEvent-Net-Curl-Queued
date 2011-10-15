@@ -53,7 +53,6 @@ my @names = qw(
     content_type
     effective_url
     primary_ip
-    primary_port
     response_code
     size_download
 );
@@ -68,7 +67,6 @@ $easy->getinfo($info);
 ok($info->{content_type} =~ m{^text/plain\b}, 'text/plain');
 ok($info->{effective_url} eq $url->as_string, 'URL');
 ok($info->{primary_ip} eq $url->host, 'host');
-ok($info->{primary_port} eq $url->port, 'port');
 ok($info->{response_code} == 200, '200 OK');
 
 my $info2 = $easy->getinfo({%{$info}});
@@ -80,4 +78,4 @@ for (@names) {
     ok($info->{$_} eq $info[$i++], "field '$_' match for getinfo(ARRAY)");
 }
 
-done_testing(30);
+done_testing(27);
