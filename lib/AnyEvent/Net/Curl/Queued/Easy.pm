@@ -272,15 +272,16 @@ sub _finish {
     if ($self->http_response) {
         $self->res(
             HTTP::Response->parse(
-                ${$self->header}
-                . ${$self->data}
+                (${$self->header} // "\n")
+                . (${$self->data} // '')
             )
         );
 
-        my $msg = $self->res->message;
-        $msg =~ s/^\s+//s;
-        $msg =~ s/\s+$//s;
-        $self->res->message($msg);
+        if (my $msg = $self->res->message) {
+            $msg =~ s/^\s+//s;
+            $msg =~ s/\s+$//s;
+            $self->res->message($msg);
+        }
     }
 
     # wrap around the extendible interface
