@@ -26,7 +26,7 @@ __PACKAGE__->meta->make_immutable;
 
 1;
 
-
+package main;
 use common::sense;
 
 use Test::More;
