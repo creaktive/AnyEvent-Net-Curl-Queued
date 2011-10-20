@@ -2,33 +2,39 @@
 use common::sense;
 
 use AnyEvent;
-use AnyEvent::Curl::Multi;
-use AnyEvent::Net::Curl::Queued;
-use AnyEvent::Net::Curl::Queued::Easy;
 use AnyEvent::Util;
 use Benchmark qw(cmpthese);
 use File::Slurp;
 use File::Temp;
-use HTTP::Lite;
-use HTTP::Tiny;
-use LWP::UserAgent;
 use List::Util qw(shuffle);
 use POSIX;
+
+use AnyEvent::Curl::Multi;
+use AnyEvent::Net::Curl::Queued;
+use AnyEvent::Net::Curl::Queued::Easy;
+use HTTP::Lite;
+use HTTP::Tiny;
+use LWP::Curl;
+use LWP::UserAgent;
+use WWW::Mechanize;
 
 my $parallel = $AnyEvent::Util::MAX_FORKS;
 my @urls = read_file('queue', 'chomp' => 1);
 my $num = scalar @urls;
 for (my $i = 0; $i < $num; $i++) {
-    push @urls, $urls[$i] . "?$_" for 1 .. 3;
+    push @urls, $urls[$i] . "?$_" for 1 .. 5;
 }
 @urls = shuffle @urls;
+say STDERR scalar @urls;
 
 cmpthese(5 => {
+    # external executables
     '00-lftp' => sub {
         my $list = File::Temp->new;
         say $list "set cmd:queue-parallel $parallel";
         say $list "set cmd:verbose no";
         say $list "set net:connection-limit 0";
+        say $list "set xfer:clobber 1";
         say $list "queue get \"$_\" -o \"/dev/null\""
             for @urls;
         say $list "wait all";
@@ -79,6 +85,7 @@ cmpthese(5 => {
         $cv->wait;
     },
 
+    # non-async modules
     '10-HTTP::Lite' => sub {
         my $cv = AE::cv;
         my $ua = HTTP::Lite->new;
@@ -118,7 +125,34 @@ cmpthese(5 => {
         }
         $cv->wait;
     },
+    '13-WWW::Mechanize' => sub {
+        my $cv = AE::cv;
+        my $ua = WWW::Mechanize->new;
+        for my $url (@urls) {
+            $cv->begin;
+            fork_call {
+                $ua->get($url);
+            } sub {
+                $cv->end;
+            };
+        }
+        $cv->wait;
+    },
+    '14-LWP::Curl' => sub {
+        my $cv = AE::cv;
+        my $ua = LWP::Curl->new;
+        for my $url (@urls) {
+            $cv->begin;
+            fork_call {
+                $ua->get($url);
+            } sub {
+                $cv->end;
+            };
+        }
+        $cv->wait;
+    },
 
+    # async modules
     '20-AnyEvent::Net::Curl::Queued' => sub {
         my $q = AnyEvent::Net::Curl::Queued->new({ max => $parallel });
         for my $url (@urls) {
