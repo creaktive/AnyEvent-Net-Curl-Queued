@@ -167,6 +167,20 @@ L<AnyEvent::Net::Curl::Queued::Stats> instance.
 
 has stats       => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Stats', default => sub { AnyEvent::Net::Curl::Queued::Stats->new }, lazy => 1);
 
+=attr on_init
+
+Callback you can define instead of extending the C<init> method.
+Almost the same as C<after init =E<gt> sub { ... }>
+
+=attr on_finish
+
+Callback you can define instead of extending the C<finish> method.
+Almost the same as C<after finish =E<gt> sub { ... }>
+
+=cut
+
+has [qw(on_init on_finish)] => (is => 'ro', isa => 'CodeRef');
+
 =method unique()
 
 Returns the unique signature of the request.
@@ -235,6 +249,9 @@ sub init {
     my $header;
     $self->setopt(Net::Curl::Easy::CURLOPT_WRITEHEADER, \$header);
     $self->header(\$header);
+
+    # call the optional callback
+    $self->on_init->(@_) if ref($self->on_init) eq 'CODE';
 }
 
 =method has_error()
@@ -304,7 +321,8 @@ sub _finish {
 sub finish {
     my ($self, $result) = @_;
 
-    # dummy
+    # call the optional callback
+    $self->on_finish->($self, $result) if ref($self->on_finish) eq 'CODE';
 }
 
 =method clone()
@@ -446,8 +464,10 @@ around getinfo => sub {
 
 sub _curl_const {
     my ($key, $suffix) = @_;
+    state $cache = {};
 
     return $key if looks_like_number($key);
+    return $cache->{$suffix . $key} if exists $cache->{$suffix . $key};
 
     $key =~ s{^Net::Curl::Easy::}{}i;
     $key =~ y{-}{_};
@@ -463,6 +483,7 @@ sub _curl_const {
     };
     carp "Invalid libcurl constant: $key" if $@;
 
+    $cache->{$suffix . $key} = $val;
     return $val;
 }
 
