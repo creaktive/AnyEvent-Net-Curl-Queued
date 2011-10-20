@@ -56,6 +56,28 @@ cmpthese(5 => {
         }
         $cv->wait;
     },
+    '02-curl' => sub {
+        my @list;
+        for (my $i = 0; $i < $parallel; $i++) {
+            push @list, File::Temp->new;
+        }
+        for (my $i = 0; $i <= $#urls; $i++) {
+            my $list = $list[$i % $parallel];
+            say $list "url = $urls[$i]";
+            say $list "output = \"/dev/null\"";
+        }
+
+        my $cv = AE::cv;
+        for my $list (@list) {
+            $cv->begin;
+            fork_call {
+                system qw(curl -s -K), $list->filename;
+            } sub {
+                $cv->end;
+            }
+        }
+        $cv->wait;
+    },
 
     '10-HTTP::Lite' => sub {
         my $cv = AE::cv;
