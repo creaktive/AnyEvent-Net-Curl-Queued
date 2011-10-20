@@ -21,6 +21,8 @@ can_ok($easy, qw(
     init
     initial_url
     new
+    on_finish
+    on_init
     queue
     res
     retry
