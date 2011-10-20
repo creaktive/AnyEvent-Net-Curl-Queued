@@ -23,7 +23,7 @@ for (my $i = 0; $i < $num; $i++) {
 }
 @urls = shuffle @urls;
 
-cmpthese(2 => {
+cmpthese(5 => {
     '00-lftp' => sub {
         my $list = File::Temp->new;
         say $list "set cmd:queue-parallel $parallel";

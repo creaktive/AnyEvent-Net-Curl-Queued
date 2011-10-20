@@ -86,6 +86,27 @@ L<AnyEvent::Net::Curl::Queued> is a glue module to wrap it all together.
 It offers no callbacks and (almost) no default handlers.
 It's up to you to extend the base class L<AnyEvent::Net::Curl::Queued::Easy> so it will actually download something and store it somewhere.
 
+=head2 OVERHEAD
+
+Obviously, the bottleneck of any kind of download agent is the connection itself.
+However, socket handling and header parsing add a lots of overhead.
+The script F<eg/benchmark.pl> compares L<AnyEvent::Net::Curl::Queued> against several other download agents.
+Only L<AnyEvent::Net::Curl::Queued> itself, L<AnyEvent::Curl::Multi> and L<lftp|http://lftp.yar.ru/> support parallel connections;
+thus, L<forks|AnyEvent::Util/fork_call> are used to reproduce the same behaviour for the remaining agents.
+The download target is a local copy of the L<Apache documentation|http://httpd.apache.org/docs/2.2/>.
+
+                                URL/second LWP::UserAgent HTTP::Tiny HTTP::Lite AnyEvent::Net::Curl::Queued AnyEvent::Curl::Multi lftp wget
+    LWP::UserAgent                    23.2             --       -93%       -95%                        -99%                  -99% -99% -100%
+    HTTP::Tiny                       348.6          1404%         --       -19%                        -79%                  -80% -86%  -97%
+    HTTP::Lite                       429.3          1753%        23%         --                        -74%                  -76% -83%  -97%
+    AnyEvent::Net::Curl::Queued     1648.1          7023%       373%       284%                          --                   -7% -34%  -88%
+    AnyEvent::Curl::Multi           1769.8          7544%       408%       312%                          7%                    -- -29%  -87%
+    lftp                            2500.9         10711%       619%       483%                         52%                   41%   --  -81%
+    wget                           13253.5         57145%      3705%      2989%                        704%                  649% 429%    --
+
+L<AnyEvent::Curl::Multi> really has less overhead at the cost of very primitive queue manager
+(no retries and large queues waste too much RAM due to lack of lazy initialization).
+
 =cut
 
 use common::sense;
