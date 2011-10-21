@@ -48,7 +48,7 @@ use AnyEvent::Net::Curl::Queued;
 
 my $q = AnyEvent::Net::Curl::Queued->new;
 $q->append(sub {
-    CrawlApache->new({ initial_url => 'http://localhost/manual/' })
+    CrawlApache->new({ initial_url => 'http://localhost/manual/', use_stats => 1 })
 });
 $q->wait;
 

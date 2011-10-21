@@ -61,6 +61,7 @@ while (my $url = <$fh>) {
         MyDownloader->new({
             initial_url => $url,
             retry       => 10,
+            use_stats   => 1,
         })
     });
 }

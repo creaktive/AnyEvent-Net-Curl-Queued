@@ -163,9 +163,15 @@ has retry       => (is => 'rw', isa => 'Int', default => 5);
 
 L<AnyEvent::Net::Curl::Queued::Stats> instance.
 
+=attr use_stats
+
+Set to true to enable stats computation.
+Note that extracting C<libcurl> time/size data degrades performance slightly.
+
 =cut
 
 has stats       => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Stats', default => sub { AnyEvent::Net::Curl::Queued::Stats->new }, lazy => 1);
+has use_stats   => (is => 'ro', isa => 'Bool', default => 0);
 
 =attr on_init
 
@@ -311,9 +317,12 @@ sub _finish {
     }
 
     # update stats
-    $self->stats->sum($self);
-    $self->queue->stats->sum($self);
+    if ($self->use_stats) {
+        $self->stats->sum($self);
+        $self->queue->stats->sum($self);
+    }
 
+    # request completed (even if returned error!)
     $self->queue->inc_completed;
 
     # move queue
