@@ -1,13 +1,26 @@
 package AnyEvent::Net::Curl::Const;
-# ABSTRACT: Access Net::Curl::* constants by string
+# ABSTRACT: Access Net::Curl::* constants by name
+
+=for test_synopsis
+my ($easy);
 
 =head1 SYNOPSIS
 
-    ...
+    $easy->setopt(AnyEvent::Net::Curl::Const::opt('verbose'), 1);
+    ...;
+    $easy->getinfo(AnyEvent::Net::Curl::Const::info('size_download'));
 
 =head1 DESCRIPTION
 
-...
+Perl-friendly access to the L<libcurl|http://curl.haxx.se/libcurl/> constants.
+For example, you can access C<CURLOPT_TCP_NODELAY> value by supplying any of:
+
+=for :list
+* C<'Net::Curl::Easy::CURLOPT_TCP_NODELAY'>
+* C<'CURLOPT_TCP_NODELAY'>
+* C<'TCP_NODELAY'>
+* C<'TCP-NoDelay'>
+* C<'tcp_nodelay'>
 
 =cut
 
@@ -21,6 +34,16 @@ use Scalar::Util qw(looks_like_number);
 # VERSION
 
 memoize($_) for qw(info opt);
+
+=func info($constant_name)
+
+Retrieve numeric value for C<$constant_name> in C<CURLINFO> namespace.
+
+=func opt($constant_name)
+
+Retrieve numeric value for C<$constant_name> in I<CURLOPT> namespace.
+
+=cut
 
 sub info {
     return _curl_const(CURLINFO => shift);
@@ -55,11 +78,9 @@ sub _curl_const {
 =head1 SEE ALSO
 
 =for :list
-* L<AnyEvent>
-* L<Moose>
-* L<Net::Curl>
-* L<WWW::Curl>
-* L<AnyEvent::Curl::Multi>
+* L<libcurl - curl_easy_getinfo()|http://curl.haxx.se/libcurl/c/curl_easy_getinfo.html>
+* L<libcurl - curl_easy_setopt()|http://curl.haxx.se/libcurl/c/curl_easy_setopt.html>
+* L<Net::Curl::Easy>
 
 =cut
 
