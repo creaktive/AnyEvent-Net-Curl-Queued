@@ -17,6 +17,7 @@ isa_ok($q, qw(Net::Curl::Easy AnyEvent::Net::Curl::Queued));
 can_ok($q, qw(
     add
     append
+    completed
     count
     cv
     dequeue
@@ -51,6 +52,6 @@ $q->append(
 
 $q->wait;
 
-ok($q->stats->stats->{total} == 1, 'single GET');
+ok($q->completed == 1, 'single GET');
 
 done_testing(12);

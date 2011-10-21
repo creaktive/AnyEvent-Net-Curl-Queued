@@ -125,6 +125,22 @@ use AnyEvent::Net::Curl::Queued::Multi;
 
 # VERSION
 
+=attr completed
+
+Count completed requests.
+
+=cut
+
+has completed  => (
+    traits      => ['Counter'],
+    is          => 'ro',
+    isa         => 'Int',
+    default     => 0,
+    handles     => {qw{
+        inc_completed inc
+    }},
+);
+
 =attr cv
 
 L<AnyEvent> condition variable.
@@ -255,7 +271,7 @@ sub empty {
 
     $self->cv->send
         if
-            $self->stats->stats->{total} > 0
+            $self->completed > 0
             and $self->count == 0
             and $self->multi->handles == 0;
 }

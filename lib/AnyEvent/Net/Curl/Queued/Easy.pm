@@ -57,11 +57,11 @@ use HTTP::Response;
 use Moose;
 use Moose::Util::TypeConstraints;
 use MooseX::NonMoose;
-use Scalar::Util qw(looks_like_number);
 use URI;
 
 extends 'Net::Curl::Easy';
 
+use AnyEvent::Net::Curl::Const;
 use AnyEvent::Net::Curl::Queued::Stats;
 
 # VERSION
@@ -314,6 +314,8 @@ sub _finish {
     $self->stats->sum($self);
     $self->queue->stats->sum($self);
 
+    $self->queue->inc_completed;
+
     # move queue
     $self->queue->start;
 }
@@ -385,7 +387,7 @@ around setopt => sub {
         }
 
         while (my ($key, $val) = each %param) {
-            $key = _curl_const($key, 'CURLOPT');
+            $key = AnyEvent::Net::Curl::Const::opt($key);
             $self->$orig($key, $val) if defined $key;
         }
     } else {
@@ -430,7 +432,7 @@ around getinfo => sub {
         when ('ARRAY') {
             my @val;
             for my $name (@{$_[0]}) {
-                my $const = _curl_const($name, 'CURLINFO');
+                my $const = AnyEvent::Net::Curl::Const::info($name);
                 next unless defined $const;
                 push @val, $self->$orig($const);
             }
@@ -438,7 +440,7 @@ around getinfo => sub {
         } when ('HASH') {
             my %val;
             for my $name (keys %{$_[0]}) {
-                my $const = _curl_const($name, 'CURLINFO');
+                my $const = AnyEvent::Net::Curl::Const::info($name);
                 next unless defined $const;
                 $val{$name} = $self->$orig($const);
             }
@@ -453,7 +455,7 @@ around getinfo => sub {
                 return \%val;
             }
         } when ('') {
-            my $const = _curl_const($_[0], 'CURLINFO');
+            my $const = AnyEvent::Net::Curl::Const::info($_[0]);
             return defined $const ? $self->$orig($const) : $const;
         } default {
             carp "getinfo() expects array/hash reference or string!";
@@ -461,32 +463,6 @@ around getinfo => sub {
         }
     }
 };
-
-sub _curl_const {
-    my ($key, $suffix) = @_;
-    state $cache = {};
-
-    return $key if looks_like_number($key);
-    return $cache->{$suffix . $key} if exists $cache->{$suffix . $key};
-
-    $key =~ s{^Net::Curl::Easy::}{}i;
-    $key =~ y{-}{_};
-    $key =~ s{\W}{}g;
-    $key = uc $key;
-    $key = "${suffix}_${key}" if $key !~ m{^${suffix}_};
-
-    my $val;
-    eval {
-        no strict 'refs';   ## no critic
-        my $const_name = 'Net::Curl::Easy::' . $key;
-        $val = *$const_name->();
-    };
-    carp "Invalid libcurl constant: $key" if $@;
-
-    $cache->{$suffix . $key} = $val;
-    return $val;
-}
-
 
 =head1 SEE ALSO
 

@@ -24,7 +24,8 @@ use common::sense;
 
 use Carp qw(confess);
 use Moose;
-use Net::Curl::Easy;
+
+use AnyEvent::Net::Curl::Const;
 
 # VERSION
 
@@ -75,33 +76,9 @@ has stats       => (
         size_download       => 0,
         size_upload         => 0,
         starttransfer_time  => 0,
-        total               => 0,
         total_time          => 0,
     } },
 );
-
-=attr const_map
-
-Cache of L<curl_easy_getinfo()|http://curl.haxx.se/libcurl/c/curl_easy_getinfo.html> constants.
-
-=cut
-
-has const_map   => (is => 'rw', isa => 'HashRef[Num]', default => sub { {} });
-
-sub BUILD {
-    my ($self) = @_;
-
-    foreach my $type (keys %{$self->stats}) {
-        next if $type eq 'total';
-
-        eval {
-            no strict 'refs';   ## no critic
-            my $const_name = 'Net::Curl::Easy::CURLINFO_' . uc($type);
-            $self->const_map->{$type} = *$const_name->();
-        };
-        confess "Unable to obtain CURLINFO_\U$type\E value: $@" if $@;
-    }
-}
 
 =method sum($from)
 
@@ -113,20 +90,20 @@ It is supposed to be an instance of L<AnyEvent::Net::Curl::Queued::Easy> or L<An
 sub sum {
     my ($self, $from) = @_;
 
-    foreach my $type (keys %{$self->stats}) {
-        next if $type eq 'total';
-        my $val = 0;
+    #return 1;
 
-        if ($from->isa('AnyEvent::Net::Curl::Queued::Easy')) {
-            $val = $from->getinfo($self->const_map->{$type});
-        } elsif (ref($from) eq __PACKAGE__) {
-            $val = $from->stats->{$type};
-        }
-
-        $self->stats->{$type} += $val;
+    my $is_stats;
+    if ($from->isa('AnyEvent::Net::Curl::Queued::Easy')) {
+        $is_stats = 0;
+    } elsif (ref($from) eq __PACKAGE__) {
+        $is_stats = 1;
     }
 
-    ++$self->stats->{total};
+    foreach my $type (keys %{$self->stats}) {
+        next if $type eq 'total';
+        $self->stats->{$type} += $is_stats ? $from->stats->{$type} : $from->getinfo(AnyEvent::Net::Curl::Const::info($type));
+    }
+
     $self->stamp(time);
 
     return 1;

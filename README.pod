@@ -143,6 +143,10 @@ L<AnyEvent::Curl::Multi> really has less overhead at the cost of very primitive 
 
 =head1 ATTRIBUTES
 
+=head2 completed
+
+Count completed requests.
+
 =head2 cv
 
 L<AnyEvent> condition variable.
