@@ -350,8 +350,16 @@ sub clone {
     $param //= {};
 
     my $class = ($self->meta->class_precedence_list)[0];
-    $param->{initial_url}   = $self->initial_url;
-    $param->{retry}         = $self->retry - 1;
+    $param->{$_} = $self->$_()
+        for qw(
+            http_response
+            initial_url
+            on_finish
+            on_init
+            retry
+            use_stats
+        );
+    --$param->{retry};
 
     return sub { $class->new($param) };
 }
