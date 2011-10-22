@@ -70,14 +70,10 @@ subtype 'AnyEvent::Net::Curl::Queued::Easy::URI'
     => as class_type('URI');
 
 coerce 'AnyEvent::Net::Curl::Queued::Easy::URI'
-    => from 'Object'
-        => via {
-            $_->isa('URI')
-                ? $_
-                : Params::Coerce::coerce('URI', $_);
-        }
-    => from 'Str'
-        => via { URI->new($_) };
+    => from 'Any'
+        => via { URI->new("$_") }
+    => from 'URI'
+        => via { $_ };
 
 =attr curl_result
 
