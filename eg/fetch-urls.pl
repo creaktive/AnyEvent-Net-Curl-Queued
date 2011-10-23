@@ -41,7 +41,6 @@ __PACKAGE__->meta->make_immutable;
 
 package main;
 use common::sense;
-use lib qw(lib);
 
 use Data::Printer;
 
