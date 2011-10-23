@@ -4,17 +4,14 @@ use common::sense;
 
 use Test::More;
 
-use_ok('Test::HTTP::Server');
 use_ok('AnyEvent::Net::Curl::Queued::Easy');
 use_ok('AnyEvent::Net::Curl::Queued::Multi');
 
 use Net::Curl::Easy qw(:constants);
 use Net::Curl::Multi qw(:constants);
 
-my $server = Test::HTTP::Server->new;
-isa_ok($server, 'Test::HTTP::Server');
-
-my $url = $server->uri;
+# Test::HTTP::Server is a bit borked
+my $url = 'http://www.cpan.org/';
 
 my $last_fdset = '';
 my $last_cnt = 0;
@@ -84,7 +81,7 @@ ok(${$curl->data}, "Body reply exists from second handle");
 ok(${$curl2->header}, "Header reply exists from second handle");
 ok(${$curl2->data}, "Body reply exists from second handle");
 
-done_testing(27);
+done_testing(25);
 
 sub action_wait {
     my $curlm = shift;
