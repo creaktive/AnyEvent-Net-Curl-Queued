@@ -134,6 +134,7 @@ has queue       => (is => 'rw', isa => 'Ref', weak_ref => 1);
 =attr sha
 
 Uniqueness detection helper.
+Setup via C<sign> and access through C<unique>.
 
 =cut
 
@@ -337,6 +338,23 @@ sub finish {
 Clones the instance, for re-enqueuing purposes.
 
 You are supposed to build your own stuff after/around/before this method using L<method modifiers|Moose::Manual::MethodModifiers>.
+For example, to implement proper POST re-enqueuing:
+
+    has method => (is => 'ro', isa => 'Str', default => 'GET');
+    has post_content => (is => 'ro', isa => 'Str');
+
+    ...;
+
+    around clone => sub {
+        my $orig = shift;
+        my $self = shift;
+        my $param = shift;
+
+        $param->{method} = $self->method;
+        $param->{post_content} = $self->post_content;
+
+        return $self->$orig($param);
+    };
 
 =cut
 

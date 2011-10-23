@@ -32,7 +32,6 @@ can_ok($q, qw(
     start
     stats
     timeout
-    unique
     wait
 ));
 

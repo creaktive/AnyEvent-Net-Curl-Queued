@@ -124,6 +124,17 @@ use AnyEvent::Net::Curl::Queued::Multi;
 
 # VERSION
 
+=attr allow_dups
+
+Allow duplicate requests (default: false).
+By default, requests to the same URL (more precisely, requests with the same L<signature|AnyEvent::Net::Curl::Queued::Easy/sha> are issued only once.
+To seed POST parameters, you must extend the L<AnyEvent::Net::Curl::Queued::Easy> class.
+Setting C<allow_dups> to true value disables request checks.
+
+=cut
+
+has allow_dups  => (is => 'ro', isa => 'Bool', default => 0);
+
 =attr completed
 
 Count completed requests.
@@ -218,14 +229,6 @@ Timeout (default: 10 seconds).
 
 has timeout     => (is => 'ro', isa => 'Num', default => 10.0);
 
-=attr unique
-
-C<HashRef> to store request unique identifiers to prevent repeated accesses.
-
-=cut
-
-has unique      => (is => 'ro', isa => 'HashRef[Str]', default => sub { {} });
-
 sub BUILD {
     my ($self) = @_;
 
@@ -283,6 +286,8 @@ Activate a worker.
 =cut
 
 sub add {
+    state $unique = {};
+
     my ($self, $worker) = @_;
 
     # vivify the worker
@@ -294,8 +299,8 @@ sub add {
     $worker->init;
 
     # check if already processed
-    if (my $unique = $worker->unique) {
-        return if ++$self->unique->{$unique} > 1;
+    unless ($self->allow_dups) {
+        return if ++$unique->{$worker->unique} > 1;
     }
 
     # fire
