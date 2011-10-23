@@ -2,6 +2,8 @@ Changelog for AnyEvent::Net::Curl::Queued (full version at https://github.com/cr
 
 {{$NEXT}}
 
+0.008     2011-10-22
+
 0.007     2011-10-21
 
 0.006     2011-10-20
