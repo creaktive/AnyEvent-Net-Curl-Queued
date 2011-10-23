@@ -169,7 +169,7 @@ Maximum number of parallel connections (default: 4; minimum value: 1).
 subtype 'MaxConn'
     => as Int
     => where { $_ >= 1 };
-has max         => (is => 'ro', isa => 'MaxConn', default => 4);
+has max         => (is => 'rw', isa => 'MaxConn', default => 4);
 
 =attr multi
 
