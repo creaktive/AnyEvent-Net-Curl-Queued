@@ -299,7 +299,7 @@ sub add {
     $worker->init;
 
     # check if already processed
-    unless ($self->allow_dups) {
+    if (not $self->allow_dups and not $worker->force) {
         return if ++$unique->{$worker->unique} > 1;
     }
 

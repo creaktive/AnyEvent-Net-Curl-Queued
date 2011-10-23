@@ -91,6 +91,14 @@ Receive buffer.
 
 has data        => (is => 'rw', isa => 'Ref');
 
+=attr force
+
+Force request processing, despite uniqueness signature.
+
+=cut
+
+has force       => (is => 'ro', isa => 'Bool', default => 0);
+
 =attr header
 
 Header buffer.
@@ -309,7 +317,6 @@ sub _finish {
 
     # re-enqueue the request
     if ($self->has_error and $self->retry > 1) {
-        $self->queue->unique->{$self->unique} = 0;
         $self->queue->queue_push($self->clone);
     }
 
@@ -374,6 +381,7 @@ sub clone {
             use_stats
         );
     --$param->{retry};
+    $param->{force} = 1;
 
     return sub { $class->new($param) };
 }
