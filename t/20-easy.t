@@ -37,7 +37,7 @@ can_ok($easy, qw(
 
 $easy->init;
 
-ok($easy->retry == 5, 'default retry()');
+ok($easy->retry == 10, 'default retry()');
 
 ok($easy->sign('TEST'), 'sign()');
 ok($easy->unique eq 'iNmIrn-mUqH6CA6Ee78z1Sek5Rl5zXzO5Hc9j127_1s', 'URL uniqueness signature: ' . $easy->unique);

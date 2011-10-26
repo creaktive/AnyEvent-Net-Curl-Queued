@@ -158,11 +158,11 @@ has res         => (is => 'rw', isa => 'HTTP::Response');
 
 =attr retry
 
-Number of retries (default: 5).
+Number of retries (default: 10).
 
 =cut
 
-has retry       => (is => 'rw', isa => 'Int', default => 5);
+has retry       => (is => 'rw', isa => 'Int', default => 10);
 
 =attr stats
 

@@ -223,11 +223,11 @@ has stats       => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Stats', def
 
 =attr timeout
 
-Timeout (default: 10 seconds).
+Timeout (default: 60 seconds).
 
 =cut
 
-has timeout     => (is => 'ro', isa => 'Num', default => 10.0);
+has timeout     => (is => 'ro', isa => 'Num', default => 60.0);
 
 sub BUILD {
     my ($self) = @_;

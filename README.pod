@@ -201,7 +201,7 @@ L<AnyEvent::Net::Curl::Queued::Stats> instance.
 
 =head2 timeout
 
-Timeout (default: 10 seconds).
+Timeout (default: 60 seconds).
 
 =head1 METHODS
 

@@ -36,7 +36,7 @@ can_ok($q, qw(
 ));
 
 ok($q->max      == 4, 'default max()');
-ok($q->timeout  == 10.0, 'default timeout()');
+ok($q->timeout  == 60.0, 'default timeout()');
 
 isa_ok($q->share, 'Net::Curl::Share');
 isa_ok($q->stats, 'AnyEvent::Net::Curl::Queued::Stats');
