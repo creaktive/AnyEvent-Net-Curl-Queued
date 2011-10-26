@@ -5,7 +5,7 @@ use common::sense;
 
 use Moose;
 
-extends 'AnyEvent::Net::Curl::Queued::Easy';
+extends 'YADA::Worker';
 
 after init => sub {
     my ($self) = @_;
@@ -44,9 +44,9 @@ use common::sense;
 
 use Data::Printer;
 
-use AnyEvent::Net::Curl::Queued;
+use YADA;
 
-my $q = AnyEvent::Net::Curl::Queued->new({
+my $q = YADA->new({
     max     => 8,
     timeout => 30,
 });

@@ -4,7 +4,7 @@ use common::sense;
 use HTML::LinkExtor;
 use Moose;
 
-extends 'AnyEvent::Net::Curl::Queued::Easy';
+extends 'YADA::Worker';
 
 after finish => sub {
     my ($self, $result) = @_;

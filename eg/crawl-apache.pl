@@ -3,10 +3,10 @@ use common::sense;
 
 use Data::Printer;
 
-use AnyEvent::Net::Curl::Queued;
+use YADA;
 use CrawlApache;
 
-my $q = AnyEvent::Net::Curl::Queued->new;
+my $q = YADA->new;
 $q->append(sub {
     CrawlApache->new({ initial_url => 'http://localhost/manual/', use_stats => 1 })
 });
