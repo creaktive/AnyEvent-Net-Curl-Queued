@@ -252,6 +252,9 @@ Populate empty request slots with workers from the queue.
 sub start {
     my ($self) = @_;
 
+    # watchdog
+    state $watchdog = AE::timer $self->timeout + 1, 0, sub { $self->empty };
+
     # populate queue
     $self->add($self->dequeue)
         while
