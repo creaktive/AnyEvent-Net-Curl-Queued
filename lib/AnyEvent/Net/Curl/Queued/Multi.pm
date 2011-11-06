@@ -26,6 +26,14 @@ use Net::Curl::Multi;
 
 extends 'Net::Curl::Multi';
 
+=attr active
+
+Currently active sockets.
+
+=cut
+
+has active      => (is => 'rw', isa => 'Int', default => -1);
+
 =attr pool
 
 Sockets pool.
@@ -56,7 +64,7 @@ Timeout threshold, in seconds (default: 10).
 
 =cut
 
-has timeout     => (is => 'ro', isa => 'Num', default => 10.0);
+has timeout     => (is => 'ro', isa => 'Num', default => 60.0);
 
 # VERSION
 
@@ -131,8 +139,8 @@ sub _cb_timer {
         # must not wait too long (more than a few seconds perhaps)
         # before you call curl_multi_perform() again.
 
-        $self->timer(AE::timer $self->timeout, $self->timeout, $cb)
-            if $self->handles;
+        $self->timer(AE::timer 1, 1, $cb)
+            if $self->handles > 0;
     } else {
         # This will trigger timeouts if there are any.
         $self->timer(AE::timer $timeout_ms / 1000, 0, $cb);
@@ -151,8 +159,9 @@ around socket_action => sub {
     my $orig = shift;
     my $self = shift;
 
-    my $active = $self->$orig(@_);
+    $self->active($self->$orig(@_));
 
+    my $i = 0;
     while (my ($msg, $easy, $result) = $self->info_read) {
         if ($msg == Net::Curl::Multi::CURLMSG_DONE) {
             $self->remove_handle($easy);
@@ -160,7 +169,11 @@ around socket_action => sub {
         } else {
             confess "I don't know what to do with message $msg";
         }
+    } continue {
+        ++$i;
     }
+
+    $self->active($self->active - $i);
 };
 
 =method add_handle(...)
@@ -170,11 +183,15 @@ Add one handle and kickstart download.
 
 =cut
 
-override add_handle => sub {
-    my ($self, $easy) = @_;
+around add_handle => sub {
+    my $orig = shift;
+    my $self = shift;
+    my $easy = shift;
 
     confess "Can't _finish()"
         unless $easy->can('_finish');
+
+    my $r = $self->$orig($easy);
 
     # Calling socket_action with default arguments will trigger
     # socket callback and register IO events.
@@ -191,7 +208,7 @@ override add_handle => sub {
         $self->socket_action;
     };
 
-    super($easy);
+    return $r;
 };
 
 =head1 SEE ALSO

@@ -229,6 +229,14 @@ Timeout (default: 60 seconds).
 
 has timeout     => (is => 'ro', isa => 'Num', default => 60.0);
 
+=attr watchdog
+
+The last resort against the non-deterministic chaos of evil lurking sockets.
+
+=cut
+
+has watchdog    => (is => 'rw', isa => 'Ref');
+
 sub BUILD {
     my ($self) = @_;
 
@@ -253,7 +261,10 @@ sub start {
     my ($self) = @_;
 
     # watchdog
-    state $watchdog = AE::timer $self->timeout + 1, 0, sub { $self->empty };
+    $self->watchdog(AE::timer 1, 1, sub {
+        $self->multi->perform;
+        $self->empty;
+    });
 
     # populate queue
     $self->add($self->dequeue)
@@ -357,6 +368,10 @@ sub wait {
 
     $self->cv->recv;
 }
+
+=head1 CAVEAT
+
+The I<"Attempt to free unreferenced scalar: SV 0xdeadbeef during global destruction."> message on finalization is mostly harmless.
 
 =head1 SEE ALSO
 

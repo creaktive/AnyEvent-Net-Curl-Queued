@@ -203,6 +203,10 @@ L<AnyEvent::Net::Curl::Queued::Stats> instance.
 
 Timeout (default: 60 seconds).
 
+=head2 watchdog
+
+The last resort against the non-deterministic chaos of evil lurking sockets.
+
 =head1 METHODS
 
 =head2 start()
@@ -238,6 +242,10 @@ For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you d
 =head2 wait()
 
 Shortcut to C<$queue-E<gt>cv-E<gt>recv>.
+
+=head1 CAVEAT
+
+The I<"Attempt to free unreferenced scalar: SV 0xdeadbeef during global destruction."> message on finalization is mostly harmless.
 
 =head1 SEE ALSO
 
