@@ -158,7 +158,7 @@ Initialized automatically, unless you specify your own.
 
 =cut
 
-has cv          => (is => 'ro', isa => 'AnyEvent::CondVar', default => sub { AE::cv }, lazy => 1);
+has cv          => (is => 'rw', isa => 'AnyEvent::CondVar', default => sub { AE::cv }, lazy => 1);
 
 =attr max
 
@@ -359,14 +359,24 @@ sub prepend {
 
 =method wait()
 
-Shortcut to C<$queue-E<gt>cv-E<gt>recv>.
+Process queue.
 
 =cut
 
 sub wait {
     my ($self) = @_;
 
+    # handle queue
     $self->cv->recv;
+
+    # reload
+    $self->cv(AE::cv);
+    $self->multi(
+        AnyEvent::Net::Curl::Queued::Multi->new({
+            max         => $self->max,
+            timeout     => $self->timeout,
+        })
+    );
 }
 
 =head1 CAVEAT

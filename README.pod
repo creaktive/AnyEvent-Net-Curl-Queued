@@ -6,7 +6,7 @@ AnyEvent::Net::Curl::Queued - Moose wrapper for queued downloads via Net::Curl &
 
 =head1 VERSION
 
-version 0.011
+version 0.012
 
 =head1 SYNOPSIS
 
@@ -241,7 +241,7 @@ For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you d
 
 =head2 wait()
 
-Shortcut to C<$queue-E<gt>cv-E<gt>recv>.
+Process queue.
 
 =head1 CAVEAT
 
