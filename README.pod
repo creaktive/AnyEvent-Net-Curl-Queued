@@ -6,7 +6,7 @@ AnyEvent::Net::Curl::Queued - Moose wrapper for queued downloads via Net::Curl &
 
 =head1 VERSION
 
-version 0.012
+version 0.013
 
 =head1 SYNOPSIS
 
@@ -16,7 +16,7 @@ version 0.012
     use common::sense;
 
     use HTML::LinkExtor;
-    use Moose;
+    use Any::Moose;
 
     extends 'AnyEvent::Net::Curl::Queued::Easy';
 
@@ -46,7 +46,7 @@ version 0.012
         }
     };
 
-    no Moose;
+    no Any::Moose;
     __PACKAGE__->meta->make_immutable;
 
     1;

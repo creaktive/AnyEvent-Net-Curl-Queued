@@ -3,7 +3,7 @@
 package MyDownloader;
 use common::sense;
 
-use Moose;
+use Any::Moose;
 
 extends 'YADA::Worker';
 
@@ -34,7 +34,7 @@ around has_error => sub {
     return 1 if $self->getinfo('response_code') =~ m{^5[0-9]{2}$};
 };
 
-no Moose;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;

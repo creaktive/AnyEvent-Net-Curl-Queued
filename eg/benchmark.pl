@@ -14,9 +14,11 @@ use AnyEvent::HTTP;
 use AnyEvent::Net::Curl::Queued;
 use AnyEvent::Net::Curl::Queued::Easy;
 use HTTP::Lite;
+use HTTP::Request::Common qw(GET);
 use HTTP::Tiny;
 use LWP::Curl;
 use LWP::UserAgent;
+use Parallel::Downloader;
 use WWW::Mechanize;
 
 my $parallel = $AnyEvent::Util::MAX_FORKS;
@@ -26,6 +28,7 @@ for (my $i = 0; $i < $num; $i++) {
     push @urls, $urls[$i] . "?$_" for 1 .. 5;
 }
 @urls = shuffle @urls;
+#splice @urls, 1000;
 say STDERR scalar @urls;
 
 my (
@@ -57,6 +60,8 @@ for (my $i = 0; $i <= $#urls; $i++) {
 }
 
 say $lftp_queue "wait all";
+
+my $yada = AnyEvent::Net::Curl::Queued->new({ max => $parallel });
 
 cmpthese(10 => {
     # external executables
@@ -185,13 +190,23 @@ cmpthese(10 => {
         $cv->wait;
     },
     '21-AnyEvent::Net::Curl::Queued' => sub {
-        my $q = AnyEvent::Net::Curl::Queued->new({ max => $parallel });
+        #my $yada = AnyEvent::Net::Curl::Queued->new({ max => $parallel });
         for my $url (@urls) {
-            $q->append(sub { AnyEvent::Net::Curl::Queued::Easy->new({ initial_url => $url }) });
+            $yada->append(sub {
+                AnyEvent::Net::Curl::Queued::Easy->new({ initial_url => $url })
+            });
         }
-        $q->wait;
+        $yada->wait;
     },
-    '22-AnyEvent::Curl::Multi' => sub {
+    '22-Parallel::Downloader' => sub {
+        my $downloader = Parallel::Downloader->new(
+            requests        => [ map { GET($_) } @urls ],
+            workers         => $parallel,
+            conns_per_host  => $parallel,
+        );
+        $downloader->run;
+    },
+    '23-AnyEvent::Curl::Multi' => sub {
         my $cv = AE::cv;
         my $client = AnyEvent::Curl::Multi->new;
         $client->max_concurrency($parallel);

@@ -9,7 +9,7 @@ package AnyEvent::Net::Curl::Queued;
     use common::sense;
 
     use HTML::LinkExtor;
-    use Moose;
+    use Any::Moose;
 
     extends 'AnyEvent::Net::Curl::Queued::Easy';
 
@@ -39,7 +39,7 @@ package AnyEvent::Net::Curl::Queued;
         }
     };
 
-    no Moose;
+    no Any::Moose;
     __PACKAGE__->meta->make_immutable;
 
     1;
@@ -116,8 +116,8 @@ L<AnyEvent::HTTP> & L<LWP::Curl> are actually faster, but both lack queueing/ret
 use common::sense;
 
 use AnyEvent;
-use Moose;
-use Moose::Util::TypeConstraints;
+use Any::Moose;
+use Any::Moose qw(::Util::TypeConstraints);
 use Net::Curl::Share;
 
 use AnyEvent::Net::Curl::Queued::Multi;
@@ -394,7 +394,7 @@ The I<"Attempt to free unreferenced scalar: SV 0xdeadbeef during global destruct
 
 =cut
 
-no Moose;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;

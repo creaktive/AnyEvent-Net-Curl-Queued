@@ -23,7 +23,7 @@ Tracks statistics for L<AnyEvent::Net::Curl::Queued> and L<AnyEvent::Net::Curl::
 use common::sense;
 
 use Carp qw(confess);
-use Moose;
+use Any::Moose;
 
 use AnyEvent::Net::Curl::Const;
 
@@ -117,7 +117,7 @@ sub sum {
 
 =cut
 
-no Moose;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;

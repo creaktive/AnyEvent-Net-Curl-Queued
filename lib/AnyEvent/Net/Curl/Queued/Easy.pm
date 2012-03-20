@@ -6,7 +6,7 @@ package AnyEvent::Net::Curl::Queued::Easy;
     package MyIEDownloader;
     use common::sense;
 
-    use Moose;
+    use Any::Moose;
     use Net::Curl::Easy qw(/^CURLOPT_/);
 
     extends 'AnyEvent::Net::Curl::Queued::Easy';
@@ -38,7 +38,7 @@ package AnyEvent::Net::Curl::Queued::Easy;
         return 1 if $self->getinfo(Net::Curl::Easy::CURLINFO_RESPONSE_CODE) =~ m{^5[0-9]{2}$};
     };
 
-    no Moose;
+    no Any::Moose;
     __PACKAGE__->meta->make_immutable;
 
     1;
@@ -54,9 +54,9 @@ use common::sense;
 use Carp qw(carp confess);
 use Digest::SHA;
 use HTTP::Response;
-use Moose;
-use Moose::Util::TypeConstraints;
-use MooseX::NonMoose;
+use Any::Moose;
+use Any::Moose qw(::Util::TypeConstraints);
+use Any::Moose qw(X::NonMoose);
 use URI;
 
 extends 'Net::Curl::Easy';
@@ -199,6 +199,12 @@ By default, the signature is derived from L<Digest::SHA> of the C<initial_url>.
 
 =cut
 
+around BUILDARGS => sub {
+    my $orig = shift;
+    my $class = shift;
+    $_[0] // {};
+};
+
 sub unique {
     my ($self) = @_;
 
@@ -242,7 +248,8 @@ sub init {
     $self->setopt(Net::Curl::Easy::CURLOPT_URL,         $url->as_string);
 
     # salt
-    $self->sign(($self->meta->class_precedence_list)[0]);
+    #$self->sign(($self->meta->class_precedence_list)[0]);
+    $self->sign($self->meta->name);
     # URL; GET parameters included
     $self->sign($url->as_string);
 
@@ -420,8 +427,10 @@ Complete list of options: L<http://curl.haxx.se/libcurl/c/curl_easy_setopt.html>
 
 =cut
 
-around setopt => sub {
-    my $orig = shift;
+#around setopt => sub {
+#    my $orig = shift;
+#    my $self = shift;
+sub setopt {
     my $self = shift;
 
     if (@_) {
@@ -437,7 +446,8 @@ around setopt => sub {
 
         while (my ($key, $val) = each %param) {
             $key = AnyEvent::Net::Curl::Const::opt($key);
-            $self->$orig($key, $val) if defined $key;
+            #$self->$orig($key, $val) if defined $key;
+            $self->SUPER::setopt($key, $val) if defined $key;
         }
     } else {
         carp "Specify at least one OPTION/VALUE pair!";
@@ -473,8 +483,10 @@ Complete list of options: L<http://curl.haxx.se/libcurl/c/curl_easy_getinfo.html
 
 =cut
 
-around getinfo => sub {
-    my $orig = shift;
+#around getinfo => sub {
+#    my $orig = shift;
+#    my $self = shift;
+sub getinfo {
     my $self = shift;
 
     given (ref($_[0])) {
@@ -483,7 +495,8 @@ around getinfo => sub {
             for my $name (@{$_[0]}) {
                 my $const = AnyEvent::Net::Curl::Const::info($name);
                 next unless defined $const;
-                push @val, $self->$orig($const);
+                #push @val, $self->$orig($const);
+                push @val, $self->SUPER::getinfo($const);
             }
             return @val;
         } when ('HASH') {
@@ -491,7 +504,8 @@ around getinfo => sub {
             for my $name (keys %{$_[0]}) {
                 my $const = AnyEvent::Net::Curl::Const::info($name);
                 next unless defined $const;
-                $val{$name} = $self->$orig($const);
+                #$val{$name} = $self->$orig($const);
+                $val{$name} = $self->SUPER::getinfo($const);
             }
 
             # write back to HashRef if called under void context
@@ -505,7 +519,8 @@ around getinfo => sub {
             }
         } when ('') {
             my $const = AnyEvent::Net::Curl::Const::info($_[0]);
-            return defined $const ? $self->$orig($const) : $const;
+            #return defined $const ? $self->$orig($const) : $const;
+            return defined $const ? $self->SUPER::getinfo($const) : $const;
         } default {
             carp "getinfo() expects array/hash reference or string!";
             return;
@@ -522,7 +537,7 @@ around getinfo => sub {
 
 =cut
 
-no Moose;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
