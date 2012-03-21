@@ -380,7 +380,7 @@ sub wait {
     # handle queue
     $self->cv->recv;
 
-    # stop watchdog
+    # stop the watchdog
     $self->watchdog(undef);
 
     # reload
@@ -391,7 +391,6 @@ sub wait {
             timeout     => $self->timeout,
         })
     );
-    $self->unique({});
 }
 
 =head1 CAVEAT
