@@ -192,18 +192,16 @@ Almost the same as C<after finish =E<gt> sub { ... }>
 
 has [qw(on_init on_finish)] => (is => 'ro', isa => 'CodeRef');
 
+################# HACK #################
+around BUILDARGS => sub { $_[2] // {} };
+################# HACK #################
+
 =method unique()
 
 Returns the unique signature of the request.
 By default, the signature is derived from L<Digest::SHA> of the C<initial_url>.
 
 =cut
-
-around BUILDARGS => sub {
-    my $orig = shift;
-    my $class = shift;
-    $_[0] // {};
-};
 
 sub unique {
     my ($self) = @_;

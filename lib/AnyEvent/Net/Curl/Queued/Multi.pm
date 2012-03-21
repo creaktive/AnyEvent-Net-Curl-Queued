@@ -79,11 +79,9 @@ sub BUILD {
     $self->setopt(Net::Curl::Multi::CURLMOPT_TIMERFUNCTION      => \&_cb_timer);
 }
 
-around BUILDARGS => sub {
-    my $orig = shift;
-    my $class = shift;
-    $_[0] // {};
-};
+################# HACK #################
+around BUILDARGS => sub { $_[2] // {} };
+################# HACK #################
 
 # socket callback: will be called by curl any time events on some
 # socket must be updated
