@@ -1,5 +1,5 @@
 package AnyEvent::Net::Curl::Queued::Multi;
-# ABSTRACT: Net::Curl::Multi wrapped by Moose
+# ABSTRACT: Net::Curl::Multi wrapped by Any::Moose
 
 =head1 SYNOPSIS
 
@@ -227,7 +227,7 @@ sub add_handle {
 =for :list
 * L<AnyEvent>
 * L<AnyEvent::Net::Curl::Queued>
-* L<MooseX::NonMoose>
+* L<MooseX::NonMoose> / L<MouseX::NonMoose>
 * L<Net::Curl::Multi>
 
 =cut

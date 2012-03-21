@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-AnyEvent::Net::Curl::Queued - Moose wrapper for queued downloads via Net::Curl & AnyEvent
+AnyEvent::Net::Curl::Queued - Any::Moose wrapper for queued downloads via Net::Curl & AnyEvent
 
 =head1 VERSION
 
@@ -114,35 +114,6 @@ L<MooseX::NonMoose>: L<Net::Curl> uses a Pure-Perl object implementation, which 
 L<AnyEvent::Net::Curl::Queued> is a glue module to wrap it all together.
 It offers no callbacks and (almost) no default handlers.
 It's up to you to extend the base class L<AnyEvent::Net::Curl::Queued::Easy> so it will actually download something and store it somewhere.
-
-=head2 OVERHEAD
-
-Obviously, the bottleneck of any kind of download agent is the connection itself.
-However, socket handling and header parsing add a lots of overhead.
-The script F<eg/benchmark.pl> compares L<AnyEvent::Net::Curl::Queued> against several other download agents.
-Only L<AnyEvent::Net::Curl::Queued> itself, L<AnyEvent::Curl::Multi> and L<lftp|http://lftp.yar.ru/> support parallel connections;
-thus, L<forks|AnyEvent::Util/fork_call> are used to reproduce the same behaviour for the remaining agents.
-Both L<AnyEvent::Curl::Multi> and L<LWP::Curl> are frontends for L<WWW::Curl>.
-The download target is a local copy of the L<Apache documentation|http://httpd.apache.org/docs/2.2/>.
-
-                                 URL/s    W::M    L::U   H::L   H::T  AE::C::M   lftp   P::D  AE::H  AE::N::C::Q  curl  L::C   wget
-    WWW::Mechanize                 190      --    -61%   -80%   -85%      -87%   -88%   -90%   -94%         -94%  -97%  -97%  -100%
-    LWP::UserAgent                 485    154%      --   -50%   -62%      -66%   -69%   -74%   -81%         -86%  -92%  -93%   -99%
-    HTTP::Lite                     963    406%     99%     --   -24%      -32%   -39%   -49%   -62%         -71%  -85%  -86%   -98%
-    HTTP::Tiny                    1264    565%    161%    31%     --      -11%   -20%   -33%   -50%         -62%  -80%  -82%   -98%
-    AnyEvent::Curl::Multi         1420    646%    193%    47%    12%        --   -10%   -25%   -44%         -58%  -78%  -80%   -98%
-    lftp                          1577    729%    226%    64%    25%       11%     --   -16%   -38%         -53%  -75%  -78%   -97%
-    Parallel::Downloader          1883    890%    289%    96%    49%       33%    19%     --   -26%         -44%  -71%  -73%   -97%
-    AnyEvent::HTTP                2539   1237%    425%   164%   101%       79%    61%    35%     --         -24%  -60%  -64%   -96%
-    AnyEvent::Net::Curl::Queued   3359   1664%    593%   249%   165%      136%   113%    78%    32%           --  -48%  -53%   -94%
-    curl                          6415   3278%   1227%   567%   408%      353%   307%   241%   153%          91%    --   -9%   -89%
-    LWP::Curl                     7110   3623%   1363%   636%   460%      399%   349%   276%   179%         111%   10%    --   -88%
-    wget                         60511  31717%  12403%  6186%  4684%     4164%  3737%  3114%  2280%        1704%  842%  755%     --
-
-    Debian 5.0.8 Linux 2.6.26-2-amd64
-    16x Intel(R) Xeon(R) CPU E5620 @ 2.40GHz
-
-L<LWP::Curl> is actually faster, but lacks queueing/retry.
 
 =head1 ATTRIBUTES
 
@@ -266,7 +237,7 @@ L<AnyEvent>
 
 =item *
 
-L<Moose>
+L<Any::Moose>
 
 =item *
 

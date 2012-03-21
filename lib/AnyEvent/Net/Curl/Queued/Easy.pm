@@ -1,5 +1,5 @@
 package AnyEvent::Net::Curl::Queued::Easy;
-# ABSTRACT: Net::Curl::Easy wrapped by Moose
+# ABSTRACT: Net::Curl::Easy wrapped by Any::Moose
 
 =head1 SYNOPSIS
 
@@ -529,8 +529,8 @@ sub getinfo {
 =head1 SEE ALSO
 
 =for :list
-* L<Moose>
-* L<MooseX::NonMoose>
+* L<Any::Moose>
+* L<MooseX::NonMoose> / L<MouseX::NonMoose>
 * L<Net::Curl::Easy>
 
 =cut
