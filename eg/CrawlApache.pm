@@ -2,7 +2,7 @@ package CrawlApache;
 use common::sense;
 
 use HTML::LinkExtor;
-use Moose;
+use Any::Moose;
 
 extends 'YADA::Worker';
 
@@ -32,7 +32,7 @@ after finish => sub {
     }
 };
 
-no Moose;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;

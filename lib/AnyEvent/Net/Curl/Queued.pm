@@ -1,5 +1,5 @@
 package AnyEvent::Net::Curl::Queued;
-# ABSTRACT: Moose wrapper for queued downloads via Net::Curl & AnyEvent
+# ABSTRACT: Any::Moose wrapper for queued downloads via Net::Curl & AnyEvent
 
 =head1 SYNOPSIS
 
@@ -9,7 +9,7 @@ package AnyEvent::Net::Curl::Queued;
     use common::sense;
 
     use HTML::LinkExtor;
-    use Moose;
+    use Any::Moose;
 
     extends 'AnyEvent::Net::Curl::Queued::Easy';
 
@@ -39,7 +39,7 @@ package AnyEvent::Net::Curl::Queued;
         }
     };
 
-    no Moose;
+    no Any::Moose;
     __PACKAGE__->meta->make_immutable;
 
     1;
@@ -86,38 +86,13 @@ L<AnyEvent::Net::Curl::Queued> is a glue module to wrap it all together.
 It offers no callbacks and (almost) no default handlers.
 It's up to you to extend the base class L<AnyEvent::Net::Curl::Queued::Easy> so it will actually download something and store it somewhere.
 
-=head2 OVERHEAD
-
-Obviously, the bottleneck of any kind of download agent is the connection itself.
-However, socket handling and header parsing add a lots of overhead.
-The script F<eg/benchmark.pl> compares L<AnyEvent::Net::Curl::Queued> against several other download agents.
-Only L<AnyEvent::Net::Curl::Queued> itself, L<AnyEvent::Curl::Multi> and L<lftp|http://lftp.yar.ru/> support parallel connections;
-thus, L<forks|AnyEvent::Util/fork_call> are used to reproduce the same behaviour for the remaining agents.
-Both L<AnyEvent::Curl::Multi> and L<LWP::Curl> are frontends for L<WWW::Curl>.
-The download target is a local copy of the L<Apache documentation|http://httpd.apache.org/docs/2.2/>.
-
-                                URL/s WWW::Mechanize LWP::UserAgent HTTP::Lite HTTP::Tiny AnyEvent::Curl::Multi  lftp AnyEvent::Net::Curl::Queued AnyEvent::HTTP  curl LWP::Curl  wget
-    WWW::Mechanize                196             --           -60%       -80%       -85%                  -86%  -88%                        -89%           -92%  -97%      -97% -100%
-    LWP::UserAgent                484           148%             --       -51%       -63%                  -66%  -70%                        -72%           -80%  -93%      -93%  -99%
-    HTTP::Lite                    989           405%           104%         --       -25%                  -32%  -39%                        -42%           -59%  -85%      -86%  -99%
-    HTTP::Tiny                   1312           569%           170%        33%         --                   -9%  -19%                        -23%           -46%  -80%      -82%  -99%
-    AnyEvent::Curl::Multi        1446           638%           198%        46%        10%                    --  -10%                        -16%           -41%  -78%      -80%  -98%
-    lftp                         1609           722%           232%        63%        23%                   11%    --                         -6%           -34%  -75%      -77%  -98%
-    AnyEvent::Net::Curl::Queued  1713           773%           253%        73%        30%                   18%    6%                          --           -30%  -74%      -76%  -98%
-    AnyEvent::HTTP               2437          1144%           403%       146%        86%                   69%   51%                         42%             --  -63%      -66%  -97%
-    curl                         6512          3228%          1244%       559%       397%                  351%  305%                        281%           167%    --       -8%  -93%
-    LWP::Curl                    7110          3524%          1364%       618%       442%                  391%  341%                        315%           191%    9%        --  -92%
-    wget                        88875         45240%         18215%      8877%      6675%                 6045% 5418%                       5092%          3544% 1262%     1151%    --
-
-L<AnyEvent::HTTP> & L<LWP::Curl> are actually faster, but both lack queueing/retry.
-
 =cut
 
 use common::sense;
 
 use AnyEvent;
-use Moose;
-use Moose::Util::TypeConstraints;
+use Any::Moose;
+use Any::Moose qw(::Util::TypeConstraints);
 use Net::Curl::Share;
 
 use AnyEvent::Net::Curl::Queued::Multi;
@@ -155,10 +130,11 @@ has completed  => (
 
 L<AnyEvent> condition variable.
 Initialized automatically, unless you specify your own.
+Also reset automatically after L</wait>, so keep your own reference if you really need it!
 
 =cut
 
-has cv          => (is => 'rw', isa => 'AnyEvent::CondVar', default => sub { AE::cv }, lazy => 1);
+has cv          => (is => 'rw', isa => 'Ref | Undef', default => sub { AE::cv }, lazy => 1);
 
 =attr max
 
@@ -229,13 +205,21 @@ Timeout (default: 60 seconds).
 
 has timeout     => (is => 'ro', isa => 'Num', default => 60.0);
 
+=attr unique
+
+Signature cache.
+
+=cut
+
+has unique      => (is => 'rw', isa => 'HashRef[Str]', default => sub { {} });
+
 =attr watchdog
 
 The last resort against the non-deterministic chaos of evil lurking sockets.
 
 =cut
 
-has watchdog    => (is => 'rw', isa => 'Ref');
+has watchdog    => (is => 'rw', isa => 'Ref | Undef');
 
 sub BUILD {
     my ($self) = @_;
@@ -300,8 +284,6 @@ Activate a worker.
 =cut
 
 sub add {
-    state $unique = {};
-
     my ($self, $worker) = @_;
 
     # vivify the worker
@@ -314,7 +296,7 @@ sub add {
 
     # check if already processed
     if (not $self->allow_dups and not $worker->force) {
-        return if ++$unique->{$worker->unique} > 1;
+        return if ++$self->unique->{$worker->unique} > 1;
     }
 
     # fire
@@ -369,6 +351,9 @@ sub wait {
     # handle queue
     $self->cv->recv;
 
+    # stop the watchdog
+    $self->watchdog(undef);
+
     # reload
     $self->cv(AE::cv);
     $self->multi(
@@ -387,14 +372,14 @@ The I<"Attempt to free unreferenced scalar: SV 0xdeadbeef during global destruct
 
 =for :list
 * L<AnyEvent>
-* L<Moose>
+* L<Any::Moose>
 * L<Net::Curl>
 * L<WWW::Curl>
 * L<AnyEvent::Curl::Multi>
 
 =cut
 
-no Moose;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;

@@ -37,7 +37,7 @@ For the I<hard things should be possible> side, refer to the complete L<AnyEvent
 =cut
 
 use common::sense;
-use Moose;
+use Any::Moose;
 
 extends 'AnyEvent::Net::Curl::Queued';
 
@@ -54,7 +54,7 @@ use YADA::Worker;
 
 =cut
 
-no Moose;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
