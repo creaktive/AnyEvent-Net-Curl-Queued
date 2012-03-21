@@ -61,8 +61,6 @@ for (my $i = 0; $i <= $#urls; $i++) {
 
 say $lftp_queue "wait all";
 
-my $yada = AnyEvent::Net::Curl::Queued->new({ max => $parallel });
-
 cmpthese(10 => {
     # external executables
     '00-lftp' => sub {
@@ -190,7 +188,7 @@ cmpthese(10 => {
         $cv->wait;
     },
     '21-AnyEvent::Net::Curl::Queued' => sub {
-        #my $yada = AnyEvent::Net::Curl::Queued->new({ max => $parallel });
+        my $yada = AnyEvent::Net::Curl::Queued->new({ max => $parallel });
         for my $url (@urls) {
             $yada->append(sub {
                 AnyEvent::Net::Curl::Queued::Easy->new({ initial_url => $url })
