@@ -96,20 +96,24 @@ thus, L<forks|AnyEvent::Util/fork_call> are used to reproduce the same behaviour
 Both L<AnyEvent::Curl::Multi> and L<LWP::Curl> are frontends for L<WWW::Curl>.
 The download target is a local copy of the L<Apache documentation|http://httpd.apache.org/docs/2.2/>.
 
-                                URL/s WWW::Mechanize LWP::UserAgent HTTP::Lite HTTP::Tiny AnyEvent::Curl::Multi  lftp AnyEvent::Net::Curl::Queued AnyEvent::HTTP  curl LWP::Curl  wget
-    WWW::Mechanize                196             --           -60%       -80%       -85%                  -86%  -88%                        -89%           -92%  -97%      -97% -100%
-    LWP::UserAgent                484           148%             --       -51%       -63%                  -66%  -70%                        -72%           -80%  -93%      -93%  -99%
-    HTTP::Lite                    989           405%           104%         --       -25%                  -32%  -39%                        -42%           -59%  -85%      -86%  -99%
-    HTTP::Tiny                   1312           569%           170%        33%         --                   -9%  -19%                        -23%           -46%  -80%      -82%  -99%
-    AnyEvent::Curl::Multi        1446           638%           198%        46%        10%                    --  -10%                        -16%           -41%  -78%      -80%  -98%
-    lftp                         1609           722%           232%        63%        23%                   11%    --                         -6%           -34%  -75%      -77%  -98%
-    AnyEvent::Net::Curl::Queued  1713           773%           253%        73%        30%                   18%    6%                          --           -30%  -74%      -76%  -98%
-    AnyEvent::HTTP               2437          1144%           403%       146%        86%                   69%   51%                         42%             --  -63%      -66%  -97%
-    curl                         6512          3228%          1244%       559%       397%                  351%  305%                        281%           167%    --       -8%  -93%
-    LWP::Curl                    7110          3524%          1364%       618%       442%                  391%  341%                        315%           191%    9%        --  -92%
-    wget                        88875         45240%         18215%      8877%      6675%                 6045% 5418%                       5092%          3544% 1262%     1151%    --
+                                 URL/s    W::M    L::U   H::L   H::T  AE::C::M   lftp   P::D  AE::H  AE::N::C::Q  curl  L::C   wget
+    WWW::Mechanize                 190      --    -61%   -80%   -85%      -87%   -88%   -90%   -94%         -94%  -97%  -97%  -100%
+    LWP::UserAgent                 485    154%      --   -50%   -62%      -66%   -69%   -74%   -81%         -86%  -92%  -93%   -99%
+    HTTP::Lite                     963    406%     99%     --   -24%      -32%   -39%   -49%   -62%         -71%  -85%  -86%   -98%
+    HTTP::Tiny                    1264    565%    161%    31%     --      -11%   -20%   -33%   -50%         -62%  -80%  -82%   -98%
+    AnyEvent::Curl::Multi         1420    646%    193%    47%    12%        --   -10%   -25%   -44%         -58%  -78%  -80%   -98%
+    lftp                          1577    729%    226%    64%    25%       11%     --   -16%   -38%         -53%  -75%  -78%   -97%
+    Parallel::Downloader          1883    890%    289%    96%    49%       33%    19%     --   -26%         -44%  -71%  -73%   -97%
+    AnyEvent::HTTP                2539   1237%    425%   164%   101%       79%    61%    35%     --         -24%  -60%  -64%   -96%
+    AnyEvent::Net::Curl::Queued   3359   1664%    593%   249%   165%      136%   113%    78%    32%           --  -48%  -53%   -94%
+    curl                          6415   3278%   1227%   567%   408%      353%   307%   241%   153%          91%    --   -9%   -89%
+    LWP::Curl                     7110   3623%   1363%   636%   460%      399%   349%   276%   179%         111%   10%    --   -88%
+    wget                         60511  31717%  12403%  6186%  4684%     4164%  3737%  3114%  2280%        1704%  842%  755%     --
 
-L<AnyEvent::HTTP> & L<LWP::Curl> are actually faster, but both lack queueing/retry.
+    Debian 5.0.8 Linux 2.6.26-2-amd64
+    16x Intel(R) Xeon(R) CPU E5620 @ 2.40GHz
+
+L<LWP::Curl> is actually faster, but lacks queueing/retry.
 
 =cut
 
