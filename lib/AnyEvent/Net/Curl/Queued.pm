@@ -159,10 +159,11 @@ has completed  => (
 
 L<AnyEvent> condition variable.
 Initialized automatically, unless you specify your own.
+Also reset automatically after L</wait>, so keep your own reference if you really need it!
 
 =cut
 
-has cv          => (is => 'rw', isa => 'AnyEvent::CondVar', default => sub { AE::cv }, lazy => 1);
+has cv          => (is => 'rw', isa => 'Ref | Undef', default => sub { AE::cv }, lazy => 1);
 
 =attr max
 
@@ -233,13 +234,21 @@ Timeout (default: 60 seconds).
 
 has timeout     => (is => 'ro', isa => 'Num', default => 60.0);
 
+=attr unique
+
+Signature cache.
+
+=cut
+
+has unique      => (is => 'rw', isa => 'HashRef[Str]', default => sub { {} });
+
 =attr watchdog
 
 The last resort against the non-deterministic chaos of evil lurking sockets.
 
 =cut
 
-has watchdog    => (is => 'rw', isa => 'Ref');
+has watchdog    => (is => 'rw', isa => 'Ref | Undef');
 
 sub BUILD {
     my ($self) = @_;
@@ -304,8 +313,6 @@ Activate a worker.
 =cut
 
 sub add {
-    state $unique = {};
-
     my ($self, $worker) = @_;
 
     # vivify the worker
@@ -318,7 +325,7 @@ sub add {
 
     # check if already processed
     if (not $self->allow_dups and not $worker->force) {
-        return if ++$unique->{$worker->unique} > 1;
+        return if ++$self->unique->{$worker->unique} > 1;
     }
 
     # fire
@@ -373,6 +380,9 @@ sub wait {
     # handle queue
     $self->cv->recv;
 
+    # stop watchdog
+    $self->watchdog(undef);
+
     # reload
     $self->cv(AE::cv);
     $self->multi(
@@ -381,6 +391,7 @@ sub wait {
             timeout     => $self->timeout,
         })
     );
+    $self->unique({});
 }
 
 =head1 CAVEAT
