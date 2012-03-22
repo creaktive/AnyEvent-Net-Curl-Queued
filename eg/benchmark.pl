@@ -21,8 +21,7 @@ use WWW::Mechanize;
 
 my $parallel = 4;
 my @urls = read_file('queue', 'chomp' => 1);
-my $num = scalar @urls;
-for (my $i = 0; $i < $num; $i++) {
+for my $i (0 .. $#urls) {
     push @urls, $urls[$i] . "?$_" for 1 .. 5;
 }
 @urls = shuffle @urls;
@@ -41,12 +40,12 @@ say $lftp_queue "set cmd:verbose no";
 say $lftp_queue "set net:connection-limit 0";
 say $lftp_queue "set xfer:clobber 1";
 
-for (my $i = 0; $i < $parallel; $i++) {
+for my $i (1 .. $parallel) {
     push @curl_queue, File::Temp->new;
     push @wget_queue, File::Temp->new;
 }
 
-for (my $i = 0; $i <= $#urls; $i++) {
+for my $i (0 .. $#urls) {
     my $j = $i % $parallel;
     my $url = $urls[$i];
 
@@ -164,25 +163,18 @@ cmpthese(10 => {
         $yada->wait;
     },
     '22-AnyEvent::Curl::Multi' => sub {
-        my $cv = AE::cv;
         my $client = AnyEvent::Curl::Multi->new;
         $client->max_concurrency($parallel);
         $client->reg_cb(
             response => sub {
                 my ($client, $request, $response, $stats) = @_;
-                $cv->end;
             }
         );
         $client->reg_cb(
             error => sub {
                 my ($client, $request, $errmsg, $stats) = @_;
-                $cv->end;
             }
         );
-        for (@urls) {
-            $cv->begin;
-            $client->request(HTTP::Request->new(GET => $_));
-        }
-        $cv->wait;
+        $_->cv->recv for map { $client->request(GET($_)) } @urls;
     },
 });
