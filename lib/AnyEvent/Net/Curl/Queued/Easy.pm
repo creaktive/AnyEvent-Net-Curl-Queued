@@ -246,7 +246,6 @@ sub init {
     $self->setopt(Net::Curl::Easy::CURLOPT_URL,         $url->as_string);
 
     # salt
-    #$self->sign(($self->meta->class_precedence_list)[0]);
     $self->sign($self->meta->name);
     # URL; GET parameters included
     $self->sign($url->as_string);
@@ -384,7 +383,7 @@ sub clone {
 
     $param //= {};
 
-    my $class = ($self->meta->class_precedence_list)[0];
+    my $class = $self->meta->name;
     $param->{$_} = $self->$_()
         for qw(
             http_response
