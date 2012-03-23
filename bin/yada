@@ -64,6 +64,10 @@ Turn off progress output.
 
 Used to set the C<Referer:> header in the http request sent to the remote server.
 
+=item --timeout
+
+The maximum time in seconds that you allow the transfer operation to take (default: 600 seconds).
+
 =item --useragent
 
 Used to set the C<User-Agent:> header in the http request sent to the remote server.
@@ -92,6 +96,7 @@ GetOptions(
     q(maxredirs=i)      => \my $maxredirs,
     q(quiet!)           => \my $quiet,
     q(referer=s)        => \my $referer,
+    q(timeout=i)        => \my $timeout,
     q(useragent=s)      => \my $useragent,
     q(verbose)          => \my $verbose,
 ) or pod2usage(q(-verbose) => 1);
@@ -102,10 +107,13 @@ chomp @urls;
 
 local $| = 1;
 
-my $q = YADA->new({ max => $max // 4 });
+my $q = YADA->new({
+    max     => $max // 4,
+    timeout => $timeout // 600,
+});
 
 for my $url (@urls) {
-    my $fh;
+    my ($fh, $name);
     $q->append(
         YADA::Worker->new({
             initial_url => $url,
@@ -116,7 +124,8 @@ for my $url (@urls) {
                 $orig .= q(?) . $self->initial_url->query
                     if $self->initial_url->query;
                 $orig =~ s{[^\w\.\-]}{_}gsx;
-                my ($i, $name) = (1, $orig);
+                my $i = 1;
+                $name = $orig;
                 for (;;) {
                     -e $name
                         ? $name = $orig . q(.) . $i++
@@ -143,6 +152,7 @@ for my $url (@urls) {
             on_finish   => sub {
                 my ($self) = @_;
                 close $fh;
+                unlink $name if $self->has_error;
             },
         })
     );
