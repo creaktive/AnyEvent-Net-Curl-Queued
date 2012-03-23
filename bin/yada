@@ -94,8 +94,8 @@ GetOptions(
     q(referer=s)        => \my $referer,
     q(useragent=s)      => \my $useragent,
     q(verbose)          => \my $verbose,
-) or pod2usage;
-pod2usage if $help;
+) or pod2usage(q(-verbose) => 1);
+pod2usage(q(-verbose) => 1) if $help;
 
 my @urls = <>;
 chomp @urls;
