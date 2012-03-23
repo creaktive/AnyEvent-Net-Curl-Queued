@@ -5,6 +5,7 @@ use autodie;
 use common::sense;
 
 use Config;
+use File::Copy;
 use Getopt::Long;
 use Pod::Usage;
 use YADA;
@@ -120,17 +121,7 @@ for my $url (@urls) {
             on_init     => sub {
                 my ($self) = @_;
 
-                my $orig = ($self->initial_url->path_segments)[-1] || q(index.html);
-                $orig .= q(?) . $self->initial_url->query
-                    if $self->initial_url->query;
-                $orig =~ s{[^\w\.\-]}{_}gsx;
-                my $i = 1;
-                $name = $orig;
-                for (;;) {
-                    -e $name
-                        ? $name = $orig . q(.) . $i++
-                        : last;
-                }
+                $name = get_filename($self->initial_url);
 
                 open($fh, q(>:raw), $name);
                 $self->setopt(
@@ -152,10 +143,34 @@ for my $url (@urls) {
             on_finish   => sub {
                 my ($self) = @_;
                 close $fh;
-                unlink $name if $self->has_error;
+                if ($self->has_error) {
+                    unlink $name;
+                } else {
+                    my $new_name = get_filename($self->final_url);
+                    move($name, $new_name) if $name ne $new_name;
+                }
             },
         })
     );
 }
 
 $q->wait;
+
+sub get_filename {
+    my ($url) = @_;
+
+    my $orig = ($url->path_segments)[-1] || q(index.html);
+    $orig .= q(?) . $url->query
+        if $url->query;
+
+    $orig =~ s{[^\w\.\-]}{_}gsx;
+    my $i = 1;
+    my $name = $orig;
+    for (;;) {
+        -e $name
+            ? $name = $orig . q(.) . $i++
+            : last;
+    }
+
+    return $orig;
+}
