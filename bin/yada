@@ -1,0 +1,151 @@
+#!/usr/bin/env perl
+# ABSTRACT: Yet Another Download Accelerator CLI wrapper
+# PODNAME: yada
+use autodie;
+use common::sense;
+
+use Config;
+use Getopt::Long;
+use Pod::Usage;
+use YADA;
+
+my $VERSION; # stub
+# VERSION
+
+=head1 SYNOPSIS
+
+    yada [options] URLs_file
+    yada [options] < URLs_file
+
+=head1 DESCRIPTION
+
+Employs L<AnyEvent::Net::Curl::Queued> to download a set of URLs in batch mode (parallelizing connections).
+
+Downloading the same file in the same directory will result in the original copy of file being preserved and the second copy being named F<file.1>.
+If that file is downloaded yet again, the third copy will be named F<file.2>, and so on.
+(behavior/description copied from L<wget>)
+
+=head1 OPTIONS
+
+=over 4
+
+=item --help
+
+This.
+
+=item --encoding
+
+Sets the contents of the C<Accept-Encoding:> header sent in a HTTP request, and enables decoding of a response when a C<Content-Encoding:> header is received.
+Three encodings are supported: I<identity>, which does nothing, I<deflate> which requests the server to compress its response using the L<zlib> algorithm, and I<gzip> which requests the L<gzip> algorithm.
+If a zero-length string is set, then an C<Accept-Encoding:> header containing all supported encodings is sent (default).
+
+=item --followlocation
+
+A parameter set to 1 (default) tells the utility to follow any C<Location:> header that the server sends as part of a HTTP header.
+
+This means that the utility will re-send the same request on the new location and follow new C<Location:> headers all the way until no more such headers are returned.
+C<--maxredirs> can be used to limit the number of redirects utility will follow.
+
+=item --max
+
+Download that many files in parallel (default: 4).
+
+=item --maxredirs
+
+Redirection limit (default: 5).
+If that many redirections have been followed, the next redirect will cause an error.
+This option only makes sense if the C<--followlocation> is used at the same time.
+
+=item --quiet
+
+Turn off progress output.
+
+=item --referer
+
+Used to set the C<Referer:> header in the http request sent to the remote server.
+
+=item --useragent
+
+Used to set the C<User-Agent:> header in the http request sent to the remote server.
+
+=item --verbose
+
+Set the parameter to 1 to get the utility to display a lot of verbose information about its operations.
+Very useful for L<libcurl> and/or protocol debugging and understanding.
+The verbose information will be sent to C<STDERR>.
+
+=back
+
+=head1 SEE ALSO
+
+=for :list
+* L<AnyEvent::Net::Curl::Queued>
+* L<curl>
+
+=cut
+
+GetOptions(
+    q(help)             => \my $help,
+    q(encoding=s)       => \my $encoding,
+    q(followlocation!)  => \my $followlocation,
+    q(max=i)            => \my $max,
+    q(maxredirs=i)      => \my $maxredirs,
+    q(quiet!)           => \my $quiet,
+    q(referer=s)        => \my $referer,
+    q(useragent=s)      => \my $useragent,
+    q(verbose)          => \my $verbose,
+) or pod2usage;
+pod2usage if $help;
+
+my @urls = <>;
+chomp @urls;
+
+local $| = 1;
+
+my $q = YADA->new({ max => $max // 4 });
+
+for my $url (@urls) {
+    my $fh;
+    $q->append(
+        YADA::Worker->new({
+            initial_url => $url,
+            on_init     => sub {
+                my ($self) = @_;
+
+                my $orig = ($self->initial_url->path_segments)[-1] || q(index.html);
+                $orig .= q(?) . $self->initial_url->query
+                    if $self->initial_url->query;
+                $orig =~ s{[^\w\.\-]}{_}gsx;
+                my ($i, $name) = (1, $orig);
+                for (;;) {
+                    -e $name
+                        ? $name = $orig . q(.) . $i++
+                        : last;
+                }
+
+                open($fh, q(>:raw), $name);
+                $self->setopt(
+                    encoding            => $encoding // q(),
+                    followlocation      => $followlocation // 1,
+                    maxredirs           => $maxredirs // 5,
+                    noprogress          => $quiet,
+                    referer             => $referer,
+                    useragent           => $useragent // qq(yada/$VERSION ($Config{archname}; Perl/$Config{version}) @{[ Net::Curl::version() ]}),
+                    verbose             => $verbose,
+
+                    autoreferer         => 1,
+                    ssl_verifyhost      => 0,
+                    ssl_verifypeer      => 0,
+                    unrestricted_auth   => 1,
+                    writedata           => $fh,
+                );
+            },
+            on_finish   => sub {
+                my ($self) = @_;
+                close $fh;
+            },
+        })
+    );
+}
+
+$q->wait;
