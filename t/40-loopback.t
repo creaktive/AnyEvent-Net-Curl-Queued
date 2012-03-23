@@ -2,7 +2,7 @@
 package MyDownloader;
 use common::sense;
 
-use Moose;
+use Any::Moose;
 use Net::Curl::Easy qw(/^CURLOPT_/);
 
 extends 'AnyEvent::Net::Curl::Queued::Easy';
@@ -21,7 +21,7 @@ after finish => sub {
     $_[0]->cb->(@_);
 };
 
-no Moose;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
