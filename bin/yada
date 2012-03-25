@@ -145,9 +145,18 @@ for my $url (@urls) {
                 close $fh;
                 if ($self->has_error) {
                     unlink $name;
-                } else {
+                } elsif (${$self->header} =~ m{\bContent-Disposition:\s*attachment;\s*filename=("[^"]*"|[^,"]*)\x{0d}?\x{0a}}isx) {
+                    my $filename = $1;
+                    $filename =~ s/^"//;
+                    $filename =~ s/"$//;
+
+                    move($name, $name . q(.tmp));
+                    my $new_name = get_filename(URI->new(q(file:///) . $filename));
+                    move($name . q(.tmp), $new_name);
+                } elsif ($self->final_url ne $self->initial_url) {
+                    move($name, $name . q(.tmp));
                     my $new_name = get_filename($self->final_url);
-                    move($name, $new_name) if $name ne $new_name;
+                    move($name . q(.tmp), $new_name);
                 }
             },
         })
@@ -157,7 +166,7 @@ for my $url (@urls) {
 $q->wait;
 
 sub get_filename {
-    my ($url) = @_;
+    my $url = shift->clone->canonical;
 
     my $orig = ($url->path_segments)[-1] || q(index.html);
     $orig .= q(?) . $url->query
