@@ -58,7 +58,9 @@ for my $i (0 .. $#urls) {
 
 say $lftp_queue "wait all";
 
-cmpthese(10 => {
+my ($http_lite, $http_tiny, $lwp, $mech, $lwp_curl, $parallel_downloader, $yada);
+
+cmpthese(1 => {
     # external executables
     '00-lftp' => sub {
         system qw(lftp -f), $lftp_queue->filename;
@@ -83,61 +85,71 @@ cmpthese(10 => {
     },
 
     # non-async modules
-    '10-HTTP::Lite' => sub {
-        my $ua = HTTP::Lite->new;
+    '10a-HTTP::Lite' => sub {
+        $http_lite = HTTP::Lite->new;
+    },
+    '10b-HTTP::Lite' => sub {
         my $pm = Parallel::ForkManager->new($parallel);
         for my $queue (@queue) {
             my $pid = $pm->start and next;
             for my $url (@{$queue}) {
-                $ua->request($url);
+                $http_lite->request($url);
             }
             $pm->finish;
         }
         $pm->wait_all_children;
     },
-    '11-HTTP::Tiny' => sub {
-        my $ua = HTTP::Tiny->new;
+    '11a-HTTP::Tiny' => sub {
+        $http_tiny = HTTP::Tiny->new;
+    },
+    '11b-HTTP::Tiny' => sub {
         my $pm = Parallel::ForkManager->new($parallel);
         for my $queue (@queue) {
             my $pid = $pm->start and next;
             for my $url (@{$queue}) {
-                $ua->get($url);
+                $http_tiny->get($url);
             }
             $pm->finish;
         }
         $pm->wait_all_children;
     },
-    '12-LWP::UserAgent' => sub {
-        my $ua = LWP::UserAgent->new;
+    '12a-LWP::UserAgent' => sub {
+        $lwp = LWP::UserAgent->new;
+    },
+    '12b-LWP::UserAgent' => sub {
         my $pm = Parallel::ForkManager->new($parallel);
         for my $queue (@queue) {
             my $pid = $pm->start and next;
             for my $url (@{$queue}) {
-                $ua->get($url);
+                $lwp->get($url);
             }
             $pm->finish;
         }
         $pm->wait_all_children;
     },
-    '13-WWW::Mechanize' => sub {
-        my $ua = WWW::Mechanize->new;
+    '13a-WWW::Mechanize' => sub {
+        $mech = WWW::Mechanize->new;
+    },
+    '13b-WWW::Mechanize' => sub {
         my $pm = Parallel::ForkManager->new($parallel);
         for my $queue (@queue) {
             my $pid = $pm->start and next;
             for my $url (@{$queue}) {
-                $ua->get($url);
+                $mech->get($url);
             }
             $pm->finish;
         }
         $pm->wait_all_children;
     },
-    '14-LWP::Curl' => sub {
-        my $ua = LWP::Curl->new;
+    '14a-LWP::Curl' => sub {
+        $lwp_curl = LWP::Curl->new;
+    },
+    '14b-LWP::Curl' => sub {
         my $pm = Parallel::ForkManager->new($parallel);
         for my $queue (@queue) {
             my $pid = $pm->start and next;
             for my $url (@{$queue}) {
-                $ua->get($url);
+                $lwp_curl->get($url);
             }
             $pm->finish;
         }
@@ -145,36 +157,41 @@ cmpthese(10 => {
     },
 
     # async modules
-    '20-Parallel::Downloader' => sub {
-        my $downloader = Parallel::Downloader->new(
+    '20a-Parallel::Downloader' => sub {
+        $parallel_downloader = Parallel::Downloader->new(
             requests        => [ map { GET($_) } @urls ],
             workers         => $parallel,
             conns_per_host  => $parallel,
         );
-        $downloader->run;
     },
-    '21-AnyEvent::Net::Curl::Queued' => sub {
-        my $yada = AnyEvent::Net::Curl::Queued->new({ max => $parallel });
+    '20b-Parallel::Downloader' => sub {
+        $parallel_downloader->run;
+    },
+    '21a-AnyEvent::Net::Curl::Queued' => sub {
+        $yada = AnyEvent::Net::Curl::Queued->new({ max => $parallel });
         for my $url (@urls) {
-            $yada->append(sub {
+            $yada->append(
                 AnyEvent::Net::Curl::Queued::Easy->new({ initial_url => $url })
-            });
+            );
         }
+    },
+    '21b-AnyEvent::Net::Curl::Queued' => sub {
         $yada->wait;
     },
     '22-AnyEvent::Curl::Multi' => sub {
-        my $client = AnyEvent::Curl::Multi->new;
-        $client->max_concurrency($parallel);
-        $client->reg_cb(
+        my $multi = AnyEvent::Curl::Multi->new;
+        $multi->max_concurrency($parallel);
+        $multi->reg_cb(
             response => sub {
                 my ($client, $request, $response, $stats) = @_;
             }
         );
-        $client->reg_cb(
+        $multi->reg_cb(
             error => sub {
                 my ($client, $request, $errmsg, $stats) = @_;
             }
         );
-        $_->cv->recv for map { $client->request(GET($_)) } @urls;
+        my @multi = map { $multi->request(GET($_)) } @urls;
+        $_->cv->recv for @multi;
     },
 });
