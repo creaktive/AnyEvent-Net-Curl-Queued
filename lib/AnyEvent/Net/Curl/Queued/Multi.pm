@@ -94,26 +94,32 @@ sub _cb_socket {
     # This is why we register socket events inside multi object
     # and not $easy.
 
-    # deregister old io events
-    delete $self->pool->{"r$socket"};
-    delete $self->pool->{"w$socket"};
-
     # AnyEvent does not support registering a socket for both
     # reading and writing. This is rarely used so there is no
     # harm in separating the events.
 
+    my $keep = 0;
+
     # register read event
     if (($poll == Net::Curl::Multi::CURL_POLL_IN) or ($poll == Net::Curl::Multi::CURL_POLL_INOUT)) {
-        $self->pool->{"r$socket"} = AE::io $socket, 0, sub {
+        $self->pool->{"r$socket"} //= AE::io $socket, 0, sub {
             $self->socket_action($socket, Net::Curl::Multi::CURL_CSELECT_IN);
         };
+        ++$keep;
     }
 
     # register write event
     if (($poll == Net::Curl::Multi::CURL_POLL_OUT) or ($poll == Net::Curl::Multi::CURL_POLL_INOUT)) {
-        $self->pool->{"w$socket"} = AE::io $socket, 1, sub {
+        $self->pool->{"w$socket"} //= AE::io $socket, 1, sub {
             $self->socket_action($socket, Net::Curl::Multi::CURL_CSELECT_OUT);
         };
+        ++$keep;
+    }
+
+    # deregister old io events
+    unless ($keep) {
+        delete $self->pool->{"r$socket"};
+        delete $self->pool->{"w$socket"};
     }
 
     return 1;
