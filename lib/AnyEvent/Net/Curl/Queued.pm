@@ -86,36 +86,6 @@ L<AnyEvent::Net::Curl::Queued> is a glue module to wrap it all together.
 It offers no callbacks and (almost) no default handlers.
 It's up to you to extend the base class L<AnyEvent::Net::Curl::Queued::Easy> so it will actually download something and store it somewhere.
 
-=head2 BENCHMARK
-
-Obviously, the bottleneck of any kind of download agent is the connection itself.
-However, socket handling and header parsing add a lots of overhead.
-
-The script F<eg/benchmark.pl> compares L<AnyEvent::Net::Curl::Queued> against several other download agents.
-Only L<AnyEvent::Net::Curl::Queued> itself, L<AnyEvent::Curl::Multi>, L<Parallel::Downloader> and L<lftp|http://lftp.yar.ru/> support parallel connections natively;
-thus, L<Parallel::ForkManager> is used to reproduce the same behaviour for the remaining agents.
-Both L<AnyEvent::Curl::Multi> and L<LWP::Curl> are frontends for L<WWW::Curl>.
-L<Parallel::Downloader> uses L<AnyEvent::HTTP> as it's backend.
-
-The download target is a copy of the L<Apache documentation|http://httpd.apache.org/docs/2.2/> on an Apache server located in another datacenter.
-The benchmark separates the client initialization from the download management, when possible (not possible on external utilities neither L<AnyEvent::Curl::Multi>.
-(L<AnyEvent::Net::Curl::Queued> is actually I<"cheating">, as it's non-lazy initialization is slower than the whole download cycle for everything else except L<WWW::Mechanize> and L<LWP::UserAgent>!!!)
-
-                         URLs/s   W::M   LWP  AE::C::M  lftp  H::T  H::L  YADA  P::D  curl  L::C  wget
-    WWW::Mechanize          195     --  -50%      -60%  -76%  -76%  -77%  -81%  -84%  -92%  -93%  -94%
-    LWP::UserAgent          392   101%    --      -21%  -51%  -52%  -53%  -61%  -67%  -83%  -87%  -88%
-    AnyEvent::Curl::Multi   493   153%   26%        --  -39%  -40%  -41%  -51%  -59%  -79%  -83%  -84%
-    lftp                    802   312%  105%       63%    --   -3%   -4%  -21%  -33%  -66%  -73%  -75%
-    HTTP::Tiny              825   323%  110%       67%    3%    --   -1%  -19%  -32%  -65%  -72%  -74%
-    HTTP::Lite              833   329%  113%       69%    4%    1%    --  -17%  -31%  -65%  -72%  -74%
-    YADA                   1013   419%  158%      105%   26%   23%   21%    --  -16%  -57%  -66%  -68%
-    Parallel::Downloader   1205   518%  207%      144%   50%   46%   44%   19%    --  -49%  -59%  -62%
-    curl                   2370  1115%  504%      380%  195%  187%  183%  134%   97%    --  -20%  -25%
-    LWP::Curl              2969  1421%  657%      501%  269%  260%  255%  193%  146%   25%    --   -6%
-    wget                   3166  1523%  707%      541%  294%  284%  279%  213%  163%   34%    7%    --
-
-Kudos to L<Parallel::Downloader> and L<LWP::Curl> C<:)>
-
 =cut
 
 use common::sense;
