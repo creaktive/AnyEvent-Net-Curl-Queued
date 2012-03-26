@@ -144,7 +144,7 @@ for my $url (@urls) {
                 my ($self) = @_;
                 close $fh;
                 if ($self->has_error) {
-                    unlink $name;
+                    eval { unlink $name };
                 } elsif (${$self->header} =~ m{\bContent-Disposition:\s*attachment;\s*filename=("[^"]*"|[^,"]*)\x{0d}?\x{0a}}isx) {
                     my $filename = $1;
                     $filename =~ s/^"//;
@@ -181,5 +181,5 @@ sub get_filename {
             : last;
     }
 
-    return $orig;
+    return $name;
 }
