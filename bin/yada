@@ -34,13 +34,17 @@ If that file is downloaded yet again, the third copy will be named F<file.2>, an
 
 This.
 
+=item --[no]dups
+
+Allow repeated requests to the same URLs (default: true).
+
 =item --encoding
 
 Sets the contents of the C<Accept-Encoding:> header sent in a HTTP request, and enables decoding of a response when a C<Content-Encoding:> header is received.
 Three encodings are supported: I<identity>, which does nothing, I<deflate> which requests the server to compress its response using the L<zlib> algorithm, and I<gzip> which requests the L<gzip> algorithm.
 If a zero-length string is set, then an C<Accept-Encoding:> header containing all supported encodings is sent (default).
 
-=item --followlocation
+=item --[no]followlocation
 
 A parameter set to 1 (default) tells the utility to follow any C<Location:> header that the server sends as part of a HTTP header.
 
@@ -57,13 +61,26 @@ Redirection limit (default: 5).
 If that many redirections have been followed, the next redirect will cause an error.
 This option only makes sense if the C<--followlocation> is used at the same time.
 
-=item --quiet
+=item --proxy
+
+Set HTTP proxy to use.
+The proxy string may be specified with a C<protocol://> prefix to specify alternative proxy protocols.
+Use C<socks4://>, C<socks4a://>, C<socks5://> or C<socks5h://> (the last one to enable socks5 and asking the proxy to do the resolving) to request the specific SOCKS version to be used.
+No protocol specified, C<http://> and all others will be treated as HTTP proxies.
+
+=item --[no]quiet
 
 Turn off progress output.
 
 =item --referer
 
 Used to set the C<Referer:> header in the http request sent to the remote server.
+
+=item --tcp_nodelay
+
+Setting this option will disable TCP's Nagle algorithm.
+The purpose of this algorithm is to try to minimize the number of small packets on the network
+(where "small packets" means TCP segments less than the Maximum Segment Size (MSS) for the network).
 
 =item --timeout
 
@@ -91,12 +108,15 @@ The verbose information will be sent to C<STDERR>.
 
 GetOptions(
     q(help)             => \my $help,
+    q(dups!)            => \my $dups,
     q(encoding=s)       => \my $encoding,
     q(followlocation!)  => \my $followlocation,
     q(max=i)            => \my $max,
     q(maxredirs=i)      => \my $maxredirs,
+    q(proxy=s)          => \my $proxy,
     q(quiet!)           => \my $quiet,
     q(referer=s)        => \my $referer,
+    q(tcp_nodelay)      => \my $tcp_nodelay,
     q(timeout=i)        => \my $timeout,
     q(useragent=s)      => \my $useragent,
     q(verbose)          => \my $verbose,
@@ -109,8 +129,9 @@ chomp @urls;
 local $| = 1;
 
 my $q = YADA->new({
-    max     => $max // 4,
-    timeout => $timeout // 600,
+    allow_dups  => $dups // 1,
+    max         => $max // 4,
+    timeout     => $timeout // 600,
 });
 
 for my $url (@urls) {
@@ -129,7 +150,9 @@ for my $url (@urls) {
                     followlocation      => $followlocation // 1,
                     maxredirs           => $maxredirs // 5,
                     noprogress          => $quiet,
+                    proxy               => $proxy,
                     referer             => $referer,
+                    tcp_nodelay         => $tcp_nodelay // 0,
                     useragent           => $useragent // qq(yada/$VERSION ($Config{archname}; Perl/$Config{version}) @{[ Net::Curl::version() ]}),
                     verbose             => $verbose,
 
@@ -143,6 +166,7 @@ for my $url (@urls) {
             on_finish   => sub {
                 my ($self) = @_;
                 close $fh;
+                #if ($self->has_error or $self->getinfo(q(response_code)) =~ m{^5[0-9]{2}$}) {
                 if ($self->has_error) {
                     eval { unlink $name };
                 } elsif (${$self->header} =~ m{\bContent-Disposition:\s*attachment;\s*filename=("[^"]*"|[^,"]*)\x{0d}?\x{0a}}isx) {
