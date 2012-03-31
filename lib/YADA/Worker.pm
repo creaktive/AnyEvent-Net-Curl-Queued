@@ -8,6 +8,8 @@ Exactly the same thing as L<AnyEvent::Net::Curl::Queued::Easy>, however, with a 
 =cut
 
 use common::sense;
+use strict;
+
 use Any::Moose;
 
 extends 'AnyEvent::Net::Curl::Queued::Easy';

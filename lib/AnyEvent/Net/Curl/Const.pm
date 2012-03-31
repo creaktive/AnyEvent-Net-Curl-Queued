@@ -25,6 +25,7 @@ For example, you can access C<CURLOPT_TCP_NODELAY> value by supplying any of:
 =cut
 
 use common::sense;
+use strict;
 
 use Carp qw(carp);
 use Memoize;

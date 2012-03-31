@@ -21,6 +21,7 @@ Tracks statistics for L<AnyEvent::Net::Curl::Queued> and L<AnyEvent::Net::Curl::
 =cut
 
 use common::sense;
+use strict;
 
 use Carp qw(confess);
 use Any::Moose;

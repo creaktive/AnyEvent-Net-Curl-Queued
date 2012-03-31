@@ -50,6 +50,7 @@ The class you should overload to fetch stuff your own way.
 =cut
 
 use common::sense;
+use strict;
 
 use Carp qw(carp confess);
 use Digest::SHA;

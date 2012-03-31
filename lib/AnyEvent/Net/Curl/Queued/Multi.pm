@@ -17,6 +17,7 @@ This module extends the L<Net::Curl::Multi> class through L<MooseX::NonMoose> an
 =cut
 
 use common::sense;
+use strict;
 
 use AnyEvent;
 use Carp qw(confess);

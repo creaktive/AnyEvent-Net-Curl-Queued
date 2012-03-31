@@ -89,6 +89,7 @@ It's up to you to extend the base class L<AnyEvent::Net::Curl::Queued::Easy> so 
 =cut
 
 use common::sense;
+use strict;
 
 use AnyEvent;
 use Any::Moose;

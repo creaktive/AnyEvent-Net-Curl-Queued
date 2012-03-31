@@ -37,6 +37,8 @@ For the I<hard things should be possible> side, refer to the complete L<AnyEvent
 =cut
 
 use common::sense;
+use strict;
+
 use Any::Moose;
 
 extends 'AnyEvent::Net::Curl::Queued';
