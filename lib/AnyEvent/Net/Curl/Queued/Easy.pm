@@ -51,6 +51,7 @@ The class you should overload to fetch stuff your own way.
 
 use common::sense;
 use strict;
+use feature qw(switch);
 
 use Carp qw(carp confess);
 use Digest::SHA;
