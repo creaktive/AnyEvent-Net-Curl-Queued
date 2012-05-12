@@ -86,6 +86,19 @@ L<AnyEvent::Net::Curl::Queued> is a glue module to wrap it all together.
 It offers no callbacks and (almost) no default handlers.
 It's up to you to extend the base class L<AnyEvent::Net::Curl::Queued::Easy> so it will actually download something and store it somewhere.
 
+=head2 ALTERNATIVES
+
+As there's more than one way to do it, I'll list the alternatives which can be used to implement batch downloads:
+
+=for :list
+* L<WWW::Mechanize>: no (builtin) parallelism, no (builtin) queueing. Slow, but very powerful for site traversal;
+* L<LWP::UserAgent>: no parallelism, no queueing. L<WWW::Mechanize> is built on top of LWP, by the way;
+* L<LWP::Curl>: L<LWP::UserAgent>-alike interface for L<WWW::Curl>. No parallelism, no queueing. Fast and simple to use;
+* L<HTTP::Tiny>: no parallelism, no queueing. Fast and part of CORE since Perl v5.13.9;
+* L<HTTP::Lite>: no parallelism, no queueing. Also fast;
+* L<AnyEvent::Curl::Multi>: queued parallel downloads via L<WWW::Curl>. Queues are non-lazy, thus large ones can use many RAM;
+* L<Parallel::Downloader>: queued parallel downloads via L<AnyEvent::HTTP>. Very fast and is pure-Perl (compiling event driver is optional). You only access results when the whole batch is done; so huge batches will require lots of RAM to store contents.
+
 =cut
 
 use common::sense;
