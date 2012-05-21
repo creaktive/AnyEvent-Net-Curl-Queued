@@ -1,6 +1,8 @@
 #!perl
 # shamelessly borrowed from Net::Curl t/compat-19multi.t
-use common::sense;
+use strict;
+use utf8;
+use warnings qw(all);
 
 use Test::More;
 
@@ -20,21 +22,21 @@ my $last_fdset = '';
 my $last_cnt = 0;
 
 my $curl = new AnyEvent::Net::Curl::Queued::Easy({ initial_url => $url });
-isa_ok($curl, qw(Net::Curl::Easy AnyEvent::Net::Curl::Queued::Easy));
+isa_ok($curl, qw(AnyEvent::Net::Curl::Queued::Easy));
 can_ok($curl, qw(init));
 
 $curl->init;
 ok($curl->{private} = "foo", "Setting private data");
 
 my $curl2 = new AnyEvent::Net::Curl::Queued::Easy({ initial_url => $url });
-isa_ok($curl2, qw(Net::Curl::Easy AnyEvent::Net::Curl::Queued::Easy));
+isa_ok($curl2, qw(AnyEvent::Net::Curl::Queued::Easy));
 can_ok($curl2, qw(init));
 
 $curl2->init;
 ok($curl2->{private} = 42, "Setting private data");
 
 my $curlm = new AnyEvent::Net::Curl::Queued::Multi;
-isa_ok($curlm, qw(Net::Curl::Multi AnyEvent::Net::Curl::Queued::Multi));
+isa_ok($curlm, qw(AnyEvent::Net::Curl::Queued::Multi));
 
 my @fds = $curlm->fdset;
 ok(@fds == 3 && ref($fds[0]) eq '' && ref($fds[1]) eq '' && ref($fds[2]) eq '', "fdset returns 3 vectors");

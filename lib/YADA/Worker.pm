@@ -7,8 +7,9 @@ Exactly the same thing as L<AnyEvent::Net::Curl::Queued::Easy>, however, with a 
 
 =cut
 
-use common::sense;
 use strict;
+use utf8;
+use warnings qw(all);
 
 use Any::Moose;
 

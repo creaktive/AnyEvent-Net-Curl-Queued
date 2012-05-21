@@ -4,7 +4,9 @@ package AnyEvent::Net::Curl::Queued::Easy;
 =head1 SYNOPSIS
 
     package MyIEDownloader;
-    use common::sense;
+    use strict;
+    use utf8;
+    use warnings qw(all);
 
     use Any::Moose;
     use Net::Curl::Easy qw(/^CURLOPT_/);
@@ -49,8 +51,11 @@ The class you should overload to fetch stuff your own way.
 
 =cut
 
-use common::sense;
 use strict;
+use utf8;
+use warnings qw(all);
+
+use feature qw(switch);
 
 use Carp qw(carp confess);
 use Digest::SHA;
@@ -487,7 +492,7 @@ Complete list of options: L<http://curl.haxx.se/libcurl/c/curl_easy_getinfo.html
 sub getinfo {
     my $self = shift;
 
-    given (ref($_[0])) {
+    for (ref($_[0])) {
         when ('ARRAY') {
             my @val;
             for my $name (@{$_[0]}) {

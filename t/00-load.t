@@ -1,5 +1,7 @@
 #!perl
-use common::sense;
+use strict;
+use utf8;
+use warnings qw(all);
 
 use Test::More tests => 1;
 

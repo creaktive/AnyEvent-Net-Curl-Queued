@@ -1,5 +1,7 @@
 package CrawlApache;
-use common::sense;
+use strict;
+use utf8;
+use warnings qw(all);
 
 use HTML::LinkExtor;
 use Any::Moose;

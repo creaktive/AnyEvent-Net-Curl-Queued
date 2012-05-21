@@ -4,7 +4,9 @@ package YADA;
 =head1 SYNOPSIS
 
     #!/usr/bin/env perl
-    use common::sense;
+    use strict;
+    use utf8;
+    use warnings qw(all);
 
     use YADA;
 
@@ -36,8 +38,9 @@ For the I<hard things should be possible> side, refer to the complete L<AnyEvent
 
 =cut
 
-use common::sense;
 use strict;
+use utf8;
+use warnings qw(all);
 
 use Any::Moose;
 

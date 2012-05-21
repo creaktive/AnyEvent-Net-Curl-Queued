@@ -1,5 +1,7 @@
 #!perl
-use common::sense;
+use strict;
+use utf8;
+use warnings qw(all);
 
 use Test::More;
 
@@ -13,7 +15,7 @@ isa_ok($server, 'Test::HTTP::Server');
 my $n = 5;
 for (1 .. $n) {
     my $q = new AnyEvent::Net::Curl::Queued;
-    isa_ok($q, qw(Net::Curl::Easy AnyEvent::Net::Curl::Queued));
+    isa_ok($q, qw(AnyEvent::Net::Curl::Queued));
 
     $q->append(
         sub {

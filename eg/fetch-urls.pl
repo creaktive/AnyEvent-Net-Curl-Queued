@@ -1,7 +1,9 @@
 #!/usr/bin/env perl
 
 package MyDownloader;
-use common::sense;
+use strict;
+use utf8;
+use warnings qw(all);
 
 use Any::Moose;
 
@@ -40,7 +42,9 @@ __PACKAGE__->meta->make_immutable;
 1;
 
 package main;
-use common::sense;
+use strict;
+use utf8;
+use warnings qw(all);
 
 use Data::Printer;
 

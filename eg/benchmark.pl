@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
-use common::sense;
+use strict;
+use utf8;
+use warnings qw(all);
 
 use AnyEvent;
 use Benchmark qw(cmpthese :hireswallclock);

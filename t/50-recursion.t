@@ -1,6 +1,8 @@
 #!perl
 package MyDownloader;
-use common::sense;
+use strict;
+use utf8;
+use warnings qw(all);
 
 use Any::Moose;
 use Net::Curl::Easy qw(/^CURLOPT_/);
@@ -42,7 +44,9 @@ __PACKAGE__->meta->make_immutable;
 1;
 
 package main;
-use common::sense;
+use strict;
+use utf8;
+use warnings qw(all);
 
 use Test::More;
 
@@ -55,7 +59,7 @@ my $server = Test::HTTP::Server->new;
 isa_ok($server, 'Test::HTTP::Server');
 
 my $q = new AnyEvent::Net::Curl::Queued;
-isa_ok($q, qw(Net::Curl::Easy AnyEvent::Net::Curl::Queued));
+isa_ok($q, qw(AnyEvent::Net::Curl::Queued));
 
 $q->append(
     sub {
@@ -66,7 +70,7 @@ $q->append(
 
                 diag($self->final_url);
 
-                isa_ok($self, qw(MyDownloader AnyEvent::Net::Curl::Queued::Easy));
+                isa_ok($self, qw(MyDownloader));
                 ok($result == 0, 'got CURLE_OK');
                 ok(!$self->has_error, "libcurl message: '$result'");
             },

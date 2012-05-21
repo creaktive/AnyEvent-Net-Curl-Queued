@@ -1,5 +1,7 @@
 #!perl
-use common::sense;
+use strict;
+use utf8;
+use warnings qw(all);
 
 use Test::More;
 
@@ -14,7 +16,7 @@ isa_ok($server, 'Test::HTTP::Server');
 
 my $url = URI->new($server->uri . 'echo/head');
 my $easy = new AnyEvent::Net::Curl::Queued::Easy({ initial_url => $url });
-isa_ok($easy, qw(Net::Curl::Easy AnyEvent::Net::Curl::Queued::Easy));
+isa_ok($easy, qw(AnyEvent::Net::Curl::Queued::Easy));
 can_ok($easy, qw(
     getinfo
     perform
@@ -39,7 +41,7 @@ $easy->setopt({
     PostFields          => 'test1=12345&test2=QWERTY',
 });
 
-ok($easy->perform == Net::Curl::Easy::CURLE_OK, 'perform()');
+ok(($easy->perform // 0) == Net::Curl::Easy::CURLE_OK, 'perform()');
 
 my $buf = ${$easy->data};
 like($buf, qr{^POST\b}, 'POST');

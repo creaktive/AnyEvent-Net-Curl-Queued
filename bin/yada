@@ -2,7 +2,9 @@
 # ABSTRACT: Yet Another Download Accelerator CLI wrapper
 # PODNAME: yada
 use autodie;
-use common::sense;
+use strict;
+use utf8;
+use warnings qw(all);
 
 use Config;
 use File::Copy;

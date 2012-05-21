@@ -6,7 +6,9 @@ package AnyEvent::Net::Curl::Queued;
     #!/usr/bin/env perl
 
     package CrawlApache;
-    use common::sense;
+    use strict;
+    use utf8;
+    use warnings qw(all);
 
     use HTML::LinkExtor;
     use Any::Moose;
@@ -45,7 +47,9 @@ package AnyEvent::Net::Curl::Queued;
     1;
 
     package main;
-    use common::sense;
+    use strict;
+    use utf8;
+    use warnings qw(all);
 
     use AnyEvent::Net::Curl::Queued;
 
@@ -101,8 +105,9 @@ As there's more than one way to do it, I'll list the alternatives which can be u
 
 =cut
 
-use common::sense;
 use strict;
+use utf8;
+use warnings qw(all);
 
 use AnyEvent;
 use Any::Moose;

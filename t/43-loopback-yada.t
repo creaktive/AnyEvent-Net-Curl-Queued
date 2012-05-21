@@ -1,5 +1,7 @@
 #!perl
-use common::sense;
+use strict;
+use utf8;
+use warnings qw(all);
 
 use Test::More;
 
@@ -11,7 +13,7 @@ my $server = Test::HTTP::Server->new;
 isa_ok($server, 'Test::HTTP::Server');
 
 my $q = YADA->new;
-isa_ok($q, qw(AnyEvent::Net::Curl::Queued YADA));
+isa_ok($q, qw(YADA));
 
 can_ok($q, qw(append wait));
 
@@ -31,7 +33,7 @@ for my $j (1 .. 10) {
                 on_finish   => sub {
                     my ($self, $result) = @_;
 
-                    isa_ok($self, qw(AnyEvent::Net::Curl::Queued::Easy YADA::Worker));
+                    isa_ok($self, qw(YADA::Worker));
 
                     can_ok($self, qw(
                         data
