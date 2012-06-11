@@ -2,11 +2,24 @@ package CrawlApache;
 use strict;
 use utf8;
 use warnings qw(all);
+use feature qw(say);
 
-use HTML::LinkExtor;
 use Any::Moose;
+use Web::Scraper::LibXML;
 
 extends 'YADA::Worker';
+
+has scrap => (
+    is      => 'ro',
+    isa     => 'Web::Scraper',
+    default => sub {
+        scraper {
+            process q(//a),
+                q(links[]) => q(@href)
+        };
+    },
+    lazy    => 1,
+);
 
 after finish => sub {
     my ($self, $result) = @_;
@@ -17,18 +30,24 @@ after finish => sub {
         not $self->has_error
         and $self->getinfo('content_type') =~ m{^text/html}
     ) {
-        my @links;
-
-        HTML::LinkExtor->new(sub {
-            my ($tag, %links) = @_;
-            push @links,
-                grep { $_->scheme eq 'http' and $_->host eq 'localhost' }
-                values %links;
-        }, $self->final_url)->parse(${$self->data});
-
-        for my $link (@links) {
+        my $res = $self
+            ->scrap
+            ->scrape(
+                ${$self->data},
+                $self->final_url
+            );
+        for my $link (
+            grep {
+                $_->scheme eq 'http'
+                and $_->host eq 'localhost'
+            } @{$res->{links}}
+        ) {
             $self->queue->prepend(sub {
-                CrawlApache->new({ initial_url => $link, use_stats => 1 });
+                CrawlApache->new({
+                    initial_url => $link,
+                    scrap       => $self->scrap,
+                    use_stats   => 1,
+                });
             });
         }
     }
