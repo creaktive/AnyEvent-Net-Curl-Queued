@@ -22,7 +22,7 @@ after finish => sub {
     my ($self, $result) = @_;
 
     if ($self->has_error) {
-        say "ERROR: $result";
+        print "ERROR: $result\n";
     } else {
         printf "Finished downloading %s: %d bytes\n", $self->final_url, length ${$self->data};
     }
