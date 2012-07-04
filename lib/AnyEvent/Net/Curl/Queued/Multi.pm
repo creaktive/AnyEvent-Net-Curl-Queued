@@ -76,7 +76,7 @@ sub BUILD {
     confess 'Net::Curl::Multi is missing timer callback, rebuild Net::Curl with libcurl 7.16.0 or newer'
         unless $self->can('CURLMOPT_TIMERFUNCTION');
 
-    $self->setopt(Net::Curl::Multi::CURLMOPT_MAXCONNECTS        => $self->max);
+    $self->setopt(Net::Curl::Multi::CURLMOPT_MAXCONNECTS        => $self->max << 2);
     $self->setopt(Net::Curl::Multi::CURLMOPT_SOCKETFUNCTION     => \&_cb_socket);
     $self->setopt(Net::Curl::Multi::CURLMOPT_TIMERFUNCTION      => \&_cb_timer);
 }
