@@ -20,7 +20,7 @@ can_ok($q, qw(append wait));
 for my $j (1 .. 10) {
     for my $i (1 .. 10) {
         my $url = $server->uri . 'echo/head';
-        my $post = "i=$i&j=$j";
+        my $post = qq({"i":$i,"j":$j,"k":"яда"});
         $q->append(sub {
             YADA::Worker->new({
                 initial_url => $url,
@@ -47,7 +47,7 @@ for my $j (1 .. 10) {
                     ok($result == 0, 'got CURLE_OK');
                     ok(!$self->has_error, "libcurl message: '$result'");
 
-                    like(${$self->data}, qr{^POST /echo/head HTTP/1\.[01]}i, 'got data: ' . ${$self->data});
+                    like(${$self->data}, qr{\bContent-Type:\s*application/json\b}i, 'got data: ' . ${$self->data});
                 },
             })
         });

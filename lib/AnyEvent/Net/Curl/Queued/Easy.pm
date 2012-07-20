@@ -59,7 +59,9 @@ use feature qw(switch);
 
 use Carp qw(carp confess);
 use Digest::SHA;
+use Encode;
 use HTTP::Response;
+use JSON::XS;
 use Any::Moose;
 use Any::Moose qw(::Util::TypeConstraints);
 use Any::Moose qw(X::NonMoose);
@@ -428,6 +430,9 @@ Or even shorter:
 
 Complete list of options: L<http://curl.haxx.se/libcurl/c/curl_easy_setopt.html>
 
+If C<CURLOPT_POSTFIELDS> looks like a valid JSON (validates via L<JSON::XS>),
+it is encoded as UTF-8 and C<Content-Type: application/json; charset=utf-8> header is set automatically.
+
 =cut
 
 #around setopt => sub {
@@ -449,6 +454,17 @@ sub setopt {
 
         while (my ($key, $val) = each %param) {
             $key = AnyEvent::Net::Curl::Const::opt($key);
+            if (defined $key and defined $val and $key == Net::Curl::Easy::CURLOPT_POSTFIELDS and $val ne '') {
+                my $tmp;
+                eval { $tmp = encode_utf8($val); decode_json($tmp) };
+                unless ($@) {
+                    $self->SUPER::setopt(
+                        Net::Curl::Easy::CURLOPT_HTTPHEADER,
+                        [ 'Content-Type: application/json; charset=utf-8' ],
+                    );
+                    $val = $tmp;
+                }
+            }
             #$self->$orig($key, $val) if defined $key;
             $self->SUPER::setopt($key, $val) if defined $key;
         }
