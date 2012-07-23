@@ -6,7 +6,7 @@ AnyEvent::Net::Curl::Queued - Any::Moose wrapper for queued downloads via Net::C
 
 =head1 VERSION
 
-version 0.023
+version 0.024
 
 =head1 SYNOPSIS
 
@@ -262,6 +262,11 @@ For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you d
 =head2 wait()
 
 Process queue.
+
+=for Pod::Coverage queue_push
+queue_unshift
+dequeue
+count
 
 =head1 CAVEAT
 
