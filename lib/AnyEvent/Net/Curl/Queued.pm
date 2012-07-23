@@ -188,17 +188,24 @@ Has the following helper methods:
 =cut
 
 has queue       => (
-    traits      => ['Array'],
     is          => 'ro',
     isa         => 'ArrayRef[Any]',
     default     => sub { [] },
-    handles     => {qw{
-        queue_push      push
-        queue_unshift   unshift
-        dequeue         shift
-        count           count
-    }},
 );
+
+# Moose traits are utterly broken!!!
+
+=for Pod::Coverage
+queue_push
+queue_unshift
+dequeue
+count
+=cut
+
+sub queue_push      { push @{shift->queue}, @_ }
+sub queue_unshift   { unshift @{shift->queue}, @_ }
+sub dequeue         { shift @{shift->queue} }
+sub count           { scalar @{shift->queue} }
 
 =attr share
 
