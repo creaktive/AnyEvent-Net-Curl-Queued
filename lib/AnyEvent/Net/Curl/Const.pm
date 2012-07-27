@@ -29,13 +29,10 @@ use utf8;
 use warnings qw(all);
 
 use Carp qw(carp);
-use Memoize;
 use Net::Curl::Easy;
 use Scalar::Util qw(looks_like_number);
 
 # VERSION
-
-memoize($_) for qw(info opt);
 
 =func info($constant_name)
 
@@ -47,17 +44,24 @@ Retrieve numeric value for C<$constant_name> in I<CURLOPT> namespace.
 
 =cut
 
+our (%const_info, %const_opt);
+
 sub info {
-    return _curl_const(CURLINFO => shift);
+    my ($name) = @_;
+    $const_info{$name} = _curl_const(CURLINFO => $name)
+        unless exists $const_info{$name};
+    return $const_info{$name};
 }
 
 sub opt {
-    return _curl_const(CURLOPT => shift);
+    my ($name) = @_;
+    $const_opt{$name} = _curl_const(CURLOPT => $name)
+        unless exists $const_info{$name};
+    return $const_opt{$name};
 }
 
 sub _curl_const {
     my ($suffix => $key) = @_;
-
     return $key if looks_like_number($key);
 
     $key =~ s{^Net::Curl::Easy::}{}i;
