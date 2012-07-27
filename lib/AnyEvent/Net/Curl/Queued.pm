@@ -100,8 +100,43 @@ As there's more than one way to do it, I'll list the alternatives which can be u
 * L<LWP::Curl>: L<LWP::UserAgent>-alike interface for L<WWW::Curl>. No parallelism, no queueing. Fast and simple to use;
 * L<HTTP::Tiny>: no parallelism, no queueing. Fast and part of CORE since Perl v5.13.9;
 * L<HTTP::Lite>: no parallelism, no queueing. Also fast;
+* L<Furl>: no parallelism, no queueing. B<Very> fast;
 * L<AnyEvent::Curl::Multi>: queued parallel downloads via L<WWW::Curl>. Queues are non-lazy, thus large ones can use many RAM;
 * L<Parallel::Downloader>: queued parallel downloads via L<AnyEvent::HTTP>. Very fast and is pure-Perl (compiling event driver is optional). You only access results when the whole batch is done; so huge batches will require lots of RAM to store contents.
+
+=head2 BENCHMARK
+
+Obviously, the bottleneck of any kind of download agent is the connection itself.
+However, socket handling and header parsing add a lots of overhead.
+
+The script F<eg/benchmark.pl> compares L<AnyEvent::Net::Curl::Queued> against several other download agents.
+Only L<AnyEvent::Net::Curl::Queued> itself, L<AnyEvent::Curl::Multi>, L<Parallel::Downloader> and L<lftp|http://lftp.yar.ru/> support parallel connections natively;
+thus, L<Parallel::ForkManager> is used to reproduce the same behaviour for the remaining agents.
+Both L<AnyEvent::Curl::Multi> and L<LWP::Curl> are frontends for L<WWW::Curl>.
+L<Parallel::Downloader> uses L<AnyEvent::HTTP> as it's backend.
+
+The download target is a copy of the L<Apache documentation|http://httpd.apache.org/docs/2.2/> on a local Apache server.
+The test platform configuration:
+
+=for :list
+* Intel® Core™ i7-2600 CPU @ 3.40GHz with 8 GB RAM;
+* Ubuntu 11.10 (64-bit);
+* Perl v5.16.2 (installed via L<perlbrew>);
+* libcurl 7.26.0 (without AsynchDNS, which slows down L<curl_easy_init()|http://curl.haxx.se/libcurl/c/curl_easy_init.html>).
+
+                              Request rate   W::M    LWP  AE::C::M  H::Lite  H::Tiny  P::D  YADA  lftp  Furl  wget  curl  L::Curl
+    WWW::Mechanize v1.72             265/s     --   -61%      -86%     -86%     -87%  -90%  -91%  -91%  -95%  -96%  -97%     -97%
+    LWP::UserAgent v6.04             674/s   154%     --      -63%     -64%     -67%  -75%  -77%  -78%  -88%  -89%  -91%     -91%
+    AnyEvent::Curl::Multi v1.1      1850/s   596%   174%        --      -1%     -10%  -31%  -38%  -39%  -66%  -71%  -76%     -77%
+    HTTP::Lite v2.4                 1860/s   601%   176%        1%       --      -9%  -31%  -38%  -39%  -66%  -71%  -76%     -77%
+    HTTP::Tiny v0.017               2040/s   670%   203%       11%      10%       --  -24%  -31%  -33%  -63%  -68%  -74%     -74%
+    Parallel::Downloader v0.121560  2680/s   909%   297%       45%      44%      31%    --  -10%  -12%  -51%  -58%  -65%     -66%
+    YADA v0.025                     2980/s  1023%   342%       61%      60%      46%   11%    --   -2%  -45%  -53%  -61%     -62%
+    lftp v4.3.1                     3030/s  1041%   349%       64%      63%      48%   13%    2%    --  -45%  -53%  -61%     -62%
+    Furl v0.40                      5460/s  1959%   710%      196%     194%     168%  104%   83%   80%    --  -15%  -29%     -31%
+    wget v1.12                      6400/s  2312%   849%      247%     244%     213%  139%  115%  111%   17%    --  -17%     -19%
+    curl v7.26.0                    7720/s  2809%  1044%      318%     315%     278%  188%  159%  155%   41%   21%    --      -3%
+    LWP::Curl v0.12                 7930/s  2890%  1076%      330%     327%     288%  196%  166%  162%   45%   24%    3%       --
 
 =cut
 

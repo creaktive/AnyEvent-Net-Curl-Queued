@@ -28,7 +28,7 @@ after finish => sub {
 
     if (
         not $self->has_error
-        and $self->getinfo('content_type') =~ m{^text/html}
+        and $self->getinfo('content_type') =~ m{^text/html}x
     ) {
         my $res = $self
             ->scrap

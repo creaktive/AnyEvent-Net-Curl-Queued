@@ -33,7 +33,7 @@ around has_error => sub {
     my $self = shift;
 
     return 1 if $self->$orig(@_);
-    return 1 if $self->getinfo('response_code') =~ m{^5[0-9]{2}$};
+    return 1 if $self->getinfo('response_code') =~ m{^5[0-9]{2}$}x;
 };
 
 no Any::Moose;
@@ -46,6 +46,7 @@ use strict;
 use utf8;
 use warnings qw(all);
 
+use Carp;
 use Data::Printer;
 
 use YADA;
@@ -56,7 +57,7 @@ my $q = YADA->new({
 });
 
 open(my $fh, '<', 'queue')
-    or die "can't open queue: $!";
+    or croak "can't open queue: $!";
 while (my $url = <$fh>) {
     chomp $url;
 
