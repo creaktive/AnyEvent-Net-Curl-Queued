@@ -1,3 +1,5 @@
+=pod
+
 =encoding utf8
 
 =head1 NAME
@@ -6,7 +8,7 @@ AnyEvent::Net::Curl::Queued - Any::Moose wrapper for queued downloads via Net::C
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 SYNOPSIS
 

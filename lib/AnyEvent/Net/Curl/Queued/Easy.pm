@@ -123,6 +123,14 @@ Optionally encapsulate the response in L<HTTP::Response>.
 
 has http_response => (is => 'ro', isa => 'Bool', default => 0);
 
+=attr post_content
+
+Cache POST content to perform retries.
+
+=cut
+
+has post_content => (is => 'rw', isa => 'Str', default => '');
+
 =attr initial_url
 
 URL to fetch (string).
@@ -367,23 +375,6 @@ sub finish {
 Clones the instance, for re-enqueuing purposes.
 
 You are supposed to build your own stuff after/around/before this method using L<method modifiers|Moose::Manual::MethodModifiers>.
-For example, to implement proper POST re-enqueuing:
-
-    has method => (is => 'ro', isa => 'Str', default => 'GET');
-    has post_content => (is => 'ro', isa => 'Str');
-
-    ...;
-
-    around clone => sub {
-        my $orig = shift;
-        my $self = shift;
-        my $param = shift;
-
-        $param->{method} = $self->method;
-        $param->{post_content} = $self->post_content;
-
-        return $self->$orig($param);
-    };
 
 =cut
 
@@ -406,7 +397,14 @@ sub clone {
     $param->{on_init}   = $self->on_init if ref($self->on_init) eq 'CODE';
     $param->{on_finish} = $self->on_finish if ref($self->on_finish) eq 'CODE';
 
-    return sub { $class->new($param) };
+    my $post_content = $self->post_content;
+    return ($post_content eq '')
+        ? sub { $class->new($param) }
+        : sub {
+            my $new = $class->new($param);
+            $new->setopt(Net::Curl::Easy::CURLOPT_POSTFIELDS, $post_content);
+            return $new;
+        };
 }
 
 =method setopt(OPTION => VALUE [, OPTION => VALUE])
@@ -456,6 +454,8 @@ sub setopt {
         while (my ($key, $val) = each %param) {
             $key = AnyEvent::Net::Curl::Const::opt($key);
             if (defined $key and defined $val and $key == Net::Curl::Easy::CURLOPT_POSTFIELDS and $val ne '') {
+                $self->post_content($val);
+
                 my $tmp;
                 eval { $tmp = encode_utf8($val); decode_json($tmp) };
                 unless ($@) {
