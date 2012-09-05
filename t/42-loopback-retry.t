@@ -5,40 +5,11 @@ use utf8;
 use warnings qw(all);
 
 use Any::Moose;
-use Net::Curl::Easy qw(/^CURLOPT_/);
 
 extends 'AnyEvent::Net::Curl::Queued::Easy';
 
-has cb      => (is => 'ro', isa => 'CodeRef', required => 1);
-has post    => (is => 'ro', isa => 'Str', required => 1);
-
-after init => sub {
-    my ($self) = @_;
-
-    $self->sign($self->post);
-    $self->setopt(CURLOPT_POSTFIELDS, $self->post);
-};
-
-around clone => sub {
-    my $orig = shift;
-    my $self = shift;
-    my $param = shift;
-
-    $param->{$_} = $self->$_
-        for qw(
-            cb
-            post
-        );
-
-    return $self->$orig($param);
-};
-
 around has_error => sub {
     return 1;
-};
-
-after finish => sub {
-    $_[0]->cb->(@_);
 };
 
 no Any::Moose;
@@ -70,8 +41,13 @@ for my $i (1 .. $n) {
     $q->append(sub {
         MyDownloader->new({
             initial_url => $url,
-            post        => "i=$i",
-            cb          => sub {
+            on_init     => sub {
+                my ($self) = @_;
+                my $q = "i=$i";
+                $self->sign($q);
+                $self->setopt(CURLOPT_POSTFIELDS => $q);
+            },
+            on_finish   => sub {
                 my ($self, $result) = @_;
 
                 isa_ok($self, qw(MyDownloader));
