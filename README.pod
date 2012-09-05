@@ -241,25 +241,21 @@ L<Net::Curl::Multi> instance.
 C<ArrayRef> to the queue.
 Has the following helper methods:
 
-=over 4
+=head2 queue_push
 
-=item *
+Append item at the end of the queue.
 
-queue_push: append item at the end of the queue;
+=head2 queue_unshift
 
-=item *
+Prepend item at the top of the queue.
 
-queue_unshift: prepend item at the top of the queue;
+=head2 dequeue
 
-=item *
+Shift item from the top of the queue.
 
-dequeue: shift item from the top of the queue;
+=head2 count
 
-=item *
-
-count: number of items in queue.
-
-=back
+Number of items in queue.
 
 =head2 share
 
@@ -316,11 +312,6 @@ For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you d
 =head2 wait()
 
 Process queue.
-
-=for Pod::Coverage queue_push
-queue_unshift
-dequeue
-count
 
 =head1 CAVEAT
 

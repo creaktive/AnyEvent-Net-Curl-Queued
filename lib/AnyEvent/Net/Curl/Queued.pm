@@ -214,11 +214,21 @@ has multi       => (is => 'rw', isa => 'AnyEvent::Net::Curl::Queued::Multi');
 C<ArrayRef> to the queue.
 Has the following helper methods:
 
-=for :list
-* queue_push: append item at the end of the queue;
-* queue_unshift: prepend item at the top of the queue;
-* dequeue: shift item from the top of the queue;
-* count: number of items in queue.
+=attr queue_push
+
+Append item at the end of the queue.
+
+=attr queue_unshift
+
+Prepend item at the top of the queue.
+
+=attr dequeue
+
+Shift item from the top of the queue.
+
+=attr count
+
+Number of items in queue.
 
 =cut
 
@@ -228,14 +238,7 @@ has queue       => (
     default     => sub { [] },
 );
 
-# Moose traits are utterly broken!!!
-
-=for Pod::Coverage
-queue_push
-queue_unshift
-dequeue
-count
-=cut
+# Mouse traits are utterly broken!!!
 
 sub queue_push      { push @{shift->queue}, @_ }
 sub queue_unshift   { unshift @{shift->queue}, @_ }
