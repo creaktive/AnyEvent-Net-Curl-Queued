@@ -56,7 +56,7 @@ sub info {
 sub opt {
     my ($name) = @_;
     $const_opt{$name} = _curl_const(CURLOPT => $name)
-        unless exists $const_info{$name};
+        unless exists $const_opt{$name};
     return $const_opt{$name};
 }
 

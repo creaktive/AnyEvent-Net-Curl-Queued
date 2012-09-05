@@ -4,6 +4,7 @@ use utf8;
 use warnings qw(all);
 
 use Test::More;
+use Test::Warn;
 
 use_ok('AnyEvent::Net::Curl::Const');
 use Net::Curl::Easy;
@@ -37,4 +38,9 @@ ok($value = AnyEvent::Net::Curl::Const::info($_), "'$_' defined")
         effective_url
     );
 
-done_testing(13);
+warning_like
+    { AnyEvent::Net::Curl::Const::info('no_such_constant') }
+    [qr{Invalid libcurl constant: CURLINFO_NO_SUCH_CONSTANT}],
+    'undefined constant';
+
+done_testing(14);
