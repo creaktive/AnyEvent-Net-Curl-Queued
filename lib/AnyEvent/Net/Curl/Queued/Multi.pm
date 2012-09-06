@@ -223,7 +223,7 @@ sub add_handle {
     # persistent connections and server returned data right away)
     # and it could confuse our application -- it would appear to
     # have finished before it started.
-    AE::timer 0, 0, sub {
+    AE::postpone {
         $self->socket_action;
     };
 
