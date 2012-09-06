@@ -3,14 +3,16 @@ use strict;
 use utf8;
 use warnings qw(all);
 
+use lib qw(inc);
+
 use Test::More;
 
 use_ok('YADA');
 use_ok('YADA::Worker');
-use_ok('Test::HTTP::Server');
+use_ok('Test::HTTP::AnyEvent::Server');
 
-my $server = Test::HTTP::Server->new;
-isa_ok($server, 'Test::HTTP::Server');
+my $server = Test::HTTP::AnyEvent::Server->new;
+isa_ok($server, 'Test::HTTP::AnyEvent::Server');
 
 my $q = YADA->new;
 isa_ok($q, qw(YADA));

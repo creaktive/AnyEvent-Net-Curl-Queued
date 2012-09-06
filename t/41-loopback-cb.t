@@ -3,14 +3,16 @@ use strict;
 use utf8;
 use warnings qw(all);
 
+use lib qw(inc);
+
 use Test::More;
 
 use_ok('AnyEvent::Net::Curl::Queued');
 use_ok('AnyEvent::Net::Curl::Queued::Easy');
-use_ok('Test::HTTP::Server');
+use_ok('Test::HTTP::AnyEvent::Server');
 
-my $server = Test::HTTP::Server->new;
-isa_ok($server, 'Test::HTTP::Server');
+my $server = Test::HTTP::AnyEvent::Server->new;
+isa_ok($server, 'Test::HTTP::AnyEvent::Server');
 
 my $q = AnyEvent::Net::Curl::Queued->new;
 isa_ok($q, 'AnyEvent::Net::Curl::Queued');
