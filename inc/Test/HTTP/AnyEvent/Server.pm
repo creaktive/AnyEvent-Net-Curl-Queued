@@ -113,7 +113,7 @@ sub _reply {
         200 => 'OK',
         HTTP::Headers->new(
             Connection      => 'close',
-            Content_Type    => 'text/html; charset=utf-8',
+            Content_Type    => 'text/plain',
             Server          => __PACKAGE__ . "/$Test::HTTP::AnyEvent::Server::VERSION AnyEvent/$AE::VERSION Perl/$] ($^O)",
         )
     );
