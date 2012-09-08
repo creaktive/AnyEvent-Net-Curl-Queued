@@ -69,6 +69,7 @@ my @names = qw(
     primary_ip
     response_code
     size_download
+    INVALID.NAME
 );
 
 my $info = {
@@ -88,10 +89,18 @@ my @info = $easy->getinfo(\@names);
 
 my $i = 0;
 for (@names) {
-    ok($info->{$_} eq $info2->{$_}, "field '$_' match for getinfo(HASH)");
-    ok($info->{$_} eq $info[$i++], "field '$_' match for getinfo(ARRAY)");
+    if (m{^\w+$}) {
+        ok($info->{$_} eq $info2->{$_}, "field '$_' match for getinfo(HASH)");
+        ok($info->{$_} eq $info[$i], "field '$_' match for getinfo(ARRAY)");
+    } else {
+        is($info->{$_}, 0, 'getinfo(HASHREF) with INVALID.NAME');
+        is($info2->{$_}, undef, 'getinfo(HASH) with INVALID.NAME');
+        is($info[$i], undef, 'getinfo(ARRAY) with INVALID.NAME');
+    }
+    ++$i;
 }
 
 is($easy->getinfo($easy), undef, 'getinfo(bad object)');
+is($easy->getinfo('INVALID.NAME'), undef, 'getinfo("INVALID.NAME")');
 
-done_testing(24);
+done_testing(28);
