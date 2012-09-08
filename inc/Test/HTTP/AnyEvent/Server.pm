@@ -136,6 +136,13 @@ sub _reply {
                 );
             } when (m{^/echo/body$}x) {
                 $res->content($content);
+            } when (m{^/delay/(\d+)$}x) {
+                $res->content(scalar localtime);
+                AE::timer $1, 0, sub {
+                    $h->push_write($res->as_string("\015\012"));
+                    _cleanup($h);
+                };
+                return;
             } default {
                 $res->code(404);
                 $res->message('Not Found');
