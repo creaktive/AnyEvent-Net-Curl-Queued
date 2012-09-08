@@ -360,12 +360,14 @@ sub add {
     $worker->init;
 
     # check if already processed
-    if (not $self->allow_dups and not $worker->force) {
-        return if ++$self->unique->{$worker->unique} > 1;
+    if (
+        $self->allow_dups
+        or $worker->force
+        or ++$self->unique->{$worker->unique} == 1
+    ) {
+        # fire
+        $self->multi->add_handle($worker);
     }
-
-    # fire
-    $self->multi->add_handle($worker);
 }
 
 =method append($worker)
@@ -431,7 +433,9 @@ sub wait {
 
 =head1 CAVEAT
 
-The I<"Attempt to free unreferenced scalar: SV 0xdeadbeef during global destruction."> message on finalization is mostly harmless.
+=for :list
+* If you mix in C<fork()> calls you may get the I<"Attempt to free unreferenced scalar: SV 0xdeadbeef during global destruction."> message on finalization.
+* Many sources suggest to compile L<libcurl|http://curl.haxx.se/> with L<c-ares|http://c-ares.haxx.se/> support. This only improves performance if you are supposed to do many DNS resolutions (e.g. access many hosts). If you are fetching many documents from a single server, C<c-ares> initialization will actually slow down the whole process!
 
 =head1 SEE ALSO
 
