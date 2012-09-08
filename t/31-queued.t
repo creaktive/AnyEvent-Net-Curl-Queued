@@ -50,7 +50,12 @@ for my $method (qw(append prepend)) {
         $q->$method(
             sub {
                 AnyEvent::Net::Curl::Queued::Easy->new({
-                    initial_url => $server->uri . 'repeat/' . ($i * 10) . '/' . $method,
+                    initial_url => $server->uri . 'repeat/' . ($i * 1024) . '/' . $method,
+                    on_init     => sub {
+                        shift->setopt(
+                            max_recv_speed_large    => 50 * 1024,   # slow down so the CURLMOPT_TIMERFUNCTION is triggered
+                        );
+                    },
                 })
             }
         );

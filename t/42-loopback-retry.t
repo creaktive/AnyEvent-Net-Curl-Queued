@@ -68,10 +68,10 @@ for my $i (1 .. $n) {
 
                 like(${$self->data}, qr{^POST /echo/head HTTP/1\.[01]}i, 'got data: ' . ${$self->data});
             },
-            retry       => 3,
+            retry       => 5,
         })
     });
 }
 $q->cv->wait;
 
-done_testing(5 + 6 * $n * 3);
+done_testing(5 + 6 * $n * 5);

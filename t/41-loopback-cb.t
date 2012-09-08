@@ -25,17 +25,20 @@ for my $i (1 .. $n) {
     my $post = "i=$i";
     $q->append(sub {
         AnyEvent::Net::Curl::Queued::Easy->new({
+            http_response => 1,
             initial_url => $url,
             on_init     => sub {
                 my ($self) = @_;
 
                 $self->sign($post);
-                $self->setopt(postfields => $post);
+                $self->setopt({ postfields => $post });
             },
             on_finish   => sub {
                 my ($self, $result) = @_;
 
                 isa_ok($self, qw(AnyEvent::Net::Curl::Queued::Easy));
+                isa_ok($self->res, qw(HTTP::Response));
+                ok($self->res->code == 200, 'HTTP 200');
 
                 can_ok($self, qw(
                     data
@@ -49,11 +52,12 @@ for my $i (1 .. $n) {
                 ok($result == 0, 'got CURLE_OK');
                 ok(!$self->has_error, "libcurl message: '$result'");
 
-                like(${$self->data}, qr{^POST /echo/head HTTP/1\.[01]}i, 'got data: ' . ${$self->data});
+                like($self->res->content, qr{^POST /echo/head HTTP/1\.[01]}i, 'got data: ' . $self->res->content);
             },
+            use_stats   => 1,
         })
     });
 }
 $q->cv->wait;
 
-done_testing(6 + 6 * $n);
+done_testing(6 + 8 * $n);

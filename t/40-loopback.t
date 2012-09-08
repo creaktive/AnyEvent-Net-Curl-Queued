@@ -15,7 +15,6 @@ has post    => (is => 'ro', isa => 'Str', required => 1);
 after init => sub {
     my ($self) = @_;
 
-    $self->sign($self->post);
     $self->setopt(CURLOPT_POSTFIELDS, $self->post);
 };
 
@@ -43,7 +42,7 @@ use_ok('Test::HTTP::AnyEvent::Server');
 my $server = Test::HTTP::AnyEvent::Server->new;
 isa_ok($server, 'Test::HTTP::AnyEvent::Server');
 
-my $q = AnyEvent::Net::Curl::Queued->new;
+my $q = AnyEvent::Net::Curl::Queued->new({ allow_dups => 1 });
 isa_ok($q, 'AnyEvent::Net::Curl::Queued');
 
 can_ok($q, qw(append prepend cv));

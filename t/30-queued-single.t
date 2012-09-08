@@ -49,7 +49,7 @@ $q->append(
     AnyEvent::Net::Curl::Queued::Easy->new({
         initial_url => $server->uri . 'echo/head',
     })
-) for 1 .. 2; # test deduplication by URL
+) for 1 .. 10; # test deduplication by URL
 
 $q->wait;
 
