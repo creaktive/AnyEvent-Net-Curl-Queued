@@ -21,7 +21,7 @@ can_ok($q, qw(append prepend cv));
 
 my $n = 50;
 for my $i (1 .. $n) {
-    my $url = $server->uri . 'echo/head';
+    my $url = $server->uri . 'echo/body';
     my $post = "i=$i";
     $q->append(sub {
         AnyEvent::Net::Curl::Queued::Easy->new({
@@ -52,7 +52,7 @@ for my $i (1 .. $n) {
                 ok($result == 0, 'got CURLE_OK');
                 ok(!$self->has_error, "libcurl message: '$result'");
 
-                like($self->res->content, qr{^POST /echo/head HTTP/1\.[01]}i, 'got data: ' . $self->res->content);
+                is($self->res->content, $post, 'got data: ' . $self->res->content);
             },
             use_stats   => 1,
         })

@@ -14,15 +14,23 @@ use HTTP::Response;
 
 #$AnyEvent::Log::FILTER->level('debug');
 
-our %pool;
+our (%pool, %timer);
 our $VERSION = '0.001';
+
+=head1 METHODS
+
+=head2 new
+
+Create new instance.
+
+=cut
 
 sub new {
     my $class = shift;
     my $self = {
         address     => '127.0.0.1',
         port        => undef,
-        maxconn     => 100,
+        maxconn     => 10,
         timeout     => 10,
     };
 
@@ -83,28 +91,44 @@ sub new {
     return bless $self => $class;
 }
 
+=head2 uri
+
+Return URI of a newly created server.
+
+=cut
+
 sub uri {
     my ($self) = @_;
     return "http://$self->{address}:$self->{port}/";
 }
 
-sub port {
-    my ($self) = @_;
-    return $self->{port};
-}
+=head1 INTERNAL FUNCTIONS
+
+=head2 _cleanup
+
+Close descriptor and shutdown connection.
+
+=cut
 
 sub _cleanup {
     my ($h, $fatal, $msg) = @_;
     AE::log debug => "closing connection\n";
-    my $id = fileno($h->{fh});
-    delete $pool{$id} if defined $id;
     eval {
         no warnings;    ## no critic
+
+        my $id = fileno($h->{fh});
+        delete $pool{$id};
         shutdown $h->{fh}, 2;
     };
     $h->destroy;
     return;
 }
+
+=head2 _reply
+
+Issue HTTP reply to HTTP request.
+
+=cut
 
 sub _reply {
     my ($h, $req, $hdr, $content) = @_;
@@ -120,7 +144,7 @@ sub _reply {
     $res->date(time);
     $res->protocol('HTTP/1.0');
 
-    if ($req =~ m{^(GET|HEAD|POST|PUT)\s+(.+)\s+(HTTP/1\.[01])$}ix) {
+    if ($req =~ m{^(GET|POST)\s+(.+)\s+(HTTP/1\.[01])$}ix) {
         my ($method, $uri, $protocol) = ($1, $2, $3);
         AE::log debug => "sending response\n";
         for ($uri) {
@@ -137,8 +161,10 @@ sub _reply {
             } when (m{^/echo/body$}x) {
                 $res->content($content);
             } when (m{^/delay/(\d+)$}x) {
-                $res->content(scalar localtime);
-                AE::timer $1, 0, sub {
+                $res->content('issued ' . scalar localtime);
+                $timer{$h} = AE::timer $1, 0, sub {
+                    delete $timer{$h};
+                    AE::log debug => "delayed response\n";
                     $h->push_write($res->as_string("\015\012"));
                     _cleanup($h);
                 };

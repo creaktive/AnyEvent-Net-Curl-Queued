@@ -42,8 +42,20 @@ $q->append(sub {
     })
 });
 
+$q->append(sub {
+    AnyEvent::Net::Curl::Queued::Easy->new({
+        initial_url => $server->uri . 'delay/1',
+        on_finish   => sub {
+            my ($self, $result) = @_;
+            ok($result == 0, 'got CURLE_OK');
+            like(${$self->data}, qr{^issued\s+}i, 'got data: ' . ${$self->data});
+        },
+        retry       => 3,
+    })
+});
+
 $q->wait;
 
-ok($q->completed == 3, 'retries detected');
+ok($q->completed == 3 + 1, 'retries detected');
 
-done_testing(4);
+done_testing(6);
