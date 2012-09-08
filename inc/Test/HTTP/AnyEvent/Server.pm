@@ -1,9 +1,26 @@
 package Test::HTTP::AnyEvent::Server;
+# ABSTRACT: Test::HTTP::Server, the asynchronous way
+
+=head1 SYNOPSIS
+
+    use Test::HTTP::AnyEvent::Server;
+
+    my $server = Test::HTTP::AnyEvent::Server->new;
+
+    AE::cv->wait;
+
+=head1 DESCRIPTION
+
+This package provides a simple B<NON>-forking HTTP server which can be used for testing HTTP clients.
+
+=cut
+
 use feature qw(switch);
 use strict;
 use utf8;
 use warnings qw(all);
 
+use Any::Moose;
 use AnyEvent;
 use AnyEvent::Handle;
 use AnyEvent::Log;
@@ -15,30 +32,22 @@ use HTTP::Response;
 #$AnyEvent::Log::FILTER->level('debug');
 
 our (%pool, %timer);
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
-=head1 METHODS
+has address     => (is => 'ro', isa => 'Str', default => '127.0.0.1', writer => 'set_address');
+has port        => (is => 'ro', isa => 'Int', writer => 'set_port');
+has maxconn     => (is => 'ro', isa => 'Int', default => 10);
+has timeout     => (is => 'ro', isa => 'Int', default => 10);
+has server      => (is => 'ro', isa => 'Ref', writer => 'set_server');
 
-=head2 new
+sub BUILD {
+    my ($self) = @_;
 
-Create new instance.
-
-=cut
-
-sub new {
-    my $class = shift;
-    my $self = {
-        address     => '127.0.0.1',
-        port        => undef,
-        maxconn     => 10,
-        timeout     => 10,
-    };
-
-    $self->{server} = tcp_server(
-        $self->{address} => $self->{port},
+    $self->set_server(tcp_server(
+        $self->address => $self->port,
         sub {
             my ($fh, $host, $port) = @_;
-            if (scalar keys %pool > $self->{maxconn}) {
+            if (scalar keys %pool > $self->maxconn) {
                 AE::log error =>
                     "deny connection from $host:$port (too many connections)\n";
                 return;
@@ -51,7 +60,7 @@ sub new {
                 fh          => $fh,
                 on_eof      => \&_cleanup,
                 on_error    => \&_cleanup,
-                timeout     => $self->{timeout},
+                timeout     => $self->timeout,
             );
 
             $pool{fileno($fh)} = $h;
@@ -82,14 +91,20 @@ sub new {
                 }
             });
         } => sub {
-            ($self->{fh}, $self->{address}, $self->{port}) = @_;
+            my (undef, $address, $port) = @_;
+            $self->set_address($address);
+            $self->set_port($port);
             AE::log info =>
-                "bound to http://$self->{address}:$self->{port}/";
+                "bound to http://$address:$port/";
         }
-    );
-
-    return bless $self => $class;
+    ));
 }
+
+=head1 METHODS
+
+=head2 new
+
+Create a new instance.
 
 =head2 uri
 
@@ -99,7 +114,7 @@ Return URI of a newly created server.
 
 sub uri {
     my ($self) = @_;
-    return "http://$self->{address}:$self->{port}/";
+    return sprintf('http://%s:%d/', $self->address, $self->port);
 }
 
 =head1 INTERNAL FUNCTIONS
@@ -186,5 +201,14 @@ sub _reply {
     _cleanup($h);
     return;
 }
+
+=head1 SEE ALSO
+
+L<Test::HTTP::Server>
+
+=cut
+
+no Any::Moose;
+__PACKAGE__->meta->make_immutable;
 
 1;
