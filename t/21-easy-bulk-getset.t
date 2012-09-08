@@ -3,16 +3,19 @@ use strict;
 use utf8;
 use warnings qw(all);
 
+use lib qw(inc);
+
 use Test::More;
 diag('setopt()/getinfo() are *forced* to fail so warnings are OK here!');
 
+use AnyEvent::Net::Curl::Queued;
 use AnyEvent::Net::Curl::Queued::Easy;
-use Test::HTTP::Server;
+use Test::HTTP::AnyEvent::Server;
 use URI;
 
 use Net::Curl::Easy qw(:constants);
 
-my $server = Test::HTTP::Server->new;
+my $server = Test::HTTP::AnyEvent::Server->new;
 
 my $url = URI->new($server->uri . 'echo/head');
 
@@ -46,7 +49,11 @@ $easy->setopt({
 $easy->setopt();
 $easy->setopt($easy);
 
-ok(($easy->perform // 0) == Net::Curl::Easy::CURLE_OK, 'perform()');
+my $q = new AnyEvent::Net::Curl::Queued;
+$q->prepend($easy);
+$q->wait;
+
+ok($easy->curl_result == Net::Curl::Easy::CURLE_OK, 'perform()');
 
 my $buf = ${$easy->data};
 like($buf, qr{^POST\b}, 'POST');

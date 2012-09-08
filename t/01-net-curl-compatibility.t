@@ -4,16 +4,20 @@ use strict;
 use utf8;
 use warnings qw(all);
 
+use lib qw(inc);
+
 use Test::More;
 
-use Test::HTTP::Server;
+use EV;
+use Test::HTTP::AnyEvent::Server;
 use AnyEvent::Net::Curl::Queued::Easy;
 use AnyEvent::Net::Curl::Queued::Multi;
 
 use Net::Curl::Easy qw(:constants);
 use Net::Curl::Multi qw(:constants);
 
-my $server = Test::HTTP::Server->new;
+my $server = Test::HTTP::AnyEvent::Server->new;
+
 my $url = $server->uri;
 
 my $last_fdset = '';
@@ -73,6 +77,8 @@ ok(2, "The read or write fdset contains two fds (is $cnt)");
 my $active = 2;
 
 while ($active != 0) {
+    EV::run EV::RUN_NOWAIT;
+
     my $ret = $curlm->perform;
     if ($ret != $active) {
         while (my ($msg, $curl, $result) = $curlm->info_read) {
@@ -83,6 +89,8 @@ while ($active != 0) {
         $active = $ret;
     }
     action_wait($curlm);
+
+    EV::run EV::RUN_NOWAIT;
 }
 
 @fds = $curlm->fdset;
