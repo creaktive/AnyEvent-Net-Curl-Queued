@@ -20,6 +20,7 @@ Tracks statistics for L<AnyEvent::Net::Curl::Queued> and L<AnyEvent::Net::Curl::
 
 =cut
 
+use feature qw(switch);
 use strict;
 use utf8;
 use warnings qw(all);
@@ -92,13 +93,15 @@ sub sum {
     my ($self, $from) = @_;
 
     my $is_stats;
-    if ($from->isa('AnyEvent::Net::Curl::Queued::Easy')) {
-        $is_stats = 0;
-    } elsif ($from->isa(__PACKAGE__)) {
-        $is_stats = 1;
+    for (ref $from) {
+        when ('AnyEvent::Net::Curl::Queued::Easy') {
+            $is_stats = 0;
+        } when (__PACKAGE__) {
+            $is_stats = 1;
+        }
     }
 
-    foreach my $type (keys %{$self->stats}) {
+    for my $type (keys %{$self->stats}) {
         $self->stats->{$type} +=
             $is_stats
                 ? $from->stats->{$type}

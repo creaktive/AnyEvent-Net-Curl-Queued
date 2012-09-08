@@ -73,9 +73,6 @@ has timeout     => (is => 'ro', isa => 'Num', default => 60.0);
 sub BUILD {
     my ($self) = @_;
 
-    confess 'Net::Curl::Multi is missing timer callback, rebuild Net::Curl with libcurl 7.16.0 or newer'
-        unless $self->can('CURLMOPT_TIMERFUNCTION');
-
     $self->setopt(Net::Curl::Multi::CURLMOPT_MAXCONNECTS        => $self->max << 2);
     $self->setopt(Net::Curl::Multi::CURLMOPT_SOCKETFUNCTION     => \&_cb_socket);
     $self->setopt(Net::Curl::Multi::CURLMOPT_TIMERFUNCTION      => \&_cb_timer);
@@ -103,16 +100,16 @@ sub _cb_socket {
     my $keep = 0;
 
     # register read event
-    if (($poll == Net::Curl::Multi::CURL_POLL_IN) or ($poll == Net::Curl::Multi::CURL_POLL_INOUT)) {
-        $self->pool->{"r$socket"} //= AE::io $socket, 0, sub {
+    if ($poll & Net::Curl::Multi::CURL_POLL_IN) {
+        $self->pool->{"r$socket"} = AE::io $socket, 0, sub {
             $self->socket_action($socket, Net::Curl::Multi::CURL_CSELECT_IN);
         };
         ++$keep;
     }
 
     # register write event
-    if (($poll == Net::Curl::Multi::CURL_POLL_OUT) or ($poll == Net::Curl::Multi::CURL_POLL_INOUT)) {
-        $self->pool->{"w$socket"} //= AE::io $socket, 1, sub {
+    if ($poll & Net::Curl::Multi::CURL_POLL_OUT) {
+        $self->pool->{"w$socket"} = AE::io $socket, 1, sub {
             $self->socket_action($socket, Net::Curl::Multi::CURL_CSELECT_OUT);
         };
         ++$keep;
@@ -151,8 +148,7 @@ sub _cb_timer {
         # must not wait too long (more than a few seconds perhaps)
         # before you call curl_multi_perform() again.
 
-        $self->timer(AE::timer 1, 1, $cb)
-            if $self->handles > 0;
+        $self->timer(AE::timer 1, 1, $cb);
     } else {
         # This will trigger timeouts if there are any.
         $self->timer(AE::timer $timeout_ms / 1000, 0, $cb);
@@ -177,13 +173,9 @@ sub socket_action {
     $self->active($self->SUPER::socket_action(@_));
 
     my $i = 0;
-    while (my ($msg, $easy, $result) = $self->info_read) {
-        if ($msg == Net::Curl::Multi::CURLMSG_DONE) {
-            $self->remove_handle($easy);
-            $easy->_finish($result);
-        } else {
-            confess "I don't know what to do with message $msg";
-        }
+    while (my (undef, $easy, $result) = $self->info_read) {
+        $self->remove_handle($easy);
+        $easy->_finish($result);
     } continue {
         ++$i;
     }
@@ -205,9 +197,6 @@ Add one handle and kickstart download.
 sub add_handle {
     my $self = shift;
     my $easy = shift;
-
-    confess "Can't _finish()"
-        unless $easy->can('_finish');
 
     #my $r = $self->$orig($easy);
     my $r = $self->SUPER::add_handle($easy);

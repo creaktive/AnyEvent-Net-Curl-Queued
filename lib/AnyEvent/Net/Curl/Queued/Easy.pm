@@ -330,8 +330,8 @@ sub _finish {
     if ($self->http_response) {
         $self->res(
             HTTP::Response->parse(
-                (${$self->header} // "\n")
-                . (${$self->data} // '')
+                ${$self->header}
+                . ${$self->data}
             )
         );
 
@@ -379,10 +379,9 @@ You are supposed to build your own stuff after/around/before this method using L
 =cut
 
 sub clone {
-    my ($self, $param) = @_;
+    my ($self) = @_;
 
-    $param //= {};
-
+    my $param = {};
     my $class = $self->meta->name;
     $param->{$_} = $self->$_()
         for qw(
@@ -453,7 +452,7 @@ sub setopt {
 
         while (my ($key, $val) = each %param) {
             $key = AnyEvent::Net::Curl::Const::opt($key);
-            if (defined $key and defined $val and $key == Net::Curl::Easy::CURLOPT_POSTFIELDS and $val ne '') {
+            if ($key == Net::Curl::Easy::CURLOPT_POSTFIELDS) {
                 $self->post_content($val);
 
                 my $tmp;
@@ -466,8 +465,7 @@ sub setopt {
                     $val = $tmp;
                 }
             }
-            #$self->$orig($key, $val) if defined $key;
-            $self->SUPER::setopt($key, $val) if defined $key;
+            $self->SUPER::setopt($key, $val);
         }
     } else {
         carp "Specify at least one OPTION/VALUE pair!";
