@@ -269,13 +269,15 @@ sub init {
         Net::Curl::Easy::CURLOPT_URL,           $url->as_string,
         Net::Curl::Easy::CURLOPT_WRITEDATA,     \$data,
         Net::Curl::Easy::CURLOPT_WRITEHEADER,   \$header,
+    );
 
-        # common parameters
-        ($self->queue ? (
+    # common parameters
+    if (ref($self->queue) eq 'AnyEvent::Net::Curl::Queued') {
+        $self->setopt(
             Net::Curl::Easy::CURLOPT_SHARE,     $self->queue->share,
             Net::Curl::Easy::CURLOPT_TIMEOUT,   $self->queue->timeout,
-        ) : ()),
-    );
+        );
+    }
 
     # salt
     $self->sign($self->meta->name);
@@ -304,10 +306,8 @@ For example, to retry on server error (HTTP 5xx response code):
 =cut
 
 sub has_error {
-    my ($self) = @_;
-
     # very bad error
-    return ($self->curl_result == Net::Curl::Easy::CURLE_OK) ? 0 : 1;
+    0 + $_[0]->curl_result != Net::Curl::Easy::CURLE_OK;
 }
 
 =method finish($result)
@@ -335,11 +335,9 @@ sub _finish {
             )
         );
 
-        if (my $msg = $self->res->message) {
-            $msg =~ s/^\s+//s;
-            $msg =~ s/\s+$//s;
-            $self->res->message($msg);
-        }
+        my $msg = $self->res->message;
+        $msg =~ s/^\s+|\s+$//s;
+        $self->res->message($msg);
     }
 
     # wrap around the extendible interface
