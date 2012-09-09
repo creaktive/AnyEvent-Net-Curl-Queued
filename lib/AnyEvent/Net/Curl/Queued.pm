@@ -101,16 +101,19 @@ As there's more than one way to do it, I'll list the alternatives which can be u
 * L<HTTP::Tiny>: no parallelism, no queueing. Fast and part of CORE since Perl v5.13.9;
 * L<HTTP::Lite>: no parallelism, no queueing. Also fast;
 * L<Furl>: no parallelism, no queueing. B<Very> fast;
+* L<Mojo::UserAgent>: capable of non-blocking parallel requests, no queueing;
 * L<AnyEvent::Curl::Multi>: queued parallel downloads via L<WWW::Curl>. Queues are non-lazy, thus large ones can use many RAM;
 * L<Parallel::Downloader>: queued parallel downloads via L<AnyEvent::HTTP>. Very fast and is pure-Perl (compiling event driver is optional). You only access results when the whole batch is done; so huge batches will require lots of RAM to store contents.
 
 =head2 BENCHMARK
 
+(see also: L<CPAN modules for making HTTP requests|http://neilb.org/reviews/http-requesters.html>)
+
 Obviously, the bottleneck of any kind of download agent is the connection itself.
 However, socket handling and header parsing add a lots of overhead.
 
 The script F<eg/benchmark.pl> compares L<AnyEvent::Net::Curl::Queued> against several other download agents.
-Only L<AnyEvent::Net::Curl::Queued> itself, L<AnyEvent::Curl::Multi>, L<Parallel::Downloader> and L<lftp|http://lftp.yar.ru/> support parallel connections natively;
+Only L<AnyEvent::Net::Curl::Queued> itself, L<AnyEvent::Curl::Multi>, L<Parallel::Downloader>, L<Mojo::UserAgent> and L<lftp|http://lftp.yar.ru/> support parallel connections natively;
 thus, L<Parallel::ForkManager> is used to reproduce the same behaviour for the remaining agents.
 Both L<AnyEvent::Curl::Multi> and L<LWP::Curl> are frontends for L<WWW::Curl>.
 L<Parallel::Downloader> uses L<AnyEvent::HTTP> as it's backend.
@@ -122,7 +125,7 @@ The test platform configuration:
 * Intel® Core™ i7-2600 CPU @ 3.40GHz with 8 GB RAM;
 * Ubuntu 11.10 (64-bit);
 * Perl v5.16.2 (installed via L<perlbrew>);
-* libcurl 7.26.0 (without AsynchDNS, which slows down L<curl_easy_init()|http://curl.haxx.se/libcurl/c/curl_easy_init.html>).
+* libcurl 7.27.0 (without AsynchDNS, which slows down L<curl_easy_init()|http://curl.haxx.se/libcurl/c/curl_easy_init.html>).
 
                               Request rate   W::M    LWP  AE::C::M  H::Lite  H::Tiny  P::D  YADA  lftp  Furl  wget  curl  L::Curl
     WWW::Mechanize v1.72             265/s     --   -61%      -86%     -86%     -87%  -90%  -91%  -91%  -95%  -96%  -97%     -97%

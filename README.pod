@@ -153,6 +153,10 @@ L<Furl>: no parallelism, no queueing. B<Very> fast;
 
 =item *
 
+L<Mojo::UserAgent>: capable of non-blocking parallel requests, no queueing;
+
+=item *
+
 L<AnyEvent::Curl::Multi>: queued parallel downloads via L<WWW::Curl>. Queues are non-lazy, thus large ones can use many RAM;
 
 =item *
@@ -163,11 +167,13 @@ L<Parallel::Downloader>: queued parallel downloads via L<AnyEvent::HTTP>. Very f
 
 =head2 BENCHMARK
 
+(see also: L<CPAN modules for making HTTP requests|http://neilb.org/reviews/http-requesters.html>)
+
 Obviously, the bottleneck of any kind of download agent is the connection itself.
 However, socket handling and header parsing add a lots of overhead.
 
 The script F<eg/benchmark.pl> compares L<AnyEvent::Net::Curl::Queued> against several other download agents.
-Only L<AnyEvent::Net::Curl::Queued> itself, L<AnyEvent::Curl::Multi>, L<Parallel::Downloader> and L<lftp|http://lftp.yar.ru/> support parallel connections natively;
+Only L<AnyEvent::Net::Curl::Queued> itself, L<AnyEvent::Curl::Multi>, L<Parallel::Downloader>, L<Mojo::UserAgent> and L<lftp|http://lftp.yar.ru/> support parallel connections natively;
 thus, L<Parallel::ForkManager> is used to reproduce the same behaviour for the remaining agents.
 Both L<AnyEvent::Curl::Multi> and L<LWP::Curl> are frontends for L<WWW::Curl>.
 L<Parallel::Downloader> uses L<AnyEvent::HTTP> as it's backend.
@@ -191,7 +197,7 @@ Perl v5.16.2 (installed via L<perlbrew>);
 
 =item *
 
-libcurl 7.26.0 (without AsynchDNS, which slows down L<curl_easy_init()|http://curl.haxx.se/libcurl/c/curl_easy_init.html>).
+libcurl 7.27.0 (without AsynchDNS, which slows down L<curl_easy_init()|http://curl.haxx.se/libcurl/c/curl_easy_init.html>).
 
 =back
 
