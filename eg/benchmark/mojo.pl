@@ -5,26 +5,39 @@ use utf8;
 use warnings qw(all);
 
 use File::Slurp;
+use Mojo::IOLoop;
+use Mojo::URL;
 use Mojo::UserAgent;
-use Parallel::ForkManager;
 
 my $parallel = $ENV{PARALLEL} // 4;
 my @urls = read_file(shift @ARGV, 'chomp' => 1);
 
-my @queue;
-for my $i (0 .. $#urls) {
-    my $j = $i % $parallel;
-    my $url = $urls[$i];
-    push @{$queue[$j]}, $url;
+# stolen from https://metacpan.org/module/Mojolicious::Guides::Cookbook#Non-blocking
+
+# User agent
+my $ua = Mojo::UserAgent->new;
+
+# Crawler
+sub crawl {
+    my $id = shift;
+
+    # Dequeue or wait 0.1 seconds for more URLs
+    return Mojo::IOLoop->timer(0.1 => sub { @urls ? crawl($id) : Mojo::IOLoop->stop })
+        unless my $url = shift @urls;
+
+    # Fetch non-blocking just by adding a callback
+    $ua->get(
+        $url => sub {
+            # Next
+            crawl($id);
+        }
+    );
+
+    return;
 }
 
-my $mojo = Mojo::UserAgent->new;
-my $pm = Parallel::ForkManager->new($parallel);
-for my $queue (@queue) {
-    my $pid = $pm->start and next;
-    for my $url (@{$queue}) {
-        $mojo->get($url);
-    }
-    $pm->finish;
-}
-$pm->wait_all_children;
+# Start a bunch of parallel crawlers sharing the same user agent
+crawl($_) for 1 .. $parallel;
+
+# Start event loop
+Mojo::IOLoop->start;
