@@ -61,7 +61,7 @@ package AnyEvent::Net::Curl::Queued;
 
 =head1 DESCRIPTION
 
-Efficient and flexible batch downloader with a straight-forward interface:
+B<AnyEvent::Net::Curl::Queued> (a.k.a. L<YADA>, I<Yet Another Download Accelerator>) is an efficient and flexible batch downloader with a straight-forward interface capable of:
 
 =for :list
 * create a queue;
@@ -124,22 +124,23 @@ The test platform configuration:
 =for :list
 * Intel® Core™ i7-2600 CPU @ 3.40GHz with 8 GB RAM;
 * Ubuntu 11.10 (64-bit);
-* Perl v5.16.2 (installed via L<perlbrew>);
+* Perl v5.16.1 (installed via L<perlbrew>);
 * libcurl 7.27.0 (without AsynchDNS, which slows down L<curl_easy_init()|http://curl.haxx.se/libcurl/c/curl_easy_init.html>).
 
-                              Request rate   W::M    LWP  AE::C::M  H::Lite  H::Tiny  P::D  YADA  lftp  Furl  wget  curl  L::Curl
-    WWW::Mechanize v1.72             265/s     --   -61%      -86%     -86%     -87%  -90%  -91%  -91%  -95%  -96%  -97%     -97%
-    LWP::UserAgent v6.04             674/s   154%     --      -63%     -64%     -67%  -75%  -77%  -78%  -88%  -89%  -91%     -91%
-    AnyEvent::Curl::Multi v1.1      1850/s   596%   174%        --      -1%     -10%  -31%  -38%  -39%  -66%  -71%  -76%     -77%
-    HTTP::Lite v2.4                 1860/s   601%   176%        1%       --      -9%  -31%  -38%  -39%  -66%  -71%  -76%     -77%
-    HTTP::Tiny v0.017               2040/s   670%   203%       11%      10%       --  -24%  -31%  -33%  -63%  -68%  -74%     -74%
-    Parallel::Downloader v0.121560  2680/s   909%   297%       45%      44%      31%    --  -10%  -12%  -51%  -58%  -65%     -66%
-    YADA v0.025                     2980/s  1023%   342%       61%      60%      46%   11%    --   -2%  -45%  -53%  -61%     -62%
-    lftp v4.3.1                     3030/s  1041%   349%       64%      63%      48%   13%    2%    --  -45%  -53%  -61%     -62%
-    Furl v0.40                      5460/s  1959%   710%      196%     194%     168%  104%   83%   80%    --  -15%  -29%     -31%
-    wget v1.12                      6400/s  2312%   849%      247%     244%     213%  139%  115%  111%   17%    --  -17%     -19%
-    curl v7.26.0                    7720/s  2809%  1044%      318%     315%     278%  188%  159%  155%   41%   21%    --      -3%
-    LWP::Curl v0.12                 7930/s  2890%  1076%      330%     327%     288%  196%  166%  162%   45%   24%    3%       --
+                             Request rate  W::M  LWP Mojo::UA H::Lite H::Tiny AE::C::M P::D lftp YADA Furl wget L::Curl curl
+    WWW::Mechanize v1.72            280/s    -- -62%     -79%    -84%    -85%     -85% -90% -91% -91% -94% -95%    -96% -96%
+    LWP::UserAgent v6.04            727/s  160%   --     -45%    -59%    -61%     -61% -73% -76% -77% -85% -88%    -90% -90%
+    Mojo::UserAgent v3.39          1310/s  370%  81%       --    -26%    -29%     -30% -52% -57% -59% -73% -78%    -81% -82%
+    HTTP::Lite v2.4                1780/s  535% 144%      35%      --     -4%      -6% -35% -42% -44% -63% -71%    -75% -76%
+    HTTP::Tiny v0.017              1850/s  563% 155%      41%      4%      --      -1% -32% -39% -42% -62% -69%    -74% -75%
+    AnyEvent::Curl::Multi v1.1     1880/s  573% 159%      43%      6%      1%       -- -31% -38% -41% -61% -69%    -73% -74%
+    Parallel::Downloader v0.121560 2730/s  875% 275%     107%     53%     47%      45%   -- -11% -14% -44% -55%    -62% -63%
+    lftp v4.3.1                    3050/s  992% 320%     132%     72%     65%      62%  12%   --  -4% -37% -50%    -57% -58%
+    YADA v0.027                    3180/s 1037% 337%     142%     79%     71%      69%  17%   4%   -- -34% -48%    -55% -57%
+    Furl v0.40                     4850/s 1634% 567%     269%    173%    161%     158%  78%  59%  53%   -- -20%    -32% -34%
+    wget v1.12                     6060/s 2065% 733%     361%    241%    227%     222% 122%  98%  90%  25%   --    -15% -17%
+    LWP::Curl v0.12                7090/s 2434% 875%     439%    299%    282%     277% 160% 132% 123%  46%  17%      --  -3%
+    curl v7.27.0                   7310/s 2513% 905%     456%    311%    294%     288% 168% 139% 130%  51%  21%      3%   --
 
 =cut
 
