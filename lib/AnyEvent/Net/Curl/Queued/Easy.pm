@@ -377,9 +377,8 @@ You are supposed to build your own stuff after/around/before this method using L
 =cut
 
 sub clone {
-    my ($self) = @_;
+    my ($self, $param) = @_;
 
-    my $param = {};
     my $class = $self->meta->name;
     $param->{$_} = $self->$_()
         for qw(
