@@ -379,6 +379,9 @@ You are supposed to build your own stuff after/around/before this method using L
 sub clone {
     my ($self, $param) = @_;
 
+    # silently ignore unsupported parameters
+    $param = {} unless 'HASH' eq ref $param;
+
     my $class = $self->meta->name;
     $param->{$_} = $self->$_()
         for qw(

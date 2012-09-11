@@ -8,6 +8,26 @@ use Any::Moose;
 
 extends 'AnyEvent::Net::Curl::Queued::Easy';
 
+has attr1 => (is => 'ro', isa => 'Num', required => 1);
+has attr2 => (is => 'ro', isa => 'Int', required => 1);
+has attr3 => (is => 'rw', isa => 'URI');
+has attr4 => (is => 'rw', isa => 'Str', default => 'A');
+
+around clone => sub {
+    my $orig = shift;
+    my $self = shift;
+    my $param = shift;
+
+    $param->{$_} = $self->$_
+        for qw(
+            attr1
+            attr2
+            attr3
+        );
+
+    return $self->$orig($param);
+};
+
 around has_error => sub {
     return 1;
 };
@@ -42,6 +62,10 @@ for my $i (1 .. $n) {
     my $url = $server->uri . 'echo/head';
     $q->append(sub {
         MyDownloader->new({
+            attr1       => rand,
+            attr2       => $i,
+            attr3       => URI->new($url),
+            attr4       => 'B',
             initial_url => $url,
             on_init     => sub {
                 my ($self) = @_;
@@ -55,12 +79,30 @@ for my $i (1 .. $n) {
                 isa_ok($self, qw(MyDownloader));
 
                 can_ok($self, qw(
+                    attr1
+                    attr2
+                    attr3
+                    clone
                     data
                     final_url
                     has_error
                     header
                     initial_url
                 ));
+
+                ok($self->attr1 >= 0, 'custom attribute 1 is >= 0');
+                ok($self->attr1 < 1, 'custom attribute 1 is < 1');
+
+                ok($self->attr2 == $i, 'custom attribute 2 ok');
+
+                ok(ref($self->attr3) =~ m{^URI\b}, 'custom attribute 3 ok');
+
+                ok(
+                    (($self->retry == 5) and ($self->attr4 =~ /A/))
+                        or
+                    (($self->retry < 5) and ($self->attr4 =~ /B/)),
+                    'custom attribute 4 ok (not cloned!)'
+                );
 
                 ok($self->final_url eq $url, 'initial/final URLs match');
                 ok($result == 0, 'got CURLE_OK');
@@ -74,4 +116,4 @@ for my $i (1 .. $n) {
 }
 $q->cv->wait;
 
-done_testing(5 + 6 * $n * 5);
+done_testing(555);
