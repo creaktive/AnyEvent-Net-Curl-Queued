@@ -127,20 +127,26 @@ The test platform configuration:
 * Perl v5.16.1 (installed via L<perlbrew>);
 * libcurl 7.27.0 (without AsynchDNS, which slows down L<curl_easy_init()|http://curl.haxx.se/libcurl/c/curl_easy_init.html>).
 
-                             Request rate  W::M  LWP Mojo::UA H::Lite H::Tiny AE::C::M P::D lftp YADA Furl wget L::Curl curl
-    WWW::Mechanize v1.72            280/s    -- -62%     -79%    -84%    -85%     -85% -90% -91% -91% -94% -95%    -96% -96%
-    LWP::UserAgent v6.04            727/s  160%   --     -45%    -59%    -61%     -61% -73% -76% -77% -85% -88%    -90% -90%
-    Mojo::UserAgent v3.39          1310/s  370%  81%       --    -26%    -29%     -30% -52% -57% -59% -73% -78%    -81% -82%
-    HTTP::Lite v2.4                1780/s  535% 144%      35%      --     -4%      -6% -35% -42% -44% -63% -71%    -75% -76%
-    HTTP::Tiny v0.017              1850/s  563% 155%      41%      4%      --      -1% -32% -39% -42% -62% -69%    -74% -75%
-    AnyEvent::Curl::Multi v1.1     1880/s  573% 159%      43%      6%      1%       -- -31% -38% -41% -61% -69%    -73% -74%
-    Parallel::Downloader v0.121560 2730/s  875% 275%     107%     53%     47%      45%   -- -11% -14% -44% -55%    -62% -63%
-    lftp v4.3.1                    3050/s  992% 320%     132%     72%     65%      62%  12%   --  -4% -37% -50%    -57% -58%
-    YADA v0.027                    3180/s 1037% 337%     142%     79%     71%      69%  17%   4%   -- -34% -48%    -55% -57%
-    Furl v0.40                     4850/s 1634% 567%     269%    173%    161%     158%  78%  59%  53%   -- -20%    -32% -34%
-    wget v1.12                     6060/s 2065% 733%     361%    241%    227%     222% 122%  98%  90%  25%   --    -15% -17%
-    LWP::Curl v0.12                7090/s 2434% 875%     439%    299%    282%     277% 160% 132% 123%  46%  17%      --  -3%
-    curl v7.27.0                   7310/s 2513% 905%     456%    311%    294%     288% 168% 139% 130%  51%  21%      3%   --
+The script F<eg/benchmark.pl> uses L<Benchmark::Forking> and L<Class::Load> to keep UA modules isolated and loaded only once.
+
+    $ perl benchmark.pl --count 100 --parallel 4 --repeat 5
+
+                             Request rate WWW::M LWP::UA Mojo::UA HTTP::Tiny HTTP::Lite AE::C::M P::D lftp YADA Furl wget curl LWP::Curl
+    WWW::Mechanize v1.72            303/s     --    -65%     -80%       -82%       -85%     -86% -91% -91% -93% -95% -96% -96%      -97%
+    LWP::UserAgent v6.04            873/s   187%      --     -44%       -48%       -58%     -60% -74% -74% -79% -87% -89% -89%      -90%
+    Mojo::UserAgent v3.39          1558/s   412%     78%       --        -7%       -24%     -29% -54% -54% -63% -76% -80% -80%      -82%
+    HTTP::Tiny v0.017              1672/s   451%     92%       8%         --       -19%     -24% -51% -51% -60% -74% -79% -79%      -81%
+    HTTP::Lite v2.4                2058/s   577%    136%      32%        23%         --      -6% -39% -39% -51% -68% -74% -74%      -77%
+    AnyEvent::Curl::Multi v1.1     2203/s   624%    152%      41%        31%         7%       -- -35% -35% -47% -66% -72% -72%      -75%
+    Parallel::Downloader v0.121560 3378/s  1015%    288%     118%       102%        65%      54%   --  -0% -19% -48% -57% -57%      -61%
+    lftp v4.3.1                    3401/s  1018%    289%     118%       103%        65%      55%   0%   -- -19% -48% -57% -57%      -61%
+    YADA v0.027                    4167/s  1276%    379%     169%       150%       103%      90%  23%  23%   -- -36% -47% -47%      -52%
+    Furl v0.40                     6502/s  2041%    645%     318%       288%       216%     196%  92%  91%  56%   -- -17% -18%      -26%
+    wget v1.12                     7874/s  2493%    803%     406%       371%       283%     258% 133% 132%  88%  21%   --  -0%      -10%
+    curl v7.27.0                   7899/s  2501%    806%     408%       372%       284%     260% 133% 133%  89%  22%   0%   --      -10%
+    LWP::Curl v0.12                8757/s  2780%    902%     462%       423%       326%     298% 158% 158% 109%  35%  11%  11%        --
+
+    (output formatted to show module versions at row labels and keep column labels abbreviated)
 
 =cut
 
