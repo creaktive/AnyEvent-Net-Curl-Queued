@@ -16,6 +16,8 @@ use URI;
 use Net::Curl::Easy qw(:constants);
 
 my $server = Test::HTTP::Server->new;
+# disable proxy!
+@ENV{qw(http_proxy ftp_proxy all_proxy)} = ('' x 3);
 
 my $url = URI->new($server->uri . 'echo/head');
 

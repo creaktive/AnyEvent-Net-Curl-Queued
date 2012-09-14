@@ -6,6 +6,7 @@ package AnyEvent::Net::Curl::Queued;
     #!/usr/bin/env perl
 
     package CrawlApache;
+    use feature qw(say);
     use strict;
     use utf8;
     use warnings qw(all);

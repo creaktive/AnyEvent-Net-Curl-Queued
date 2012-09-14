@@ -31,6 +31,9 @@ use HTTP::Response;
 
 #$AnyEvent::Log::FILTER->level('debug');
 
+# disable proxy!
+@ENV{qw(http_proxy ftp_proxy all_proxy)} = ('' x 3);
+
 our (%pool, %timer);
 our $VERSION = '0.002';
 

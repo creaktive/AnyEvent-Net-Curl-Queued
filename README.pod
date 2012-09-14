@@ -15,6 +15,7 @@ version 0.028
     #!/usr/bin/env perl
 
     package CrawlApache;
+    use feature qw(say);
     use strict;
     use utf8;
     use warnings qw(all);

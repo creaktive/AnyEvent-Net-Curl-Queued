@@ -4,6 +4,7 @@ package YADA;
 =head1 SYNOPSIS
 
     #!/usr/bin/env perl
+    use feature qw(say);
     use strict;
     use utf8;
     use warnings qw(all);
