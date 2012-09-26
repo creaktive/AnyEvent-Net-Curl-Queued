@@ -12,7 +12,7 @@ my $q = AnyEvent::Net::Curl::Queued->new;
 
 $q->append(
     AnyEvent::Net::Curl::Queued::Easy->new({
-        initial_url => 'http://255.255.255.255/',
+        initial_url => 'http://127.0.0.1:0/',
         on_finish   => sub {
             my ($self, $result) = @_;
             ok($self->has_error, "error detected");

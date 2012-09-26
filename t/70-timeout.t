@@ -32,12 +32,12 @@ use Test::HTTP::AnyEvent::Server;
 
 my $server = Test::HTTP::AnyEvent::Server->new;
 my $q = AnyEvent::Net::Curl::Queued->new({
-    timeout     => 2,   # allow watchdog to manifest itself
+    timeout     => 5,   # allow watchdog to manifest itself
 });
 
 $q->append(sub {
     MyDownloader->new({
-        initial_url => $server->uri . 'delay/3',
+        initial_url => $server->uri . 'delay/10',
         retry       => 3,
     })
 });
