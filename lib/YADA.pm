@@ -4,30 +4,24 @@ package YADA;
 =head1 SYNOPSIS
 
     #!/usr/bin/env perl
-    use feature qw(say);
-    use strict;
-    use utf8;
-    use warnings qw(all);
+    use common::sense;
 
     use YADA;
 
-    my $q = YADA->new;
-    $q->append(
-        $_,
-        sub {
+    YADA->new->append(
+        [qw[
+            http://www.cpan.org/modules/by-category/02_Language_Extensions/
+            http://www.cpan.org/modules/by-category/02_Perl_Core_Modules/
+            http://www.cpan.org/modules/by-category/03_Development_Support/
+            ...
+            http://www.cpan.org/modules/by-category/27_Pragma/
+            http://www.cpan.org/modules/by-category/28_Perl6/
+            http://www.cpan.org/modules/by-category/99_Not_In_Modulelist/
+        ]] => sub {
             say $_[0]->final_url;
             say ${$_[0]->header};
         },
-    ) for qw(
-        http://www.cpan.org/modules/by-category/02_Language_Extensions/
-        http://www.cpan.org/modules/by-category/02_Perl_Core_Modules/
-        http://www.cpan.org/modules/by-category/03_Development_Support/
-        ...
-        http://www.cpan.org/modules/by-category/27_Pragma/
-        http://www.cpan.org/modules/by-category/28_Perl6/
-        http://www.cpan.org/modules/by-category/99_Not_In_Modulelist/
-    );
-    $q->wait;
+    )->wait;
 
 =head1 DESCRIPTION
 
@@ -88,8 +82,10 @@ around qw(append prepend) => sub {
             );
         }
     } else {
-        return $self->$orig(@_);
+        $self->$orig(@_);
     }
+
+    return $self;
 };
 
 =head1 SEE ALSO
