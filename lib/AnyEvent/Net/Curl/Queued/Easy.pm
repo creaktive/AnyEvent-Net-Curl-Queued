@@ -147,6 +147,14 @@ Final URL (after redirections).
 
 has final_url   => (is => 'rw', isa => 'AnyEvent::Net::Curl::Queued::Easy::URI', coerce => 1);
 
+=attr opts
+
+C<HashRef> to be passed to C<setopt()> during initialization (inside C<init()>, before C<on_init()> callback).
+
+=cut
+
+has opts        => (is => 'ro', isa => 'HashRef', default => sub { {} });
+
 =attr queue
 
 L<AnyEvent::Net::Curl::Queued> circular reference.
@@ -257,9 +265,9 @@ sub init {
     my ($self) = @_;
 
     # buffers
-    my $data;
+    my $data = '';
     $self->data(\$data);
-    my $header;
+    my $header = '';
     $self->header(\$header);
 
     # fragment mangling
@@ -283,6 +291,9 @@ sub init {
     $self->sign($self->meta->name);
     # URL; GET parameters included
     $self->sign($url->as_string);
+
+    # set default options
+    $self->setopt($self->opts);
 
     # call the optional callback
     $self->on_init->(@_) if ref($self->on_init) eq 'CODE';
