@@ -117,7 +117,7 @@ has header      => (is => 'rw', isa => 'Ref');
 
 =attr http_response
 
-Optionally encapsulate the response in L<HTTP::Response>.
+Optionally encapsulate the response in L<HTTP::Response> (when the scheme is HTTP/HTTPS).
 
 =cut
 
@@ -338,7 +338,7 @@ sub _finish {
     $self->final_url($self->getinfo(Net::Curl::Easy::CURLINFO_EFFECTIVE_URL));
 
     # optionally encapsulate with HTTP::Response
-    if ($self->http_response) {
+    if ($self->http_response and $self->final_url->scheme =~ m{^https?$}i) {
         $self->res(
             HTTP::Response->parse(
                 ${$self->header}
@@ -347,7 +347,7 @@ sub _finish {
         );
 
         my $msg = $self->res->message;
-        $msg =~ s/^\s+|\s+$//s;
+        $msg =~ s/^\s+|\s+$//gs;
         $self->res->message($msg);
     }
 

@@ -51,6 +51,7 @@ for my $i (1 .. $n) {
                 ok($self->final_url eq $url, 'initial/final URLs match');
                 ok($result == 0, 'got CURLE_OK');
                 ok(!$self->has_error, "libcurl message: '$result'");
+                ok(ref($self->res) eq 'HTTP::Response', 'returns ' . ref($self->res));
 
                 is($self->res->content, $post, 'got data: ' . $self->res->content);
             },
@@ -60,4 +61,4 @@ for my $i (1 .. $n) {
 }
 $q->cv->wait;
 
-done_testing(6 + 8 * $n);
+done_testing(6 + 9 * $n);
