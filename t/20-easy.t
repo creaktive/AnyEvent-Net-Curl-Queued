@@ -3,12 +3,20 @@ use strict;
 use utf8;
 use warnings qw(all);
 
+use Digest::SHA qw(sha256_base64);
+use Test::HTTP::Server;
 use Test::More;
+
+my $server = Test::HTTP::Server->new;
+# disable proxy!
+@ENV{qw(http_proxy ftp_proxy all_proxy)} = ('' x 3);
+
+my $url = $server->uri . 'repeat/5/zxcvb';
 
 use_ok('AnyEvent::Net::Curl::Queued::Easy');
 use Net::Curl::Easy qw(:constants);
 
-my $easy = new AnyEvent::Net::Curl::Queued::Easy({ initial_url => 'http://www.cpan.org/' });
+my $easy = new AnyEvent::Net::Curl::Queued::Easy({ initial_url => $url });
 isa_ok($easy, qw(AnyEvent::Net::Curl::Queued::Easy));
 can_ok($easy, qw(
     clone
@@ -42,7 +50,12 @@ $easy->init;
 ok($easy->retry == 10, 'default retry()');
 
 ok($easy->sign('TEST'), 'sign()');
-ok($easy->unique eq 'iNmIrn-mUqH6CA6Ee78z1Sek5Rl5zXzO5Hc9j127_1s', 'URL uniqueness signature: ' . $easy->unique);
+
+# mock signature
+my $digest = sha256_base64('AnyEvent::Net::Curl::Queued::Easy' . $url . 'TEST');
+$digest =~ tr{+/}{-_};
+ok($easy->unique eq $digest, 'URL uniqueness signature: ' . $easy->unique);
+
 ok(($easy->perform // 0) == Net::Curl::Easy::CURLE_OK, 'perform()');
 ok($easy->getinfo(Net::Curl::Easy::CURLINFO_RESPONSE_CODE) eq '200', '200 OK');
 

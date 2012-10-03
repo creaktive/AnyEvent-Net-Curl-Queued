@@ -19,7 +19,7 @@ my $server = Test::HTTP::Server->new;
 # disable proxy!
 @ENV{qw(http_proxy ftp_proxy all_proxy)} = ('' x 3);
 
-my $url = $server->uri;
+my $url = $server->uri . 'echo/head';
 
 my $last_fdset = '';
 my $last_cnt = 0;
