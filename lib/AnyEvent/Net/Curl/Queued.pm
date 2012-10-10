@@ -208,7 +208,7 @@ Also reset automatically after L</wait>, so keep your own reference if you reall
 
 =cut
 
-has cv          => (is => 'rw', isa => 'Ref | Undef', default => sub { AE::cv }, lazy => 1);
+has cv          => (is => 'rw', isa => 'Maybe[Ref]', default => sub { AE::cv }, lazy => 1);
 
 =attr max
 
@@ -303,7 +303,7 @@ The last resort against the non-deterministic chaos of evil lurking sockets.
 
 =cut
 
-has watchdog    => (is => 'rw', isa => 'Ref | Undef');
+has watchdog    => (is => 'rw', isa => 'Maybe[Ref]');
 
 sub BUILD {
     my ($self) = @_;

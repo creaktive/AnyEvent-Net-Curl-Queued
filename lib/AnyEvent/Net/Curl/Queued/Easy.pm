@@ -105,7 +105,7 @@ Receive buffer.
 
 =cut
 
-has data        => (is => 'rw', isa => 'Ref');
+has data        => (is => 'rw', isa => 'ScalarRef');
 
 =attr force
 
@@ -121,7 +121,7 @@ Header buffer.
 
 =cut
 
-has header      => (is => 'rw', isa => 'Ref');
+has header      => (is => 'rw', isa => 'ScalarRef');
 
 =attr http_response
 
