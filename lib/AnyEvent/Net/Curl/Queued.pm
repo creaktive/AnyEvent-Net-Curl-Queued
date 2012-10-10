@@ -208,7 +208,7 @@ Also reset automatically after L</wait>, so keep your own reference if you reall
 
 =cut
 
-has cv          => (is => 'rw', isa => 'Maybe[Ref]', default => sub { AE::cv }, lazy => 1);
+has cv          => (is => 'ro', isa => 'Maybe[Ref]', default => sub { AE::cv }, lazy => 1, writer => 'set_cv');
 
 =attr max
 
@@ -227,7 +227,7 @@ L<Net::Curl::Multi> instance.
 
 =cut
 
-has multi       => (is => 'rw', isa => 'AnyEvent::Net::Curl::Queued::Multi');
+has multi       => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Multi', writer => 'set_multi');
 
 =attr queue
 
@@ -295,7 +295,7 @@ Signature cache.
 
 =cut
 
-has unique      => (is => 'rw', isa => 'HashRef[Str]', default => sub { {} });
+has unique      => (is => 'ro', isa => 'HashRef[Str]', default => sub { {} });
 
 =attr watchdog
 
@@ -303,12 +303,12 @@ The last resort against the non-deterministic chaos of evil lurking sockets.
 
 =cut
 
-has watchdog    => (is => 'rw', isa => 'Maybe[Ref]');
+has watchdog    => (is => 'ro', isa => 'Maybe[Ref]', writer => 'set_watchdog', clearer => 'clear_watchdog', predicate => 'has_watchdog');
 
 sub BUILD {
     my ($self) = @_;
 
-    $self->multi(
+    $self->set_multi(
         AnyEvent::Net::Curl::Queued::Multi->new({
             max         => $self->max,
             timeout     => $self->timeout,
@@ -330,7 +330,7 @@ sub start {
     my ($self) = @_;
 
     # watchdog
-    $self->watchdog(AE::timer 1, 1, sub {
+    $self->set_watchdog(AE::timer 1, 1, sub {
         $self->multi->perform;
         $self->empty;
     });
@@ -439,11 +439,11 @@ sub wait {
     $self->cv->recv;
 
     # stop the watchdog
-    $self->watchdog(undef);
+    $self->clear_watchdog;
 
     # reload
-    $self->cv(AE::cv);
-    $self->multi(
+    $self->set_cv(AE::cv);
+    $self->set_multi(
         AnyEvent::Net::Curl::Queued::Multi->new({
             max         => $self->max,
             timeout     => $self->timeout,

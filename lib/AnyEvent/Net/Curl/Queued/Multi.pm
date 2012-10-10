@@ -34,7 +34,7 @@ Currently active sockets.
 
 =cut
 
-has active      => (is => 'rw', isa => 'Int', default => -1);
+has active      => (is => 'ro', isa => 'Int', default => -1, writer => 'set_active');
 
 =attr pool
 
@@ -50,7 +50,7 @@ L<AnyEvent> C<timer()> handler.
 
 =cut
 
-has timer       => (is => 'rw', isa => 'Any');
+has timer       => (is => 'ro', isa => 'Maybe[Ref]', writer => 'set_timer', clearer => 'clear_timer', predicate => 'has_timer');
 
 =attr max
 
@@ -131,7 +131,7 @@ sub _cb_timer {
     my ($self, $timeout_ms) = @_;
 
     # deregister old timer
-    $self->timer(undef);
+    $self->clear_timer;
 
     my $cb = sub {
         $self->socket_action(Net::Curl::Multi::CURL_SOCKET_TIMEOUT)
@@ -149,10 +149,10 @@ sub _cb_timer {
         # must not wait too long (more than a few seconds perhaps)
         # before you call curl_multi_perform() again.
 
-        $self->timer(AE::timer 1, 1, $cb);
+        $self->set_timer(AE::timer 1, 1, $cb);
     } else {
         # This will trigger timeouts if there are any.
-        $self->timer(AE::timer $timeout_ms / 1000, 0, $cb);
+        $self->set_timer(AE::timer $timeout_ms / 1000, 0, $cb);
     }
 
     return 1;
@@ -171,7 +171,7 @@ sub socket_action {
     my $self = shift;
 
     #$self->active($self->$orig(@_));
-    $self->active($self->SUPER::socket_action(@_));
+    $self->set_active($self->SUPER::socket_action(@_));
 
     my $i = 0;
     while (my (undef, $easy, $result) = $self->info_read) {
@@ -181,7 +181,7 @@ sub socket_action {
         ++$i;
     }
 
-    $self->active($self->active - $i);
+    $self->set_active($self->active - $i);
 };
 
 =method add_handle(...)

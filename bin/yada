@@ -12,7 +12,6 @@ use Getopt::Long;
 use Pod::Usage;
 use YADA;
 
-my $VERSION; # stub
 # VERSION
 
 =head1 SYNOPSIS
