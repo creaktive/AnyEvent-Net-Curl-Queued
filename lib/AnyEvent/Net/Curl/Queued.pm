@@ -175,6 +175,15 @@ Setting C<allow_dups> to true value disables request checks.
 
 has allow_dups  => (is => 'ro', isa => 'Bool', default => 0);
 
+=attr common_opts
+
+L<AnyEvent::Net::Curl::Queued::Easy/opts> attribute common to all workers initialized under the same queue.
+You may define C<User-Agent> string here.
+
+=cut
+
+has common_opts => (is => 'ro', isa => 'HashRef', default => sub { {} });
+
 =attr completed
 
 Count completed requests.

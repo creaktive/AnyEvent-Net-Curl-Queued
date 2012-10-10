@@ -8,7 +8,7 @@ AnyEvent::Net::Curl::Queued - Any::Moose wrapper for queued downloads via Net::C
 
 =head1 VERSION
 
-version 0.029
+version 0.030
 
 =head1 SYNOPSIS
 
@@ -231,6 +231,11 @@ Allow duplicate requests (default: false).
 By default, requests to the same URL (more precisely, requests with the same L<signature|AnyEvent::Net::Curl::Queued::Easy/sha> are issued only once.
 To seed POST parameters, you must extend the L<AnyEvent::Net::Curl::Queued::Easy> class.
 Setting C<allow_dups> to true value disables request checks.
+
+=head2 common_opts
+
+L<AnyEvent::Net::Curl::Queued::Easy/opts> attribute common to all workers initialized under the same queue.
+You may define C<User-Agent> string here.
 
 =head2 completed
 

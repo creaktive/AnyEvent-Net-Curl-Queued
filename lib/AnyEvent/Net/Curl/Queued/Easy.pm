@@ -74,6 +74,14 @@ use AnyEvent::Net::Curl::Queued::Stats;
 
 # VERSION
 
+subtype 'QueueType'
+    => as 'Object'
+    => where {
+        $_->isa('AnyEvent::Net::Curl::Queued')
+            or
+        $_->isa('YADA')
+    };
+
 subtype 'AnyEvent::Net::Curl::Queued::Easy::URI'
     => as class_type('URI');
 
@@ -161,7 +169,7 @@ L<AnyEvent::Net::Curl::Queued> circular reference.
 
 =cut
 
-has queue       => (is => 'rw', isa => 'Ref', weak_ref => 1);
+has queue       => (is => 'rw', isa => 'QueueType');
 
 =attr sha
 
@@ -280,11 +288,12 @@ sub init {
     );
 
     # common parameters
-    if (ref($self->queue) eq 'AnyEvent::Net::Curl::Queued') {
+    if (defined($self->queue)) {
         $self->setopt(
             Net::Curl::Easy::CURLOPT_SHARE,     $self->queue->share,
             Net::Curl::Easy::CURLOPT_TIMEOUT,   $self->queue->timeout,
         );
+        $self->setopt($self->queue->common_opts);
     }
 
     # salt

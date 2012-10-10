@@ -6,6 +6,7 @@ use warnings qw(all);
 use lib qw(inc);
 
 use Test::More;
+use Net::Curl;
 
 use_ok('YADA');
 use_ok('YADA::Worker');
@@ -14,7 +15,12 @@ use_ok('Test::HTTP::AnyEvent::Server');
 my $server = Test::HTTP::AnyEvent::Server->new;
 isa_ok($server, 'Test::HTTP::AnyEvent::Server');
 
-my $q = YADA->new;
+my $ua_string = Net::Curl::version();
+my $q = YADA->new({
+    common_opts => {
+        useragent => $ua_string,
+    },
+});
 isa_ok($q, qw(YADA));
 
 can_ok($q, qw(append wait));
@@ -26,6 +32,7 @@ for my $j (1 .. 10) {
         $q->append(sub {
             YADA::Worker->new({
                 initial_url => $url,
+                opts        => { cookie => q(time=) . time },
                 on_init     => sub {
                     my ($self) = @_;
 
@@ -50,6 +57,8 @@ for my $j (1 .. 10) {
                     ok(!$self->has_error, "libcurl message: '$result'");
 
                     like(${$self->data}, qr{\bContent-Type:\s*application/json\b}i, 'got data: ' . ${$self->data});
+                    like(${$self->data}, qr{\bUser-Agent\s*:\s*\Q$ua_string\E\b}s, 'got User-Agent tag');
+                    like(${$self->data}, qr{\bCookie\s*:\s*time=\d+\b}s, 'got Cookie tag');
                 },
             })
         });
@@ -57,4 +66,4 @@ for my $j (1 .. 10) {
     $q->wait;
 }
 
-done_testing(6 + 6 * 100);
+done_testing(6 + 8 * 100);
