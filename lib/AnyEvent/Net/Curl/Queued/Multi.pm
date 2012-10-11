@@ -135,7 +135,7 @@ sub _cb_timer {
 
     my $cb = sub {
         $self->socket_action(Net::Curl::Multi::CURL_SOCKET_TIMEOUT)
-            if $self->handles > 0;
+            #if $self->handles > 0;
     };
 
     if ($timeout_ms < 0) {

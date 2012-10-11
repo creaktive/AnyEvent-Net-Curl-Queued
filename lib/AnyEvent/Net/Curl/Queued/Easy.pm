@@ -356,7 +356,7 @@ sub _finish {
             )
         );
 
-        my $msg = $self->res->message;
+        my $msg = $self->res->message // '';
         $msg =~ s/^\s+|\s+$//gs;
         $self->res->message($msg);
     }
