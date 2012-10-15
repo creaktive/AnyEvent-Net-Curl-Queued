@@ -3,13 +3,13 @@ use strict;
 use utf8;
 use warnings qw(all);
 
+use lib qw(inc);
+
 use Digest::SHA qw(sha256_base64);
-use Test::HTTP::Server;
+use Test::HTTP::AnyEvent::Server;
 use Test::More;
 
-my $server = Test::HTTP::Server->new;
-# disable proxy!
-@ENV{qw(http_proxy ftp_proxy all_proxy)} = ('' x 3);
+my $server = Test::HTTP::AnyEvent::Server->new({ forked => 1 });
 
 my $url = $server->uri . 'repeat/5/zxcvb';
 

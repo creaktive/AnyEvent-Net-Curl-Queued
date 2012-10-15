@@ -10,14 +10,12 @@ diag('setopt()/getinfo() are *forced* to fail so warnings are OK here!');
 
 use AnyEvent::Net::Curl::Queued;
 use AnyEvent::Net::Curl::Queued::Easy;
-use Test::HTTP::Server;
+use Test::HTTP::AnyEvent::Server;
 use URI;
 
 use Net::Curl::Easy qw(:constants);
 
-my $server = Test::HTTP::Server->new;
-# disable proxy!
-@ENV{qw(http_proxy ftp_proxy all_proxy)} = ('' x 3);
+my $server = Test::HTTP::AnyEvent::Server->new({ forked => 1 });
 
 my $url = URI->new($server->uri . 'echo/head');
 

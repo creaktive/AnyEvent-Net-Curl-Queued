@@ -25,28 +25,120 @@ use AnyEvent;
 use AnyEvent::Handle;
 use AnyEvent::Log;
 use AnyEvent::Socket;
+use AnyEvent::Util;
 use HTTP::Headers;
 use HTTP::Request;
 use HTTP::Response;
+use POSIX;
 
 #$AnyEvent::Log::FILTER->level('debug');
 
-# disable proxy!
-@ENV{qw(http_proxy ftp_proxy all_proxy)} = ('' x 3);
-
 our (%pool, %timer);
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 has address     => (is => 'ro', isa => 'Str', default => '127.0.0.1', writer => 'set_address');
 has port        => (is => 'ro', isa => 'Int', writer => 'set_port');
 has maxconn     => (is => 'ro', isa => 'Int', default => 10);
 has timeout     => (is => 'ro', isa => 'Int', default => 10);
+has disable_proxy => (is => 'ro', isa => 'Bool', default => 1);
+has forked      => (is => 'ro', isa => 'Bool', default => 0);
+has forked_pid  => (is => 'ro', isa => 'Int', writer => 'set_forked_pid');
 has server      => (is => 'ro', isa => 'Ref', writer => 'set_server');
 
 sub BUILD {
     my ($self) = @_;
 
-    $self->set_server(tcp_server(
+    @ENV{qw(no_proxy http_proxy ftp_proxy all_proxy)} = (q(localhost,127.0.0.1), (q()) x 3)
+        if $self->disable_proxy;
+
+    unless ($self->forked) {
+        $self->set_server(
+            $self->start_server(sub {
+                my (undef, $address, $port) = @_;
+                $self->set_address($address);
+                $self->set_port($port);
+                AE::log info =>
+                    "bound to http://$address:$port/";
+            })
+        );
+    } else {
+        my ($rh, $wh) = portable_pipe;
+
+        given (fork) {
+            when (undef) {
+                AE::log fatal =>
+                    "couldn't fork(): $!";
+            } when (0) {
+                # child
+                close $rh;
+
+                my $cv = AE::cv;
+                my $h = AnyEvent::Handle->new(
+                    fh          => $wh,
+                    on_error    => sub {
+                        my ($_h, $fatal, $msg) = @_;
+                        shutdown $_h->{fh}, 2;
+                        $_h->destroy;
+                    },
+                );
+
+                my $server = $self->start_server(sub {
+                    my (undef, $address, $port) = @_;
+                    $h->push_write(join("\t", $address, $port));
+                });
+
+                $cv->wait;
+                POSIX::_exit(0);
+                exit 1;
+            } default {
+                # parent
+                my $pid = $_;
+                close $wh;
+
+                my $buf;
+                my $len = sysread $rh, $buf, 65536;
+                AE::log fatal =>
+                    "couldn't sysread() from pipe: $!"
+                        if not defined $len or not $len;
+
+                my ($address, $port) = split m{\t}x, $buf;
+                $self->set_address($address);
+                $self->set_port($port);
+                $self->set_forked_pid($pid);
+                AE::log info =>
+                    "forked as $pid and bound to http://$address:$port/";
+            }
+        }
+    }
+}
+
+sub DEMOLISH {
+    my ($self) = @_;
+
+    if ($self->forked) {
+        my $pid = $self->forked_pid;
+        kill 9 => $pid;
+        AE::log info =>
+            "killed $pid";
+    }
+}
+
+=head1 METHODS
+
+=head2 new
+
+Create a new instance.
+
+=head2 start_server
+
+Internal.
+
+=cut
+
+sub start_server {
+    my ($self, $cb) = @_;
+
+    return tcp_server(
         $self->address => $self->port,
         sub {
             my ($fh, $host, $port) = @_;
@@ -93,21 +185,9 @@ sub BUILD {
                     _reply($h, $req, $hdr);
                 }
             });
-        } => sub {
-            my (undef, $address, $port) = @_;
-            $self->set_address($address);
-            $self->set_port($port);
-            AE::log info =>
-                "bound to http://$address:$port/";
-        }
-    ));
+        } => $cb
+    );
 }
-
-=head1 METHODS
-
-=head2 new
-
-Create a new instance.
 
 =head2 uri
 
