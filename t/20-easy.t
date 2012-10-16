@@ -3,8 +3,6 @@ use strict;
 use utf8;
 use warnings qw(all);
 
-use lib qw(inc);
-
 use Digest::SHA qw(sha256_base64);
 use Test::HTTP::AnyEvent::Server;
 use Test::More;

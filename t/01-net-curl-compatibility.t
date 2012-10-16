@@ -4,8 +4,6 @@ use strict;
 use utf8;
 use warnings qw(all);
 
-use lib qw(inc);
-
 use Test::More;
 
 use Test::HTTP::AnyEvent::Server;

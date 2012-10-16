@@ -3,8 +3,6 @@ use strict;
 use utf8;
 use warnings qw(all);
 
-use lib qw(inc);
-
 use Test::More;
 diag('setopt()/getinfo() are *forced* to fail so warnings are OK here!');
 
