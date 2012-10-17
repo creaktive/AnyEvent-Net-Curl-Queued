@@ -303,7 +303,7 @@ The last resort against the non-deterministic chaos of evil lurking sockets.
 
 =cut
 
-has watchdog    => (is => 'ro', isa => 'Maybe[Ref]', writer => 'set_watchdog', clearer => 'clear_watchdog', predicate => 'has_watchdog');
+has watchdog    => (is => 'ro', isa => 'Maybe[Ref]', writer => 'set_watchdog', clearer => 'clear_watchdog', predicate => 'has_watchdog', weak_ref => 1);
 
 sub BUILD {
     my ($self) = @_;
@@ -454,7 +454,6 @@ sub wait {
 =head1 CAVEAT
 
 =for :list
-* If you mix in C<fork()> calls you may get the I<"Attempt to free unreferenced scalar: SV 0xdeadbeef during global destruction."> message on finalization.
 * Many sources suggest to compile L<libcurl|http://curl.haxx.se/> with L<c-ares|http://c-ares.haxx.se/> support. This only improves performance if you are supposed to do many DNS resolutions (e.g. access many hosts). If you are fetching many documents from a single server, C<c-ares> initialization will actually slow down the whole process!
 
 =head1 SEE ALSO

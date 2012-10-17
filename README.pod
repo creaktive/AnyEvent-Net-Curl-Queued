@@ -8,7 +8,7 @@ AnyEvent::Net::Curl::Queued - Any::Moose wrapper for queued downloads via Net::C
 
 =head1 VERSION
 
-version 0.032
+version 0.033
 
 =head1 SYNOPSIS
 
@@ -335,10 +335,6 @@ Process queue.
 =head1 CAVEAT
 
 =over 4
-
-=item *
-
-If you mix in C<fork()> calls you may get the I<"Attempt to free unreferenced scalar: SV 0xdeadbeef during global destruction."> message on finalization.
 
 =item *
 
