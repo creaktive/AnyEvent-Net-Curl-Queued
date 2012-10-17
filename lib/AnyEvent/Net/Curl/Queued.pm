@@ -271,8 +271,22 @@ L<Net::Curl::Share> instance.
 
 =cut
 
-has share       => (is => 'ro', isa => 'Net::Curl::Share', writer => 'set_share', weak_ref => 1);
 our %share; # PLEASE, MAKE IT STOP!!! IT HURTS MY BRAIN!!!
+has share       => (
+    is      => 'ro',
+    isa     => 'Net::Curl::Share',
+    default => sub {
+        my $share = Net::Curl::Share->new;
+        $share{$share} = $share;
+    },
+    lazy    => 1,
+    weak_ref=> 1,
+);
+
+#sub DEMOLISH {
+#    # Y U NO DEFINED HERE?!?!
+#    delete $share{$_[0]->share};
+#}
 
 =attr stats
 
@@ -316,10 +330,6 @@ sub BUILD {
         })
     );
 
-    my $share = Net::Curl::Share->new;
-    $share{$share} = $share;
-
-    $self->set_share($share);
     $self->share->setopt(Net::Curl::Share::CURLSHOPT_SHARE, Net::Curl::Share::CURL_LOCK_DATA_COOKIE);   # 2
     $self->share->setopt(Net::Curl::Share::CURLSHOPT_SHARE, Net::Curl::Share::CURL_LOCK_DATA_DNS);      # 3
     eval { $self->share->setopt(Net::Curl::Share::CURLSHOPT_SHARE, Net::Curl::Share::CURL_LOCK_DATA_SSL_SESSION) };
