@@ -121,7 +121,7 @@ sub _cb_socket {
         delete $self->pool->{"w$socket"};
     }
 
-    return 1;
+    return 0;
 }
 
 # timer callback: It triggers timeout update. Timeout value tells
@@ -155,7 +155,7 @@ sub _cb_timer {
         $self->set_timer(AE::timer $timeout_ms / 1000, 0, $cb);
     }
 
-    return 1;
+    return 0;
 }
 
 =method socket_action(...)
@@ -181,7 +181,7 @@ sub socket_action {
         ++$i;
     }
 
-    $self->set_active($self->active - $i);
+    return $self->set_active($self->active - $i);
 };
 
 =method add_handle(...)
