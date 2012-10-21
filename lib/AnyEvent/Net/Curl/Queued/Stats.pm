@@ -25,11 +25,11 @@ use strict;
 use utf8;
 use warnings qw(all);
 
+use AnyEvent;
 use Carp qw(confess);
 use Any::Moose;
 
 use AnyEvent::Net::Curl::Const;
-use Time::HiRes qw(time);
 
 # VERSION
 
@@ -39,7 +39,7 @@ Unix timestamp for statistics update.
 
 =cut
 
-has stamp       => (is => 'ro', isa => 'Num', default => time, writer => 'set_stamp');
+has stamp       => (is => 'ro', isa => 'Num', default => sub { AE::time }, writer => 'set_stamp');
 
 =attr stats
 
@@ -109,7 +109,7 @@ sub sum {
                 : $from->getinfo(AnyEvent::Net::Curl::Const::info($type));
     }
 
-    $self->set_stamp(time);
+    $self->set_stamp(AE::time);
 
     return 1;
 }
