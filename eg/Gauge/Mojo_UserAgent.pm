@@ -9,7 +9,7 @@ with qw(Gauge::Role);
 use Mojo::IOLoop;
 use Mojo::UserAgent;
 
-has loop => (is => 'ro', isa => 'Mojo::IOLoop', weak_ref => 1, default => sub { Mojo::IOLoop->singleton });
+has loop => (is => 'ro', isa => 'Mojo::IOLoop', default => sub { Mojo::IOLoop->singleton });
 
 sub run {
     my ($self) = @_;
