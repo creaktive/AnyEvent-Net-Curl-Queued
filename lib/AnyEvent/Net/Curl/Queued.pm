@@ -280,13 +280,11 @@ has share       => (
         $share{$share} = $share;
     },
     lazy    => 1,
-    weak_ref=> 1,
 );
 
-#sub DEMOLISH {
-#    # Y U NO DEFINED HERE?!?!
-#    delete $share{$_[0]->share};
-#}
+sub DEMOLISH {
+    delete $share{$_[0]->share};
+}
 
 =attr stats
 
