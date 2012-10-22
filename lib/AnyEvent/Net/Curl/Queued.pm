@@ -280,10 +280,15 @@ has share       => (
         $share{$share} = $share;
     },
     lazy    => 1,
+    weak_ref=> 1,
 );
 
+# WHYYYYYYY?????? WHYYYYYYYYYYY????????
 sub DEMOLISH {
-    delete $share{$_[0]->share};
+    my ($self) = @_;
+    my $share = $self->share // '';
+    delete $share{$share}
+        if exists $share{$share};
 }
 
 =attr stats
