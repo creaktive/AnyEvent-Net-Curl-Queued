@@ -150,6 +150,8 @@ sub _cb_timer {
         # before you call curl_multi_perform() again.
 
         $self->set_timer(AE::timer 1, 1, $cb);
+    } elsif ($timeout_ms < 10) {
+        # Short timeouts are just... Weird!
     } else {
         # This will trigger timeouts if there are any.
         $self->set_timer(AE::timer $timeout_ms / 1000, 0, $cb);
