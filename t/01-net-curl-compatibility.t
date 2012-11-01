@@ -34,7 +34,7 @@ can_ok($curl2, qw(init _finish));
 $curl2->init;
 ok($curl2->{private} = 42, "Setting private data");
 
-my $curlm = new AnyEvent::Net::Curl::Queued::Multi;
+my $curlm = new AnyEvent::Net::Curl::Queued::Multi({ pool => {} });
 isa_ok($curlm, qw(AnyEvent::Net::Curl::Queued::Multi));
 
 can_ok($curlm, qw(CURLMOPT_TIMERFUNCTION));

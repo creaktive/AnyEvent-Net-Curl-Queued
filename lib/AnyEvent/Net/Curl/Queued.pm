@@ -271,25 +271,12 @@ L<Net::Curl::Share> instance.
 
 =cut
 
-our %share; # PLEASE, MAKE IT STOP!!! IT HURTS MY BRAIN!!!
 has share       => (
     is      => 'ro',
     isa     => 'Net::Curl::Share',
-    default => sub {
-        my $share = Net::Curl::Share->new;
-        $share{$share} = $share;
-    },
+    default => sub { Net::Curl::Share->new({ queue => shift }) },
     lazy    => 1,
-    weak_ref=> 1,
 );
-
-# WHYYYYYYY?????? WHYYYYYYYYYYY????????
-sub DEMOLISH {
-    my ($self) = @_;
-    my $share = $self->share // '';
-    delete $share{$share}
-        if exists $share{$share};
-}
 
 =attr stats
 
