@@ -20,21 +20,21 @@ my $url = $server->uri . 'echo/head';
 my $last_fdset = '';
 my $last_cnt = 0;
 
-my $curl = new AnyEvent::Net::Curl::Queued::Easy({ initial_url => $url });
+my $curl = new AnyEvent::Net::Curl::Queued::Easy($url);
 isa_ok($curl, qw(AnyEvent::Net::Curl::Queued::Easy));
 can_ok($curl, qw(init _finish));
 
 $curl->init;
 ok($curl->{private} = "foo", "Setting private data");
 
-my $curl2 = new AnyEvent::Net::Curl::Queued::Easy({ initial_url => $url });
+my $curl2 = new AnyEvent::Net::Curl::Queued::Easy(initial_url => $url);
 isa_ok($curl2, qw(AnyEvent::Net::Curl::Queued::Easy));
 can_ok($curl2, qw(init _finish));
 
 $curl2->init;
 ok($curl2->{private} = 42, "Setting private data");
 
-my $curlm = new AnyEvent::Net::Curl::Queued::Multi({ pool => {} });
+my $curlm = new AnyEvent::Net::Curl::Queued::Multi(pool => {});
 isa_ok($curlm, qw(AnyEvent::Net::Curl::Queued::Multi));
 
 can_ok($curlm, qw(CURLMOPT_TIMERFUNCTION));

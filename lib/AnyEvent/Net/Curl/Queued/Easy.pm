@@ -225,9 +225,29 @@ Almost the same as C<after finish =E<gt> sub { ... }>
 
 has [qw(on_init on_finish)] => (is => 'ro', isa => 'CodeRef');
 
-################# HACK #################
-around BUILDARGS => sub { $_[2] // {} };
-################# HACK #################
+=for Pod::Coverage
+BUILDARGS
+FOREIGNBUILDARGS
+=cut
+
+sub BUILDARGS {
+    return ($_[0] eq ref $_[-1])
+        ? pop
+        : FOREIGNBUILDARGS(@_);
+}
+
+sub FOREIGNBUILDARGS {
+    my $class = shift;
+    if (@_ == 1 and q(HASH) eq ref $_[0]) {
+        return shift;
+    } elsif (@_ == 1) {
+        return { initial_url => shift };
+    } elsif (@_ % 2 == 0) {
+        return { @_ };
+    } else {
+        confess 'Should be initialized as ' . $class . '->new(HASH|HASHREF)';
+    }
+}
 
 =method unique()
 

@@ -13,7 +13,7 @@ use_ok('Test::HTTP::AnyEvent::Server');
 my $server = Test::HTTP::AnyEvent::Server->new;
 isa_ok($server, 'Test::HTTP::AnyEvent::Server');
 
-my $q = new AnyEvent::Net::Curl::Queued;
+my $q = new AnyEvent::Net::Curl::Queued(5);
 isa_ok($q, qw(AnyEvent::Net::Curl::Queued));
 
 can_ok($q, qw(
@@ -37,7 +37,7 @@ can_ok($q, qw(
     wait
 ));
 
-ok($q->max      == 4, 'default max()');
+ok($q->max      == 5, 'non-default max()');
 ok($q->timeout  == 60.0, 'default timeout()');
 
 isa_ok($q->share, 'Net::Curl::Share');

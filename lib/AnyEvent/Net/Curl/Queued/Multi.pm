@@ -70,6 +70,12 @@ has timeout     => (is => 'ro', isa => 'Num', default => 60.0);
 
 # VERSION
 
+=for Pod::Coverage
+BUILD
+BUILDARGS
+FOREIGNBUILDARGS
+=cut
+
 sub BUILD {
     my ($self) = @_;
 
@@ -78,9 +84,22 @@ sub BUILD {
     $self->setopt(Net::Curl::Multi::CURLMOPT_TIMERFUNCTION      => \&_cb_timer);
 }
 
-################# HACK #################
-around BUILDARGS => sub { $_[2] // {} };
-################# HACK #################
+sub BUILDARGS {
+    return ($_[0] eq ref $_[-1])
+        ? pop
+        : FOREIGNBUILDARGS(@_);
+}
+
+sub FOREIGNBUILDARGS {
+    my $class = shift;
+    if (@_ == 1 and q(HASH) eq ref $_[0]) {
+        return shift;
+    } elsif (@_ % 2 == 0) {
+        return { @_ };
+    } else {
+        confess 'Should be initialized as ' . $class . '->new(HASH|HASHREF)';
+    }
+}
 
 # socket callback: will be called by curl any time events on some
 # socket must be updated

@@ -12,13 +12,13 @@ use Test::HTTP::AnyEvent::Server;
 
 my $server = Test::HTTP::AnyEvent::Server->new;
 
-my @q = map { AnyEvent::Net::Curl::Queued->new({ allow_dups => 1, max => 2 }) } 1 .. 5;
+my @q = map { AnyEvent::Net::Curl::Queued->new(allow_dups => 1, max => 2) } 1 .. 5;
 
 my $n = 10;
 for my $i (1 .. $n) {
     for my $q (shuffle @q) {
         $q->prepend(sub {
-            AnyEvent::Net::Curl::Queued::Easy->new({
+            AnyEvent::Net::Curl::Queued::Easy->new(
                 initial_url => URI->new($server->uri . qq(echo/head)),
                 opts        => {
                     postfields  => qq({"i":$i}),
@@ -28,7 +28,7 @@ for my $i (1 .. $n) {
                     ok($result == 0, 'got CURLE_OK');
                     ok(!$self->has_error, "libcurl message: '$result'");
                 },
-            })
+            )
         });
     }
 }

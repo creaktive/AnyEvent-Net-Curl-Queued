@@ -337,6 +337,9 @@ For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you d
 
 Process queue.
 
+=for Pod::Coverage BUILD
+BUILDARGS
+
 =head1 CAVEAT
 
 =over 4

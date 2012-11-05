@@ -160,6 +160,7 @@ use warnings qw(all);
 use AnyEvent;
 use Any::Moose;
 use Any::Moose qw(::Util::TypeConstraints);
+use Carp qw(confess);
 use Net::Curl::Share;
 
 use AnyEvent::Net::Curl::Queued::Multi;
@@ -312,6 +313,11 @@ The last resort against the non-deterministic chaos of evil lurking sockets.
 
 has watchdog    => (is => 'ro', isa => 'Maybe[Ref]', writer => 'set_watchdog', clearer => 'clear_watchdog', predicate => 'has_watchdog');
 
+=for Pod::Coverage
+BUILD
+BUILDARGS
+=cut
+
 sub BUILD {
     my ($self) = @_;
 
@@ -325,6 +331,19 @@ sub BUILD {
     $self->share->setopt(Net::Curl::Share::CURLSHOPT_SHARE, Net::Curl::Share::CURL_LOCK_DATA_COOKIE);   # 2
     $self->share->setopt(Net::Curl::Share::CURLSHOPT_SHARE, Net::Curl::Share::CURL_LOCK_DATA_DNS);      # 3
     eval { $self->share->setopt(Net::Curl::Share::CURLSHOPT_SHARE, Net::Curl::Share::CURL_LOCK_DATA_SSL_SESSION) };
+}
+
+sub BUILDARGS {
+    my $class = shift;
+    if (@_ == 1 and q(HASH) eq ref $_[0]) {
+        return shift;
+    } elsif (@_ % 2 == 0) {
+        return { @_ };
+    } elsif (@_ == 1) {
+        return { max => shift };
+    } else {
+        confess 'Should be initialized as ' . $class . '->new(HASH|HASHREF)';
+    }
 }
 
 =method start()
