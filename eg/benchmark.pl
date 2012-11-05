@@ -43,8 +43,8 @@ for my $file (glob q(Gauge/*.pm)) {
     $name =~ s{_}{::}g;
 
     $tests->{$name} = sub {
-        $0 = $name;
         load_class($class);
+        $0 = $name;
         my $obj = $class->new({
             parallel    => $parallel // 4,
             queue       => \@queue,

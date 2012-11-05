@@ -6,7 +6,6 @@ use warnings qw(all);
 use Any::Moose;
 with qw(Gauge::Role);
 
-use Mojo::IOLoop;
 use Mojo::UserAgent;
 
 has loop => (is => 'ro', isa => 'Mojo::IOLoop', default => sub { Mojo::IOLoop->singleton });

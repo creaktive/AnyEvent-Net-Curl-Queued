@@ -11,7 +11,7 @@ use WWW::Mechanize;
 sub run {
     my ($self) = @_;
 
-    my $mech = WWW::Mechanize->new;
+    my $mech = WWW::Mechanize->new(stack_depth => 0);
     $self->run_forked(sub {
         $mech->get(shift);
     });
