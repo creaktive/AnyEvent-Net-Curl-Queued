@@ -276,7 +276,7 @@ L<Net::Curl::Share> instance.
 has share       => (
     is      => 'ro',
     isa     => 'Net::Curl::Share',
-    default => sub { Net::Curl::Share->new({ queue => shift }) },
+    default => sub { Net::Curl::Share->new({ stamp => time }) },
     lazy    => 1,
 );
 
