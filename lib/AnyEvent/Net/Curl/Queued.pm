@@ -110,8 +110,11 @@ As there's more than one way to do it, I'll list the alternatives which can be u
 
 (see also: L<CPAN modules for making HTTP requests|http://neilb.org/reviews/http-requesters.html>)
 
-Obviously, the bottleneck of any kind of download agent is the connection itself.
-However, socket handling and header parsing add a lots of overhead.
+Obviously, every download agent is (or, ideally, should be) I<I/O bound>.
+However, it is not uncommon for large concurrent batch downloads to hog processor B<before> consuming the full network bandwidth.
+The proposed benchmark measures the request rate of several concurrent download agents, trying hard to make all of them I<CPU bound> (by removing the I/O constraint).
+On practice, this benchmark results mean that download agents with lower request rate are less appropriate for parallelized batch downloads.
+On the other hand, download agents with higher request rate are more likely to reach the full capacity of a network link while still leaving spare resources for data parsing/filtering.
 
 The script F<eg/benchmark.pl> compares L<AnyEvent::Net::Curl::Queued> against several other download agents.
 Only L<AnyEvent::Net::Curl::Queued> itself, L<AnyEvent::Curl::Multi>, L<Parallel::Downloader>, L<Mojo::UserAgent> and L<lftp|http://lftp.yar.ru/> support parallel connections natively;
