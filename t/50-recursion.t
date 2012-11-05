@@ -68,10 +68,8 @@ $q->append(
             cb          => sub {
                 my ($self, $result) = @_;
 
-                diag($self->final_url);
-
                 isa_ok($self, qw(MyDownloader));
-                ok($result == 0, 'got CURLE_OK');
+                ok($result == 0, 'got CURLE_OK for ' . $self->final_url);
                 ok(!$self->has_error, "libcurl message: '$result'");
             },
         })
