@@ -13,11 +13,11 @@ use URI;
 
 use Net::Curl::Easy qw(:constants);
 
-my $server = Test::HTTP::AnyEvent::Server->new({ forked => 1 });
+my $server = Test::HTTP::AnyEvent::Server->new(forked => 1);
 
 my $url = URI->new($server->uri . 'echo/head');
 
-my $easy = new AnyEvent::Net::Curl::Queued::Easy({ initial_url => $url });
+my $easy = AnyEvent::Net::Curl::Queued::Easy->new($url);
 isa_ok($easy, qw(AnyEvent::Net::Curl::Queued::Easy));
 can_ok($easy, qw(
     getinfo

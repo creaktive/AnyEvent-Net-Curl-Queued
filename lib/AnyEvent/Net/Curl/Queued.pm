@@ -36,7 +36,7 @@ package AnyEvent::Net::Curl::Queued;
 
             for my $link (@links) {
                 $self->queue->prepend(sub {
-                    CrawlApache->new({ initial_url => $link });
+                    CrawlApache->new($link);
                 });
             }
         }
@@ -56,7 +56,7 @@ package AnyEvent::Net::Curl::Queued;
 
     my $q = AnyEvent::Net::Curl::Queued->new;
     $q->append(sub {
-        CrawlApache->new({ initial_url => 'http://localhost/manual/' })
+        CrawlApache->new('http://localhost/manual/')
     });
     $q->wait;
 

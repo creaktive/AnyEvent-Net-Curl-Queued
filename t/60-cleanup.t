@@ -14,14 +14,12 @@ isa_ok($server, 'Test::HTTP::AnyEvent::Server');
 
 my $n = 5;
 for (1 .. $n) {
-    my $q = new AnyEvent::Net::Curl::Queued;
+    my $q = AnyEvent::Net::Curl::Queued->new;
     isa_ok($q, qw(AnyEvent::Net::Curl::Queued));
 
     $q->append(
         sub {
-            AnyEvent::Net::Curl::Queued::Easy->new({
-                initial_url => $server->uri . 'echo/head',
-            })
+            AnyEvent::Net::Curl::Queued::Easy->new($server->uri . 'echo/head')
         }
     );
 

@@ -13,7 +13,7 @@ use_ok('Test::HTTP::AnyEvent::Server');
 my $server = Test::HTTP::AnyEvent::Server->new;
 isa_ok($server, 'Test::HTTP::AnyEvent::Server');
 
-my $q = new AnyEvent::Net::Curl::Queued(5);
+my $q = AnyEvent::Net::Curl::Queued->new(5);
 isa_ok($q, qw(AnyEvent::Net::Curl::Queued));
 
 can_ok($q, qw(
@@ -47,9 +47,7 @@ for my $method (qw(append prepend)) {
     for my $i (1 .. $q->max) {
         $q->$method(
             sub {
-                AnyEvent::Net::Curl::Queued::Easy->new({
-                    initial_url => $server->uri . 'repeat/' . ($i * 1024) . '/' . $method,
-                })
+                AnyEvent::Net::Curl::Queued::Easy->new($server->uri . 'repeat/' . ($i * 1024) . '/' . $method)
             }
         );
     }

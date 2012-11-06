@@ -9,6 +9,9 @@ use Any::Moose;
 
 extends 'YADA::Worker';
 
+has '+use_stats'=> (default => 1);
+has '+retry'    => (default => 10);
+
 after init => sub {
     my ($self) = @_;
 
@@ -51,10 +54,10 @@ use Data::Printer;
 
 use YADA;
 
-my $q = YADA->new({
+my $q = YADA->new(
     max     => 8,
     timeout => 30,
-});
+);
 
 open(my $fh, '<', 'queue')
     or croak "can't open queue: $!";
@@ -62,11 +65,7 @@ while (my $url = <$fh>) {
     chomp $url;
 
     $q->append(sub {
-        MyDownloader->new({
-            initial_url => $url,
-            retry       => 10,
-            use_stats   => 1,
-        })
+        MyDownloader->new($url)
     });
 }
 close $fh;

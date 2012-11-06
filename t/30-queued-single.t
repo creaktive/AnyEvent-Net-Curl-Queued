@@ -13,7 +13,7 @@ use_ok('Test::HTTP::AnyEvent::Server');
 my $server = Test::HTTP::AnyEvent::Server->new;
 isa_ok($server, 'Test::HTTP::AnyEvent::Server');
 
-my $q = new AnyEvent::Net::Curl::Queued;
+my $q = AnyEvent::Net::Curl::Queued->new;
 isa_ok($q, qw(AnyEvent::Net::Curl::Queued));
 
 can_ok($q, qw(
@@ -44,9 +44,7 @@ isa_ok($q->share, 'Net::Curl::Share');
 isa_ok($q->stats, 'AnyEvent::Net::Curl::Queued::Stats');
 
 $q->append(
-    AnyEvent::Net::Curl::Queued::Easy->new({
-        initial_url => $server->uri . 'echo/head',
-    })
+    AnyEvent::Net::Curl::Queued::Easy->new($server->uri . 'echo/head')
 ) for 1 .. 10; # test deduplication by URL
 
 $q->wait;

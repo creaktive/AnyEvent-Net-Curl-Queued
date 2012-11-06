@@ -27,10 +27,10 @@ after finish => sub {
         # TODO prepend() fails sporadically?!
         $self->queue->append(
             sub {
-                __PACKAGE__->new({
+                __PACKAGE__->new(
                     initial_url => $uri,
                     cb          => $self->cb,
-                })
+                )
             }
         );
     }
@@ -58,12 +58,12 @@ use_ok('Test::HTTP::AnyEvent::Server');
 my $server = Test::HTTP::AnyEvent::Server->new;
 isa_ok($server, 'Test::HTTP::AnyEvent::Server');
 
-my $q = new AnyEvent::Net::Curl::Queued;
+my $q = AnyEvent::Net::Curl::Queued->new;
 isa_ok($q, qw(AnyEvent::Net::Curl::Queued));
 
 $q->append(
     sub {
-        MyDownloader->new({
+        MyDownloader->new(
             initial_url => $server->uri . 'repeat/6/aaaaa',
             cb          => sub {
                 my ($self, $result) = @_;
@@ -72,7 +72,7 @@ $q->append(
                 ok($result == 0, 'got CURLE_OK for ' . $self->final_url);
                 ok(!$self->has_error, "libcurl message: '$result'");
             },
-        })
+        )
     }
 );
 

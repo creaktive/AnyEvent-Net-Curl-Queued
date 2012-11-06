@@ -13,28 +13,28 @@ use AnyEvent::Net::Curl::Queued::Multi;
 use Net::Curl::Easy qw(:constants);
 use Net::Curl::Multi qw(:constants);
 
-my $server = Test::HTTP::AnyEvent::Server->new({ forked => 1 });
+my $server = Test::HTTP::AnyEvent::Server->new(forked => 1);
 
 my $url = $server->uri . 'echo/head';
 
 my $last_fdset = '';
 my $last_cnt = 0;
 
-my $curl = new AnyEvent::Net::Curl::Queued::Easy($url);
+my $curl = AnyEvent::Net::Curl::Queued::Easy->new($url);
 isa_ok($curl, qw(AnyEvent::Net::Curl::Queued::Easy));
 can_ok($curl, qw(init _finish));
 
 $curl->init;
 ok($curl->{private} = "foo", "Setting private data");
 
-my $curl2 = new AnyEvent::Net::Curl::Queued::Easy(initial_url => $url);
+my $curl2 = AnyEvent::Net::Curl::Queued::Easy->new(initial_url => $url);
 isa_ok($curl2, qw(AnyEvent::Net::Curl::Queued::Easy));
 can_ok($curl2, qw(init _finish));
 
 $curl2->init;
 ok($curl2->{private} = 42, "Setting private data");
 
-my $curlm = new AnyEvent::Net::Curl::Queued::Multi({ pool => {} });
+my $curlm = AnyEvent::Net::Curl::Queued::Multi->new({ pool => {} });
 isa_ok($curlm, qw(AnyEvent::Net::Curl::Queued::Multi));
 
 can_ok($curlm, qw(CURLMOPT_TIMERFUNCTION));

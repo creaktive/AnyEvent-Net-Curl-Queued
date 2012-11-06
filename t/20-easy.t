@@ -7,14 +7,14 @@ use Digest::SHA qw(sha256_base64);
 use Test::HTTP::AnyEvent::Server;
 use Test::More;
 
-my $server = Test::HTTP::AnyEvent::Server->new({ forked => 1 });
+my $server = Test::HTTP::AnyEvent::Server->new(forked => 1);
 
 my $url = $server->uri . 'repeat/5/zxcvb';
 
 use_ok('AnyEvent::Net::Curl::Queued::Easy');
 use Net::Curl::Easy qw(:constants);
 
-my $easy = new AnyEvent::Net::Curl::Queued::Easy({ initial_url => $url });
+my $easy = AnyEvent::Net::Curl::Queued::Easy->new($url);
 isa_ok($easy, qw(AnyEvent::Net::Curl::Queued::Easy));
 can_ok($easy, qw(
     clone

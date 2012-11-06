@@ -23,7 +23,7 @@ my $obj = {
     total_time          => 0.001751,
 };
 
-my $stats = AnyEvent::Net::Curl::Queued::Stats->new({ stats => { %{$obj} } });
+my $stats = AnyEvent::Net::Curl::Queued::Stats->new(stats => { %{$obj} });
 
 isa_ok($stats, 'AnyEvent::Net::Curl::Queued::Stats');
 can_ok($stats, qw(stamp stats sum));

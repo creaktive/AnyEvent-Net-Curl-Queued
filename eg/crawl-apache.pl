@@ -10,7 +10,7 @@ use CrawlApache;
 
 my $q = YADA->new;
 $q->append(sub {
-    CrawlApache->new({ initial_url => 'http://localhost/manual/', use_stats => 1 })
+    CrawlApache->new('http://localhost/manual/')
 });
 $q->wait;
 

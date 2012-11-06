@@ -22,7 +22,7 @@ for my $i (1 .. $n) {
     my $url = $server->uri . 'echo/body';
     my $post = "i=$i";
     $q->append(sub {
-        AnyEvent::Net::Curl::Queued::Easy->new({
+        AnyEvent::Net::Curl::Queued::Easy->new(
             http_response => 1,
             initial_url => $url,
             on_init     => sub {
@@ -54,7 +54,7 @@ for my $i (1 .. $n) {
                 is($self->res->content, $post, 'got data: ' . $self->res->content);
             },
             use_stats   => 1,
-        })
+        )
     });
 }
 $q->cv->wait;

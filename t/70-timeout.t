@@ -29,19 +29,19 @@ use AnyEvent::Net::Curl::Queued::Easy;
 use Test::HTTP::AnyEvent::Server;
 
 my $server = Test::HTTP::AnyEvent::Server->new;
-my $q = AnyEvent::Net::Curl::Queued->new({
+my $q = AnyEvent::Net::Curl::Queued->new(
     timeout     => 5,   # allow watchdog to manifest itself
-});
+);
 
 $q->append(sub {
-    MyDownloader->new({
+    MyDownloader->new(
         initial_url => $server->uri . 'delay/10',
         retry       => 3,
-    })
+    )
 });
 
 $q->append(sub {
-    AnyEvent::Net::Curl::Queued::Easy->new({
+    AnyEvent::Net::Curl::Queued::Easy->new(
         initial_url => $server->uri . 'delay/1',
         on_finish   => sub {
             my ($self, $result) = @_;
@@ -49,7 +49,7 @@ $q->append(sub {
             like(${$self->data}, qr{^issued\s+}i, 'got data: ' . ${$self->data});
         },
         retry       => 3,
-    })
+    )
 });
 
 $q->wait;

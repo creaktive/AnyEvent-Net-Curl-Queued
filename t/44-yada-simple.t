@@ -10,7 +10,7 @@ use YADA;
 
 my $server = Test::HTTP::AnyEvent::Server->new;
 
-my $q = YADA->new({ allow_dups => 1 });
+my $q = YADA->new(allow_dups => 1);
 for my $i (1 .. 10) {
     for my $method (qw(append prepend)) {
         $q->$method(

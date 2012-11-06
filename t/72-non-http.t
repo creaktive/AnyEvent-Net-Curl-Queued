@@ -12,7 +12,7 @@ use AnyEvent::Net::Curl::Queued::Easy;
 my $q = AnyEvent::Net::Curl::Queued->new;
 
 $q->append(
-    AnyEvent::Net::Curl::Queued::Easy->new({
+    AnyEvent::Net::Curl::Queued::Easy->new(
         http_response => 1,
         initial_url => "file://$Bin/$Script",
         on_finish => sub {
@@ -22,7 +22,7 @@ $q->append(
             ok(!$self->has_error, "libcurl message: '$result'");
             ok(ref($self->res) eq '', 'HTTP::Response leak');
         },
-    })
+    )
 );
 
 $q->wait;

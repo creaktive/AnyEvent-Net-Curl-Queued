@@ -11,7 +11,7 @@ use AnyEvent::Net::Curl::Queued::Easy;
 my $q = AnyEvent::Net::Curl::Queued->new;
 
 $q->append(
-    AnyEvent::Net::Curl::Queued::Easy->new({
+    AnyEvent::Net::Curl::Queued::Easy->new(
         initial_url => 'http://127.0.0.1:0/',
         http_response => 1,
         on_finish   => sub {
@@ -21,7 +21,7 @@ $q->append(
             ok($result == Net::Curl::Easy::CURLE_COULDNT_CONNECT, "couldn't connect");
         },
         retry => 3,
-    })
+    )
 );
 
 $q->wait;

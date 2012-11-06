@@ -14,11 +14,11 @@ my $server = Test::HTTP::AnyEvent::Server->new;
 isa_ok($server, 'Test::HTTP::AnyEvent::Server');
 
 my $ua_string = Net::Curl::version();
-my $q = YADA->new({
+my $q = YADA->new(
     common_opts => {
         useragent => $ua_string,
     },
-});
+);
 isa_ok($q, qw(YADA));
 
 can_ok($q, qw(append wait));
@@ -28,7 +28,7 @@ for my $j (1 .. 10) {
         my $url = $server->uri . 'echo/head';
         my $post = qq({"i":$i,"j":$j,"k":"яда"});
         $q->append(sub {
-            YADA::Worker->new({
+            YADA::Worker->new(
                 initial_url => $url,
                 opts        => { cookie => q(time=) . time },
                 on_init     => sub {
@@ -58,7 +58,7 @@ for my $j (1 .. 10) {
                     like(${$self->data}, qr{\bUser-Agent\s*:\s*\Q$ua_string\E\b}s, 'got User-Agent tag');
                     like(${$self->data}, qr{\bCookie\s*:\s*time=\d+\b}s, 'got Cookie tag');
                 },
-            })
+            )
         });
     }
     $q->wait;

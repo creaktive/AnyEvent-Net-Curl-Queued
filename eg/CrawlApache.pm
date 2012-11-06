@@ -21,6 +21,8 @@ has scrap => (
     lazy    => 1,
 );
 
+has '+use_stats' => (default => 1);
+
 after finish => sub {
     my ($self, $result) = @_;
 
@@ -43,11 +45,10 @@ after finish => sub {
             } @{$res->{links}}
         ) {
             $self->queue->prepend(sub {
-                CrawlApache->new({
+                CrawlApache->new(
                     initial_url => $link,
                     scrap       => $self->scrap,
-                    use_stats   => 1,
-                });
+                );
             });
         }
     }

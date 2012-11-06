@@ -16,7 +16,7 @@ use AnyEvent::Net::Curl::Queued::Easy;
 my $q = AnyEvent::Net::Curl::Queued->new;
 memory_cycle_ok($q, q(AnyEvent::Net::Curl::Queued after creation));
 
-my $e = AnyEvent::Net::Curl::Queued::Easy->new({
+my $e = AnyEvent::Net::Curl::Queued::Easy->new(
     http_response => 1,
     initial_url => "file://$Bin/$Script",
     on_finish => sub {
@@ -28,7 +28,7 @@ my $e = AnyEvent::Net::Curl::Queued::Easy->new({
         ok($result == 0, 'got CURLE_OK');
         ok(!$self->has_error, "libcurl message: '$result'");
     },
-});
+);
 memory_cycle_ok($e, q(AnyEvent::Net::Curl::Queued::Easy after creation));
 
 $q->append($e);

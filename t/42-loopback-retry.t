@@ -59,7 +59,7 @@ my $n = 10;
 for my $i (1 .. $n) {
     my $url = $server->uri . 'echo/head';
     $q->append(sub {
-        MyDownloader->new({
+        MyDownloader->new(
             attr1       => rand,
             attr2       => $i,
             attr3       => URI->new($url),
@@ -109,7 +109,7 @@ for my $i (1 .. $n) {
                 like(${$self->data}, qr{^POST /echo/head HTTP/1\.[01]}i, 'got data: ' . ${$self->data});
             },
             retry       => 5,
-        })
+        )
     });
 }
 $q->cv->wait;
