@@ -342,7 +342,7 @@ sub BUILDARGS {
     } elsif (@_ == 1) {
         return { max => shift };
     } else {
-        confess 'Should be initialized as ' . $class . '->new(HASH|HASHREF)';
+        confess 'Should be initialized as ' . $class . '->new(Hash|HashRef|Int)';
     }
 }
 

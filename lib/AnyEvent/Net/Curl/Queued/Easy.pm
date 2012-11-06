@@ -231,8 +231,8 @@ FOREIGNBUILDARGS
 =cut
 
 sub BUILDARGS {
-    return ($_[0] eq ref $_[-1])
-        ? pop
+    ($_[0] eq ref $_[-1])
+        ? $_[-1]
         : FOREIGNBUILDARGS(@_);
 }
 
@@ -245,7 +245,7 @@ sub FOREIGNBUILDARGS {
     } elsif (@_ % 2 == 0) {
         return { @_ };
     } else {
-        confess 'Should be initialized as ' . $class . '->new(HASH|HASHREF)';
+        confess 'Should be initialized as ' . $class . '->new(Hash|HashRef|URL)';
     }
 }
 
