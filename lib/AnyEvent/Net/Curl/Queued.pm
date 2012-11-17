@@ -380,7 +380,7 @@ Check if there are active requests or requests in queue.
 sub empty {
     my ($self) = @_;
 
-    $self->cv->send
+    AE::postpone { $self->cv->send }
         if
             $self->completed > 0
             and $self->count == 0
