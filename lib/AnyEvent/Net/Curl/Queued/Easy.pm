@@ -369,9 +369,12 @@ sub _finish {
 
     # optionally encapsulate with HTTP::Response
     if ($self->http_response and $self->final_url->scheme =~ m{^https?$}i) {
+        # libcurl concatenates headers of redirections!
+        my $header = ${$self->header};
+        $header =~ s/^.*(?:\015\012?|\012\015){2}(?!$)//sx;
         $self->set_res(
             HTTP::Response->parse(
-                ${$self->header}
+                $header
                 . ${$self->data}
             )
         );
