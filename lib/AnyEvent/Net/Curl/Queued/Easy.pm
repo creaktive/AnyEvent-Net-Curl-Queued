@@ -179,7 +179,7 @@ Setup via C<sign> and access through C<unique>.
 
 =cut
 
-has sha         => (is => 'ro', isa => 'Digest::SHA', default => sub { new Digest::SHA(256) }, lazy => 1);
+has sha         => (is => 'ro', isa => 'Digest::SHA', default => sub { Digest::SHA->new(256) }, lazy => 1);
 
 =attr res
 
@@ -227,7 +227,6 @@ has [qw(on_init on_finish)] => (is => 'ro', isa => 'CodeRef');
 
 =for Pod::Coverage
 BUILDARGS
-FOREIGNBUILDARGS
 =cut
 
 sub BUILDARGS {
@@ -235,6 +234,13 @@ sub BUILDARGS {
         ? $_[-1]
         : FOREIGNBUILDARGS(@_);
 }
+
+=func FOREIGNBUILDARGS
+
+Internal.
+Required for L<MooseX::NonMoose> to operate properly on C<new> parameters.
+
+=cut
 
 sub FOREIGNBUILDARGS {
     my $class = shift;
@@ -278,6 +284,7 @@ sub sign {
     my ($self, $str) = @_;
 
     # add entropy to the signature
+    Encode::_utf8_off($str);
     $self->sha->add($str);
 }
 
