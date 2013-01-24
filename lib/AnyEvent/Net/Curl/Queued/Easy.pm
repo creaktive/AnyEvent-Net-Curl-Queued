@@ -80,6 +80,13 @@ use AnyEvent::Net::Curl::Queued::Stats;
 
 # VERSION
 
+has json        => (
+    is          => 'ro',
+    isa         => 'JSON',
+    default     => sub { JSON->new->utf8->allow_blessed->convert_blessed },
+    lazy        => 1,
+);
+
 subtype 'QueueType'
     => as 'Object'
     => where {
@@ -495,7 +502,7 @@ Or even shorter:
 
 Complete list of options: L<http://curl.haxx.se/libcurl/c/curl_easy_setopt.html>
 
-If C<CURLOPT_POSTFIELDS> looks like a valid JSON (validates via L<JSON>),
+If C<CURLOPT_POSTFIELDS> is a C<HashRef> or looks like a valid JSON (validates via L<JSON>),
 it is encoded as UTF-8 and C<Content-Type: application/json; charset=utf-8> header is set automatically.
 
 =cut
@@ -518,18 +525,13 @@ around setopt => sub {
         while (my ($key, $val) = each %param) {
             $key = AnyEvent::Net::Curl::Const::opt($key);
             if ($key == Net::Curl::Easy::CURLOPT_POSTFIELDS) {
-                $self->set_post_content($val);
+                my $is_json = 0;
+                ($val, $is_json) = $self->_setopt_postfields($val);
 
-                my $obj = eval { decode_json(encode_utf8($val)) };
-                if ('HASH' eq ref $obj and not $@) {
-                    $orig->($self =>
-                        Net::Curl::Easy::CURLOPT_HTTPHEADER,
-                        [ 'Content-Type: application/json; charset=utf-8' ],
-                    );
-
-                    # reformat JSON query string
-                    $val = decode_utf8(encode_json($obj));
-                }
+                $orig->($self =>
+                    Net::Curl::Easy::CURLOPT_HTTPHEADER,
+                    [ 'Content-Type: application/json; charset=utf-8' ],
+                ) if $is_json;
             }
             $orig->($self => $key, $val);
         }
@@ -537,6 +539,28 @@ around setopt => sub {
         carp "Specify at least one OPTION/VALUE pair!";
     }
 };
+
+sub _setopt_postfields {
+    my ($self, $val) = @_;
+
+    my $is_json = 0;
+    if ('HASH' eq ref $val) {
+        ++$is_json;
+        $val = $self->json->encode($val);
+    } else {
+        # some DWIMmery here!
+        # application/x-www-form-urlencoded is supposed to have a 7-bit encoding
+        $val = encode_utf8($val)
+            if utf8::is_utf8($val);
+
+        my $obj;
+        ++$is_json
+            if $obj = eval { $self->json->decode($val) }
+            and not $@;
+    }
+
+    return ($self->set_post_content($val), $is_json);
+}
 
 =method getinfo(VAR_NAME [, VAR_NAME])
 
