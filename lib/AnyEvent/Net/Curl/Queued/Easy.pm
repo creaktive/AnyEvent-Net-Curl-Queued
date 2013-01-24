@@ -65,7 +65,10 @@ use JSON::XS;
 use Any::Moose;
 use Any::Moose qw(::Util::TypeConstraints);
 use Any::Moose qw(X::NonMoose);
+use Scalar::Util qw(set_prototype);
 use URI;
+
+set_prototype \&new => undef;
 
 extends 'Net::Curl::Easy';
 
@@ -484,10 +487,8 @@ it is encoded as UTF-8 and C<Content-Type: application/json; charset=utf-8> head
 
 =cut
 
-#around setopt => sub {
-#    my $orig = shift;
-#    my $self = shift;
-sub setopt {
+around setopt => sub {
+    my $orig = shift;
     my $self = shift;
 
     if (@_) {
@@ -509,14 +510,14 @@ sub setopt {
                 my $tmp;
                 eval { $tmp = encode_utf8($val); decode_json($tmp) };
                 unless ($@) {
-                    $self->SUPER::setopt(
+                    $orig->($self =>
                         Net::Curl::Easy::CURLOPT_HTTPHEADER,
                         [ 'Content-Type: application/json; charset=utf-8' ],
                     );
                     $val = $tmp;
                 }
             }
-            $self->SUPER::setopt($key, $val);
+            $orig->($self => $key, $val);
         }
     } else {
         carp "Specify at least one OPTION/VALUE pair!";
@@ -552,10 +553,8 @@ Complete list of options: L<http://curl.haxx.se/libcurl/c/curl_easy_getinfo.html
 
 =cut
 
-#around getinfo => sub {
-#    my $orig = shift;
-#    my $self = shift;
-sub getinfo {
+around getinfo => sub {
+    my $orig = shift;
     my $self = shift;
 
     for (ref($_[0])) {
@@ -564,8 +563,7 @@ sub getinfo {
             for my $name (@{$_[0]}) {
                 my $const = AnyEvent::Net::Curl::Const::info($name);
                 next unless defined $const;
-                #push @val, $self->$orig($const);
-                push @val, $self->SUPER::getinfo($const);
+                push @val, $self->$orig($const);
             }
             return @val;
         } when ('HASH') {
@@ -573,8 +571,7 @@ sub getinfo {
             for my $name (keys %{$_[0]}) {
                 my $const = AnyEvent::Net::Curl::Const::info($name);
                 next unless defined $const;
-                #$val{$name} = $self->$orig($const);
-                $val{$name} = $self->SUPER::getinfo($const);
+                $val{$name} = $self->$orig($const);
             }
 
             # write back to HashRef if called under void context
@@ -588,8 +585,7 @@ sub getinfo {
             }
         } when ('') {
             my $const = AnyEvent::Net::Curl::Const::info($_[0]);
-            #return defined $const ? $self->$orig($const) : $const;
-            return defined $const ? $self->SUPER::getinfo($const) : $const;
+            return defined $const ? $self->$orig($const) : $const;
         } default {
             carp "getinfo() expects array/hash reference or string!";
             return;
