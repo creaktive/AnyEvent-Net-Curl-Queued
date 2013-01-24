@@ -141,7 +141,7 @@ around qw(append prepend) => sub {
         my (%init, @url);
         for my $arg (@_) {
             for (ref $arg) {
-                when ($_ eq '' or m{^URI::}) {
+                when ($_ eq '' or m{^URI::}x) {
                     push @url, $arg;
                 } when ('ARRAY') {
                     push @url, @{$arg};

@@ -44,7 +44,7 @@ Retrieve numeric value for C<$constant_name> in I<CURLOPT> namespace.
 
 =cut
 
-our (%const_info, %const_opt);
+my (%const_info, %const_opt);
 
 sub info {
     my ($name) = @_;
@@ -64,19 +64,19 @@ sub _curl_const {
     my ($suffix => $key) = @_;
     return $key if looks_like_number($key);
 
-    $key =~ s{^Net::Curl::Easy::}{}i;
+    $key =~ s{^Net::Curl::Easy::}{}ix;
     $key =~ y{-}{_};
-    $key =~ s{\W}{}g;
+    $key =~ s{\W}{}gx;
     $key = uc $key;
-    $key = "${suffix}_${key}" if $key !~ m{^${suffix}_};
+    $key = "${suffix}_${key}" if $key !~ m{^${suffix}_}x;
 
-    my $val;
-    eval {
-        no strict 'refs';   ## no critic
+    my $val = eval {
+        ## no critic (ProhibitNoStrict)
+        no strict 'refs';
         my $const_name = 'Net::Curl::Easy::' . $key;
-        $val = *$const_name->();
+        *$const_name->();
     };
-    carp "Invalid libcurl constant: $key" if $@;
+    carp "Invalid libcurl constant: $key" if not defined $val or $@;
 
     return $val;
 }

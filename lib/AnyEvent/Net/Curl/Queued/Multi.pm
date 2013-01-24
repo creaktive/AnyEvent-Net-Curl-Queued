@@ -87,9 +87,12 @@ sub BUILD {
     $self->setopt(Net::Curl::Multi::CURLMOPT_MAXCONNECTS        => $self->max << 2);
     $self->setopt(Net::Curl::Multi::CURLMOPT_SOCKETFUNCTION     => \&_cb_socket);
     $self->setopt(Net::Curl::Multi::CURLMOPT_TIMERFUNCTION      => \&_cb_timer);
+
+    return;
 }
 
-sub BUILDARGS { $_[-1] }
+## no critic (RequireArgUnpacking)
+sub BUILDARGS { return $_[-1] }
 
 # socket callback: will be called by curl any time events on some
 # socket must be updated

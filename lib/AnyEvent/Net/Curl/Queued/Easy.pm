@@ -235,8 +235,10 @@ has [qw(on_init on_finish)] => (is => 'ro', isa => 'CodeRef');
 BUILDARGS
 =cut
 
+## no critic (RequireArgUnpacking)
+
 sub BUILDARGS {
-    ($_[0] eq ref $_[-1])
+    return ($_[0] eq ref $_[-1])
         ? $_[-1]
         : FOREIGNBUILDARGS(@_);
 }
@@ -290,8 +292,9 @@ sub sign {
     my ($self, $str) = @_;
 
     # add entropy to the signature
+    ## no critic (ProtectPrivateSubs)
     Encode::_utf8_off($str);
-    $self->sha->add($str);
+    return $self->sha->add($str);
 }
 
 =method init()
@@ -340,6 +343,8 @@ sub init {
 
     # call the optional callback
     $self->on_init->(@_) if ref($self->on_init) eq 'CODE';
+
+    return;
 }
 
 =method has_error()
@@ -361,7 +366,7 @@ For example, to retry on server error (HTTP 5xx response code):
 
 sub has_error {
     # very bad error
-    0 + $_[0]->curl_result != Net::Curl::Easy::CURLE_OK;
+    return 0 + $_[0]->curl_result != Net::Curl::Easy::CURLE_OK;
 }
 
 =method finish($result)
@@ -373,6 +378,7 @@ You are supposed to build your own stuff after/around/before this method using L
 
 =cut
 
+## no critic (ProhibitUnusedPrivateSubroutines)
 sub _finish {
     my ($self, $result) = @_;
 
@@ -381,7 +387,7 @@ sub _finish {
     $self->set_final_url($self->getinfo(Net::Curl::Easy::CURLINFO_EFFECTIVE_URL));
 
     # optionally encapsulate with HTTP::Response
-    if ($self->http_response and $self->final_url->scheme =~ m{^https?$}i) {
+    if ($self->http_response and $self->final_url->scheme =~ m{^https?$}ix) {
         # libcurl concatenates headers of redirections!
         my $header = ${$self->header};
         $header =~ s/^.*(?:\015\012?|\012\015){2}(?!$)//sx;
@@ -393,7 +399,7 @@ sub _finish {
         );
 
         my $msg = $self->res->message // '';
-        $msg =~ s/^\s+|\s+$//gs;
+        $msg =~ s/^\s+|\s+$//gsx;
         $self->res->message($msg);
     }
 
@@ -416,6 +422,8 @@ sub _finish {
 
     # move queue
     $self->queue->start;
+
+    return;
 }
 
 sub finish {
@@ -423,6 +431,8 @@ sub finish {
 
     # call the optional callback
     $self->on_finish->($self, $result) if ref($self->on_finish) eq 'CODE';
+
+    return;
 }
 
 =method clone()
@@ -510,14 +520,15 @@ around setopt => sub {
             if ($key == Net::Curl::Easy::CURLOPT_POSTFIELDS) {
                 $self->set_post_content($val);
 
-                my $tmp;
-                eval { $tmp = encode_utf8($val); decode_json($tmp) };
-                unless ($@) {
+                my $obj = eval { decode_json(encode_utf8($val)) };
+                if ('HASH' eq ref $obj and not $@) {
                     $orig->($self =>
                         Net::Curl::Easy::CURLOPT_HTTPHEADER,
                         [ 'Content-Type: application/json; charset=utf-8' ],
                     );
-                    $val = $tmp;
+
+                    # reformat JSON query string
+                    $val = decode_utf8(encode_json($obj));
                 }
             }
             $orig->($self => $key, $val);

@@ -145,6 +145,7 @@ for my $url (@urls) {
 
                 $name = get_filename($self->initial_url);
 
+                ## no critic (RequireBriefOpen)
                 open($fh, q(>:raw), $name);
                 $self->setopt(
                     encoding            => $encoding // q(),
@@ -167,13 +168,14 @@ for my $url (@urls) {
             on_finish   => sub {
                 my ($self) = @_;
                 close $fh;
+                ## no critic (ProhibitComplexRegexes)
                 #if ($self->has_error or $self->getinfo(q(response_code)) =~ m{^5[0-9]{2}$}) {
                 if ($self->has_error) {
-                    eval { unlink $name };
+                    unlink $name;
                 } elsif (${$self->header} =~ m{\bContent-Disposition:\s*attachment;\s*filename=("?[\w\.\-]+"?);?}isx) {
                     my $filename = $1;
-                    $filename =~ s/^"//;
-                    $filename =~ s/"$//;
+                    $filename =~ s/^"//x;
+                    $filename =~ s/"$//x;
 
                     move($name, $name . q(.tmp));
                     my $new_name = get_filename(URI->new(q(file:///) . $filename));
