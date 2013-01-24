@@ -61,7 +61,7 @@ use Carp qw(carp confess);
 use Digest::SHA;
 use Encode;
 use HTTP::Response;
-use JSON::XS;
+use JSON;
 use Any::Moose;
 use Any::Moose qw(::Util::TypeConstraints);
 use Any::Moose qw(X::NonMoose);
@@ -334,7 +334,7 @@ sub init {
     }
 
     # salt
-    $self->sign($self->meta->name);
+    $self->sign(ref($self));
     # URL; GET parameters included
     $self->sign($url->as_string);
 
@@ -449,7 +449,7 @@ sub clone {
     # silently ignore unsupported parameters
     $param = {} unless 'HASH' eq ref $param;
 
-    my $class = $self->meta->name;
+    my $class = ref($self);
     $param->{$_} = $self->$_()
         for qw(
             http_response
@@ -495,7 +495,7 @@ Or even shorter:
 
 Complete list of options: L<http://curl.haxx.se/libcurl/c/curl_easy_setopt.html>
 
-If C<CURLOPT_POSTFIELDS> looks like a valid JSON (validates via L<JSON::XS>),
+If C<CURLOPT_POSTFIELDS> looks like a valid JSON (validates via L<JSON>),
 it is encoded as UTF-8 and C<Content-Type: application/json; charset=utf-8> header is set automatically.
 
 =cut
