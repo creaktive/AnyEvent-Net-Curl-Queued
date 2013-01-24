@@ -76,7 +76,7 @@ sub _curl_const {
         my $const_name = 'Net::Curl::Easy::' . $key;
         *$const_name->();
     };
-    carp "Invalid libcurl constant: $key" if not defined $val or $@;
+    carp "Invalid libcurl constant: $key" if $@;
 
     return $val;
 }
