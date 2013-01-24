@@ -44,7 +44,7 @@ isa_ok($q->share, 'Net::Curl::Share');
 isa_ok($q->stats, 'AnyEvent::Net::Curl::Queued::Stats');
 
 $q->append(
-    AnyEvent::Net::Curl::Queued::Easy->new($server->uri . 'echo/head')
+    AnyEvent::Net::Curl::Queued::Easy->new($server->uri . 'echo/head#' . rand)
 ) for 1 .. 10; # test deduplication by URL
 
 $q->wait;
