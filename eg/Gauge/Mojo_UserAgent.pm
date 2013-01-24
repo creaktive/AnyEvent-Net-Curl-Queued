@@ -13,37 +13,39 @@ has loop => (is => 'ro', isa => 'Mojo::IOLoop', default => sub { Mojo::IOLoop->s
 sub run {
     my ($self) = @_;
 
-    # stolen from https://metacpan.org/module/Mojolicious::Guides::Cookbook#Non-blocking
+    # stolen from http://blogs.perl.org/users/stas/2013/01/web-scraping-with-modern-perl-part-1.html
 
-    # User agent
+    # User agent following up to 5 redirects
     my $ua = Mojo::UserAgent->new;
-    my @queue = @{$self->queue};
+    my @urls = map { Mojo::URL->new($_) } @{$self->queue};
 
-    # Crawler
+    # Keep track of active connections
     my $active = 0;
-    my $crawl; $crawl = sub {
-        my $id = shift;
 
-        # Fetch non-blocking just by adding a callback
-        if (my $url = shift @queue) {
-            $ua->get(
-                $url => sub {
-                    $self->loop->stop unless --$active;
+    $self->loop->recurring(
+        0 => sub {
+            for ($active + 1 .. $self->parallel) {
 
-                    # Next
-                    $crawl->($id);
-                }
-            );
-            ++$active;
+                # Dequeue or halt if there are no active crawlers anymore
+                return ($active or $self->loop->stop)
+                    unless my $url = shift @urls;
+
+                # Fetch non-blocking just by adding
+                # a callback and marking as active
+                ++$active;
+                $ua->get($url => sub {
+                    my (undef, $tx) = @_;
+
+                    # Deactivate
+                    --$active;
+
+                    return;
+                });
+            }
         }
+    );
 
-        return;
-    };
-
-    # Start a bunch of parallel crawlers sharing the same user agent
-    $crawl->($_) for 1 .. $self->parallel;
-
-    # Start event loop
+    # Start event loop if necessary
     $self->loop->start unless $self->loop->is_running;
 
     return;
