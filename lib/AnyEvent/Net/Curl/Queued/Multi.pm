@@ -25,6 +25,12 @@ use Carp qw(confess);
 use Any::Moose;
 use Any::Moose qw(X::NonMoose);
 use Net::Curl::Multi;
+use Scalar::Util qw(set_prototype);
+
+# kill Net::Curl::Mulii prototypes as they wreck around/before/after method modifiers
+set_prototype \&Net::Curl::Multi::new           => undef;
+set_prototype \&Net::Curl::Multi::socket_action => undef;
+set_prototype \&Net::Curl::Multi::add_handle    => undef;
 
 extends 'Net::Curl::Multi';
 
@@ -169,14 +175,11 @@ Wrapper around the C<socket_action()> from L<Net::Curl::Multi>.
 
 =cut
 
-#around socket_action => sub {
-#    my $orig = shift;
-#    my $self = shift;
-sub socket_action {
+around socket_action => sub {
+    my $orig = shift;
     my $self = shift;
 
-    #$self->active($self->$orig(@_));
-    $self->set_active($self->SUPER::socket_action(@_));
+    $self->set_active($orig->($self => @_));
 
     my $i = 0;
     while (my (undef, $easy, $result) = $self->info_read) {
@@ -196,16 +199,12 @@ Add one handle and kickstart download.
 
 =cut
 
-#around add_handle => sub {
-#    my $orig = shift;
-#    my $self = shift;
-#    my $easy = shift;
-sub add_handle {
+around add_handle => sub {
+    my $orig = shift;
     my $self = shift;
     my $easy = shift;
 
-    #my $r = $self->$orig($easy);
-    my $r = $self->SUPER::add_handle($easy);
+    my $r = $orig->($self => $easy);
 
     # Calling socket_action with default arguments will trigger
     # socket callback and register IO events.

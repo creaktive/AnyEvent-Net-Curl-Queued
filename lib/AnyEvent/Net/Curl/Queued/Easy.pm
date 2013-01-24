@@ -68,7 +68,10 @@ use Any::Moose qw(X::NonMoose);
 use Scalar::Util qw(set_prototype);
 use URI;
 
-set_prototype \&new => undef;
+# kill Net::Curl::Easy prototypes as they wreck around/before/after method modifiers
+set_prototype \&Net::Curl::Easy::new        => undef;
+set_prototype \&Net::Curl::Easy::getinfo    => undef;
+set_prototype \&Net::Curl::Easy::setopt     => undef;
 
 extends 'Net::Curl::Easy';
 
