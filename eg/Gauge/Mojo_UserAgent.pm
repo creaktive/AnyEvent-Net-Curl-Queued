@@ -6,9 +6,12 @@ use warnings qw(all);
 use Any::Moose;
 with qw(Gauge::Role);
 
+use Mojo::IOLoop;
+use Mojo::URL;
 use Mojo::UserAgent;
 
-has loop => (is => 'ro', isa => 'Mojo::IOLoop', default => sub { Mojo::IOLoop->singleton });
+my $loop;
+BEGIN { $loop = Mojo::IOLoop->singleton };
 
 sub run {
     my ($self) = @_;
@@ -22,20 +25,18 @@ sub run {
     # Keep track of active connections
     my $active = 0;
 
-    $self->loop->recurring(
+    $loop->recurring(
         0 => sub {
             for ($active + 1 .. $self->parallel) {
 
                 # Dequeue or halt if there are no active crawlers anymore
-                return ($active or $self->loop->stop)
+                return ($active or $loop->stop)
                     unless my $url = shift @urls;
 
                 # Fetch non-blocking just by adding
                 # a callback and marking as active
                 ++$active;
                 $ua->get($url => sub {
-                    my (undef, $tx) = @_;
-
                     # Deactivate
                     --$active;
 
@@ -46,7 +47,7 @@ sub run {
     );
 
     # Start event loop if necessary
-    $self->loop->start unless $self->loop->is_running;
+    $loop->start unless $loop->is_running;
 
     return;
 }
