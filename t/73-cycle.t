@@ -6,6 +6,7 @@ use warnings qw(all);
 use FindBin qw($Bin $Script);
 use Test::More;
 
+## no critic (ProhibitStringyEval, RequireCheckingReturnValueOfEval)
 eval q(use Test::Memory::Cycle);
 plan skip_all => q(Test::Memory::Cycle required)
     if $@;

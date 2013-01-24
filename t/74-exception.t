@@ -9,6 +9,8 @@ use Test::More;
 use AnyEvent::Net::Curl::Queued;
 use AnyEvent::Net::Curl::Queued::Easy;
 
+## no critic (ProhibitComplexRegexes)
+
 throws_ok
     { AnyEvent::Net::Curl::Queued->new(1 .. 3) }
     qr(^Should\s+be\s+initialized\s+as\s+AnyEvent::Net::Curl::Queued->new\b)sx,

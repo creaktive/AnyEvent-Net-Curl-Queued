@@ -76,10 +76,10 @@ my $active = 2;
 while ($active != 0) {
     my $ret = $curlm->perform;
     if ($ret != $active) {
-        while (my ($msg, $curl, $result) = $curlm->info_read) {
+        while (my ($msg, $_curl, $result) = $curlm->info_read) {
             is($msg, CURLMSG_DONE, "Message is CURLMSG_DONE");
-            $curlm->remove_handle($curl);
-            ok($curl && ($curl->{private} eq "foo" || $curl->{private}  == 42), "The stored private value matches what we set ($curl->{private})");
+            $curlm->remove_handle($_curl);
+            ok($_curl && ($_curl->{private} eq "foo" || $_curl->{private}  == 42), "The stored private value matches what we set ($_curl->{private})");
         }
         $active = $ret;
     }
@@ -97,11 +97,13 @@ done_testing(25);
 
 
 sub action_wait {
-    my $curlm = shift;
-    my ($rin, $win, $ein) = $curlm->fdset;
-    my $timeout = $curlm->timeout;
+    my $_curlm = shift;
+    my ($rin, $win, $ein) = $_curlm->fdset;
+    my $timeout = $_curlm->timeout;
 
     if ($timeout > 0) {
         my ($nfound, $timeleft) = select($rin, $win, $ein, $timeout / 1000);
     }
+
+    return;
 }

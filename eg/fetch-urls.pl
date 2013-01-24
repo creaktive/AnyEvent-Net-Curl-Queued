@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
 
+## no critic (ProhibitMultiplePackages)
+
 package MyDownloader;
 use strict;
 use utf8;

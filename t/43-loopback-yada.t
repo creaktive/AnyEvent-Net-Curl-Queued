@@ -54,9 +54,9 @@ for my $j (1 .. 10) {
                     ok($result == 0, 'got CURLE_OK');
                     ok(!$self->has_error, "libcurl message: '$result'");
 
-                    like(${$self->data}, qr{\bContent-Type:\s*application/json\b}i, 'got data: ' . ${$self->data});
-                    like(${$self->data}, qr{\bUser-Agent\s*:\s*\Q$ua_string\E\b}s, 'got User-Agent tag');
-                    like(${$self->data}, qr{\bCookie\s*:\s*time=\d+\b}s, 'got Cookie tag');
+                    like(${$self->data}, qr{\bContent-Type:\s*application/json\b}ix, 'got data: ' . ${$self->data});
+                    like(${$self->data}, qr{\bUser-Agent\s*:\s*\Q$ua_string\E\b}sx, 'got User-Agent tag');
+                    like(${$self->data}, qr{\bCookie\s*:\s*time=\d+\b}sx, 'got Cookie tag');
                 },
             )
         });

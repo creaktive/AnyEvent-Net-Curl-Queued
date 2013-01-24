@@ -32,19 +32,19 @@ if ($repeat) {
 my $tests = {};
 
 for my $file (glob q(Gauge/*.pm)) {
-    next if $file =~ /\bRole\b/ or not -f $file;
+    next if $file =~ /\bRole\b/x;
 
     my $class = $file;
-    $class =~ s{/}{::}g;
-    $class =~ s{\.pm$}{};
+    $class =~ s{/}{::}gx;
+    $class =~ s{\.pm$}{}x;
 
     my $name = $class;
-    $name =~ s{^.+::}{};
-    $name =~ s{_}{::}g;
+    $name =~ s{^.+::}{}x;
+    $name =~ s{_}{::}gx;
 
     $tests->{$name} = sub {
         load_class($class);
-        $0 = $name;
+        local $0 = $name;
         my $obj = $class->new({
             parallel    => $parallel // 4,
             queue       => \@queue,

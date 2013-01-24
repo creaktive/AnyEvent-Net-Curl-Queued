@@ -17,19 +17,19 @@ for my $i (1 .. 10) {
             $server->uri . "repeat/$i/$method",
             sub {
                 my ($self, $result) = @_;
-                like(${$self->data}, qr{^(?:$method){$i}$}, 'got data: ' . ${$self->data});
+                like(${$self->data}, qr{^(?:$method){$i}$}x, 'got data: ' . ${$self->data});
             }
         );
     }
 }
 
 my @urls = ($server->uri . 'echo/head') x 2;
-$urls[-1] =~ s{\b127\.0\.0\.1\b}{localhost};
+$urls[-1] =~ s{\b127\.0\.0\.1\b}{localhost}x;
 my @opts = (referer => 'http://www.cpan.org/');
 my $on_finish = sub {
     my ($self, $r) = @_;
     isa_ok($self->res, qw(HTTP::Response));
-    like($self->res->decoded_content, qr{\bReferer\s*:\s*\Q$opts[1]\E}isx);
+    like($self->res->decoded_content, qr{\bReferer\s*:\s*\Q$opts[1]\E}isx, 'referer');
 };
 
 $q->append(

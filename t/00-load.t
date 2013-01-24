@@ -26,7 +26,7 @@ foreach my $key (sort keys %$vi) {
         next;
     } elsif (ref $value and ref $value eq 'ARRAY') {
         $value = join ', ', sort @$value;
-    } elsif ($value =~ m/^\d+$/) {
+    } elsif ($value =~ m/^\d+$/x) {
         $value = sprintf "0x%06x", $value
             if $value > 255;
     } else {
@@ -41,7 +41,7 @@ sub print_features {
     my @missing = ('');
     foreach my $f (
         sort { Net::Curl->$a() <=> Net::Curl->$b() }
-        grep /^CURL_VERSION_/, keys %{Net::Curl::}
+        grep { /^CURL_VERSION_/x } keys %{Net::Curl::}
       )
     {
         my $val = Net::Curl->$f();
@@ -56,4 +56,6 @@ sub print_features {
     local $" = "\n\t\t| ";
     diag "\t{features} = @found;\n";
     diag "\tmissing features = @missing;\n";
+
+    return;
 }
