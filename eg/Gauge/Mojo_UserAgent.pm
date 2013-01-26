@@ -11,7 +11,7 @@ use Mojo::URL;
 use Mojo::UserAgent;
 
 my $loop;
-BEGIN { $loop = Mojo::IOLoop->singleton };
+BEGIN { $loop = Mojo::IOLoop->singleton }
 
 sub run {
     my ($self) = @_;
@@ -25,7 +25,8 @@ sub run {
     # Keep track of active connections
     my $active = 0;
 
-    $loop->recurring(
+    # Update queue ASAP
+    my $id = $loop->recurring(
         0 => sub {
             for ($active + 1 .. $self->parallel) {
 
@@ -48,6 +49,9 @@ sub run {
 
     # Start event loop if necessary
     $loop->start unless $loop->is_running;
+
+    # Shutdown queue watcher
+    $loop->remove($id);
 
     return;
 }
