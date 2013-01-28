@@ -22,6 +22,12 @@ sub run {
     my $ua = Mojo::UserAgent->new;
     my @urls = map { Mojo::URL->new($_) } @{$self->queue};
 
+    # Disable compression
+    $ua->on(start => sub {
+        my (undef, $tx) = @_;
+        $tx->req->headers->header(q(Accept-Encoding) => q(identity));
+    });
+
     # Keep track of active connections
     my $active = 0;
 
