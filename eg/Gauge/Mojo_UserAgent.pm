@@ -6,9 +6,7 @@ use warnings qw(all);
 use Any::Moose;
 with qw(Gauge::Role);
 
-use Mojo::IOLoop;
-use Mojo::URL;
-use Mojo::UserAgent;
+use Mojolicious;
 
 my $loop;
 BEGIN { $loop = Mojo::IOLoop->singleton }
@@ -19,7 +17,7 @@ sub run {
     # stolen from http://blogs.perl.org/users/stas/2013/01/web-scraping-with-modern-perl-part-1.html
 
     # User agent following up to 5 redirects
-    my $ua = Mojo::UserAgent->new;
+    my $ua = Mojo::UserAgent->new(name => qq(Mojo::UserAgent/$Mojolicious::VERSION));
     my @urls = map { Mojo::URL->new($_) } @{$self->queue};
 
     # Disable compression

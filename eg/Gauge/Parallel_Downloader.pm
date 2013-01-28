@@ -12,6 +12,7 @@ use Parallel::Downloader;
 sub run {
     my ($self) = @_;
 
+    $AnyEvent::HTTP::USERAGENT = qq(Parallel::Downloader/$Parallel::Downloader::VERSION);
     my $parallel_downloader = Parallel::Downloader->new(
         requests        => [ map { GET($_) } @{$self->queue} ],
         workers         => $self->parallel,

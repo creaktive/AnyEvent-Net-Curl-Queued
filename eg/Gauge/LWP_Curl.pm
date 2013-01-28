@@ -11,7 +11,7 @@ use LWP::Curl;
 sub run {
     my ($self) = @_;
 
-    my $lwp_curl = LWP::Curl->new;
+    my $lwp_curl = LWP::Curl->new(user_agent => qq(LWP::Curl/$LWP::Curl::VERSION));
     $self->run_forked(sub {
         $lwp_curl->get(shift);
     });

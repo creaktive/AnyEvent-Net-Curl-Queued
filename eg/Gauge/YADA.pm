@@ -11,13 +11,10 @@ use YADA;
 sub run {
     my ($self) = @_;
 
-    my $yada = YADA->new({ max => $self->parallel });
-    for my $url (@{$self->queue}) {
-        $yada->append(sub {
-            YADA::Worker->new({ initial_url => $url })
-        });
-    }
-    $yada->wait;
+    YADA->new(
+        common_opts => { useragent => qq(YADA/$YADA::VERSION) },
+        max => $self->parallel,
+    )->append($self->queue => sub {})->wait;
 
     return;
 }

@@ -9,6 +9,7 @@ use File::Basename;
 use File::Slurp;
 use Getopt::Long;
 use List::Util qw(shuffle);
+use POSIX qw(nice);
 
 GetOptions(
     q(count=i)      => \my $count,
@@ -53,4 +54,5 @@ for my $file (glob q(Gauge/*.pm)) {
     };
 }
 
+nice(-20);
 cmpthese($count // 10 => $tests);

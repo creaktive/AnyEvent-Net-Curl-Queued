@@ -9,6 +9,7 @@ with qw(Gauge::Role);
 use AnyEvent;
 use AnyEvent::Curl::Multi;
 use HTTP::Request::Common qw(GET);
+use WWW::Curl::Easy;
 
 sub run {
     my ($self) = @_;
@@ -25,7 +26,19 @@ sub run {
             my ($client, $request, $errmsg, $stats) = @_;
         }
     );
-    my @multi = map { $multi->request(GET($_)) } @{$self->queue};
+    my @multi = map {
+        sub {
+            my $req = $multi->request(shift);
+
+            # Disable compression
+            $req->{easy_h}->setopt(CURLOPT_ENCODING, q(identity));
+
+            # UA string
+            $req->{easy_h}->setopt(CURLOPT_USERAGENT, qq(AnyEvent::Curl::Multi/$AnyEvent::Curl::Multi::VERSION));
+
+            return $req;
+        }->(GET($_))
+    } @{$self->queue};
     $_->cv->recv for @multi;
 
     return;
