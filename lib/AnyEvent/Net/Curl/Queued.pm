@@ -117,9 +117,9 @@ The proposed benchmark measures the request rate of several concurrent download 
 On practice, this benchmark results mean that download agents with lower request rate are less appropriate for parallelized batch downloads.
 On the other hand, download agents with higher request rate are more likely to reach the full capacity of a network link while still leaving spare resources for data parsing/filtering.
 
-The script F<eg/benchmark.pl> compares L<AnyEvent::Net::Curl::Queued> against several other download agents.
+The script F<eg/benchmark.pl> compares L<AnyEvent::Net::Curl::Queued> (A.K.A. L<YADA>) against several other download agents.
 Only L<AnyEvent::Net::Curl::Queued> itself, L<AnyEvent::Curl::Multi>, L<Parallel::Downloader>, L<Mojo::UserAgent> and L<lftp|http://lftp.yar.ru/> support concurrent downloads natively;
-thus, L<Parallel::ForkManager> is used to reproduce the same behaviour for the remaining agents.
+thus, L<Parallel::ForkManager> is used to reproduce the same behaviour for the remaining agents, while L<taskset> avoids the skew on multiprocessor systems.
 
 The download target is a copy of the L<Apache documentation|http://httpd.apache.org/docs/2.2/> on a local Apache server.
 The test platform configuration:
@@ -132,22 +132,23 @@ The test platform configuration:
 
 The script F<eg/benchmark.pl> uses L<Benchmark::Forking> and L<Class::Load> to keep UA modules isolated and loaded only once.
 
-    $ perl benchmark.pl --count 100 --parallel 8 --repeat 10
+    $ taskset 1 perl benchmark.pl --count 100 --parallel 8 --repeat 10
 
-                             Request rate WWW::M LWP::UA Mojo::UA HTTP::Lite HTTP::Tiny AE::C::M lftp P::D YADA Furl curl wget LWP::Curl
-    WWW::Mechanize v1.72            231/s     --    -59%     -85%       -87%       -89%     -90% -93% -93% -94% -97% -98% -98%      -98%
-    LWP::UserAgent v6.04            567/s   145%      --     -64%       -68%       -72%     -77% -82% -83% -85% -92% -94% -95%      -96%
-    Mojo::UserAgent v3.54          1590/s   589%    181%       --       -10%       -22%     -34% -49% -53% -59% -76% -83% -87%      -88%
-    HTTP::Lite v2.4                1770/s   666%    213%      11%         --       -13%     -27% -44% -48% -54% -74% -81% -85%      -86%
-    HTTP::Tiny v0.024              2030/s   779%    259%      28%        15%         --     -16% -36% -40% -48% -70% -78% -83%      -84%
-    AnyEvent::Curl::Multi v1.1     2430/s   952%    329%      53%        37%        20%       -- -23% -29% -37% -64% -74% -80%      -81%
-    lftp v4.3.1                    3150/s  1262%    456%      98%        78%        55%      30%   --  -8% -19% -53% -66% -74%      -75%
-    Parallel::Downloader v0.121560 3410/s  1375%    502%     114%        92%        68%      40%   8%   -- -12% -49% -64% -72%      -73%
-    YADA v0.036                    3880/s  1579%    585%     144%       119%        91%      60%  23%  14%   -- -42% -59% -68%      -70%
-    Furl v1.00                     6700/s  2795%   1082%     320%       278%       229%     175% 113%  96%  72%   -- -29% -45%      -48%
-    curl v7.28.0                   9380/s  3953%   1554%     488%       429%       361%     285% 197% 175% 141%  40%   -- -23%      -27%
-    wget v1.12                    12100/s  5139%   2038%     661%       584%       496%     398% 285% 255% 212%  81%  29%   --       -5%
-    LWP::Curl v0.12               12800/s  5418%   2152%     701%       620%       528%     425% 305% 274% 229%  91%  36%   5%        --
+                              Request rate WWW::M LWP::UA L::P::N::C Mojo::UA HTTP::L HTTP::T lftp P::D AE::C::M YADA Furl curl wget LWP::C
+    WWW::Mechanize v1.72             534/s     --    -32%       -61%     -63%    -80%    -82% -83% -84%     -85% -86% -94% -95% -97%   -97%
+    LWP::UserAgent v6.04             782/s    46%      --       -42%     -46%    -71%    -73% -75% -76%     -77% -79% -92% -93% -95%   -95%
+    LWP::Protocol::Net::Curl v0.011 1360/s   154%     74%         --      -6%    -50%    -53% -57% -59%     -61% -64% -86% -88% -91%   -91%
+    Mojo::UserAgent v3.82           1450/s   171%     85%         7%       --    -46%    -50% -54% -56%     -58% -62% -85% -87% -91%   -91%
+    HTTP::Lite v2.4                 2700/s   405%    245%        98%      86%      --     -7% -14% -18%     -22% -29% -71% -76% -82%   -83%
+    HTTP::Tiny v0.025               2910/s   445%    272%       114%     101%      8%      --  -7% -11%     -16% -23% -69% -74% -81%   -81%
+    lftp v4.3.1                     3140/s   488%    302%       131%     117%     17%      8%   --  -4%      -9% -17% -67% -72% -80%   -80%
+    Parallel::Downloader v0.121560  3280/s   514%    319%       141%     127%     22%     13%   4%   --      -5% -13% -65% -70% -79%   -79%
+    AnyEvent::Curl::Multi v1.1      3460/s   548%    342%       155%     139%     28%     19%  10%   5%       --  -9% -63% -69% -77%   -78%
+    YADA v0.038                     3790/s   610%    385%       179%     162%     41%     30%  21%  16%      10%   -- -60% -66% -75%   -76%
+    Furl v2.01                      9420/s  1663%   1104%       593%     550%    249%    223% 200% 187%     172% 148%   -- -15% -39%   -40%
+    curl v7.28.0                   11100/s  1977%   1318%       716%     666%    311%    281% 253% 238%     221% 193%  18%   -- -28%   -29%
+    wget v1.12                     15400/s  2777%   1864%      1031%     961%    470%    428% 389% 368%     344% 305%  63%  39%   --    -1%
+    LWP::Curl v0.12                15600/s  2818%   1892%      1047%     976%    478%    435% 396% 375%     350% 311%  65%  40%   1%     --
 
     (output formatted to show module versions at row labels and keep column labels abbreviated)
 
