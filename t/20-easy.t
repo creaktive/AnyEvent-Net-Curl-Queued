@@ -32,7 +32,7 @@ can_ok($easy, qw(
     on_finish
     on_init
     queue
-    res
+    response
     retry
     setopt
     sha

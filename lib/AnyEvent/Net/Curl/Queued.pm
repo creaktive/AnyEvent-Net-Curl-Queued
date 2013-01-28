@@ -188,6 +188,15 @@ You may define C<User-Agent> string here.
 
 has common_opts => (is => 'ro', isa => 'HashRef', default => sub { {} });
 
+=attr http_response
+
+Encapsulate the response with L<HTTP::Response> (only when the scheme is HTTP/HTTPS); a global version of L<AnyEvent::Net::Curl::Queued::Easy/http_response>.
+Default: disabled.
+
+=cut
+
+has http_response => (is => 'ro', isa => 'Bool', default => 0);
+
 =attr completed
 
 Count completed requests.

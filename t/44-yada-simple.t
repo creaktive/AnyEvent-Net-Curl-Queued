@@ -10,7 +10,7 @@ use YADA;
 
 my $server = Test::HTTP::AnyEvent::Server->new;
 
-my $q = YADA->new(allow_dups => 1);
+my $q = YADA->new(allow_dups => 1, http_response => 1, common_opts => { encoding => 'bzip2' });
 for my $i (1 .. 10) {
     for my $method (qw(append prepend)) {
         $q->$method(
@@ -28,12 +28,11 @@ $urls[-1] =~ s{\b127\.0\.0\.1\b}{localhost}x;
 my @opts = (referer => 'http://www.cpan.org/');
 my $on_finish = sub {
     my ($self, $r) = @_;
-    isa_ok($self->res, qw(HTTP::Response));
-    like($self->res->decoded_content, qr{\bReferer\s*:\s*\Q$opts[1]\E}isx, 'referer');
+    isa_ok($self->response, qw(HTTP::Response));
+    like($self->response->decoded_content, qr{\bReferer\s*:\s*\Q$opts[1]\E}isx, 'referer');
 };
 
 $q->append(
-    { http_response => 1 },
     @urls,
     sub { $_[0]->setopt(@opts) }, # on_init placeholder
     $on_finish,
@@ -41,18 +40,17 @@ $q->append(
 
 $q->append(
     [ @urls ],
-    { http_response => 1, opts => { @opts } },
+    { opts => { @opts } },
     $on_finish,
 );
 
 $q->append(
     URI->new($_) => $on_finish,
-    { http_response => 1, opts => { @opts } },
+    { opts => { @opts } },
 ) for @urls;
 
 $q->append(
     \@urls => {
-        http_response   => 1,
         opts            => { @opts },
         on_finish       => $on_finish,
     }

@@ -139,11 +139,13 @@ has header      => (is => 'rw', isa => 'Ref');
 
 =attr http_response
 
-Optionally encapsulate the response in L<HTTP::Response> (when the scheme is HTTP/HTTPS).
+Encapsulate the response with L<HTTP::Response> (only when the scheme is HTTP/HTTPS).
+Default: disabled.
 
 =cut
 
-has http_response => (is => 'ro', isa => 'Bool', default => 0);
+has _autodecoded => (is => 'rw', isa => 'Bool', default => 0);
+has http_response => (is => 'ro', isa => 'Bool', default => 0, writer => 'set_http_response');
 
 =attr post_content
 
@@ -194,13 +196,18 @@ Setup via C<sign> and access through C<unique>.
 
 has sha         => (is => 'ro', isa => 'Digest::SHA', default => sub { Digest::SHA->new(256) }, lazy => 1);
 
-=attr res
+=attr response
 
 Encapsulated L<HTTP::Response> instance, if L</http_response> was set.
 
+=attr res
+
+Deprecated alias for L</response>.
+
 =cut
 
-has res         => (is => 'ro', isa => 'HTTP::Response', writer => 'set_res');
+has response    => (is => 'ro', isa => 'HTTP::Response', writer => 'set_response');
+sub res { my ($self, @args) = @_; return $self->response(@args) }
 
 =attr retry
 
@@ -240,6 +247,7 @@ has [qw(on_init on_finish)] => (is => 'ro', isa => 'CodeRef');
 
 =for Pod::Coverage
 BUILDARGS
+res
 =cut
 
 ## no critic (RequireArgUnpacking)
@@ -338,6 +346,8 @@ sub init {
             Net::Curl::Easy::CURLOPT_TIMEOUT,   $self->queue->timeout,
         );
         $self->setopt($self->queue->common_opts);
+        $self->set_http_response($self->queue->http_response)
+            if $self->queue->http_response;
     }
 
     # salt
@@ -398,16 +408,19 @@ sub _finish {
         # libcurl concatenates headers of redirections!
         my $header = ${$self->header};
         $header =~ s/^.*(?:\015\012?|\012\015){2}(?!$)//sx;
-        $self->set_res(
+        $self->set_response(
             HTTP::Response->parse(
                 $header
                 . ${$self->data}
             )
         );
 
-        my $msg = $self->res->message // '';
+        $self->response->headers->header(content_encoding => 'identity')
+            if $self->_autodecoded;
+
+        my $msg = $self->response->message // '';
         $msg =~ s/^\s+|\s+$//gsx;
-        $self->res->message($msg);
+        $self->response->message($msg);
     }
 
     # wrap around the extendible interface
@@ -532,6 +545,9 @@ around setopt => sub {
                     Net::Curl::Easy::CURLOPT_HTTPHEADER,
                     [ 'Content-Type: application/json; charset=utf-8' ],
                 ) if $is_json;
+            } elsif ($key == Net::Curl::Easy::CURLOPT_ENCODING) {
+                $self->_autodecoded(1);
+                $val = $self->_setopt_encoding($val);
             }
             $orig->($self => $key, $val);
         }
@@ -554,12 +570,21 @@ sub _setopt_postfields {
             if utf8::is_utf8($val);
 
         my $obj;
-        ++$is_json
-            if $obj = eval { $self->json->decode($val) }
-            and not $@;
+        ++$is_json if 'HASH' eq ref($obj = eval { $self->json->decode($val) });
     }
 
     return ($self->set_post_content($val), $is_json);
+}
+
+sub _setopt_encoding {
+    my ($self, $val) = @_;
+
+    # stolen from LWP::Protocol::Net::Curl
+    my @encoding =
+        map { /^(?:x-)?(deflate|gzip|identity)$/ix ? lc $1 : () }
+        split /\s*,\s*/x, $val;
+
+    return join q(,) => @encoding;
 }
 
 =method getinfo(VAR_NAME [, VAR_NAME])

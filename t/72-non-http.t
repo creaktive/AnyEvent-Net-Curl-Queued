@@ -18,15 +18,17 @@ $q->append(
         on_finish => sub {
             my ($self, $result) = @_;
 
-            ok($result == 0, 'got CURLE_OK');
+            is(0 + $result, 0, 'got CURLE_OK');
             ok(!$self->has_error, "libcurl message: '$result'");
-            ok(ref($self->res) eq '', 'HTTP::Response leak');
+
+            # AnyEvent::Net::Curl::Queued::Easy::res will be deprecated soon!
+            is(ref($self->res), '', 'HTTP::Response leak');
         },
     )
 );
 
 $q->wait;
 
-ok($q->completed == 1, 'single fetch');
+is($q->completed, 1, 'single fetch');
 
-done_testing(4);
+done_testing 4;

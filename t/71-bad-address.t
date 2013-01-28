@@ -17,7 +17,7 @@ $q->append(
         on_finish   => sub {
             my ($self, $result) = @_;
             ok($self->has_error, "error detected");
-            ok($self->res->message eq '', "empty HTTP::Response");
+            ok($self->response->message eq '', "empty HTTP::Response");
             ok($result == Net::Curl::Easy::CURLE_COULDNT_CONNECT, "couldn't connect");
         },
         retry => 3,

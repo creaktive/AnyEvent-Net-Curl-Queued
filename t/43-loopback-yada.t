@@ -17,8 +17,10 @@ isa_ok($server, 'Test::HTTP::AnyEvent::Server');
 my $ua_string = Net::Curl::version();
 my $q = YADA->new(
     common_opts => {
-        useragent => $ua_string,
+        encoding    => 'gzip',
+        useragent   => $ua_string,
     },
+    http_response => 1,
 );
 isa_ok($q, qw(YADA));
 
@@ -51,8 +53,8 @@ for my $j (1 .. 10) {
                         initial_url
                     ));
 
-                    ok($self->final_url eq $url, 'initial/final URLs match');
-                    ok($result == 0, 'got CURLE_OK');
+                    is($self->final_url, $url, 'initial/final URLs match');
+                    is(0 + $result, 0, 'got CURLE_OK');
                     ok(!$self->has_error, "libcurl message: '$result'");
 
                     like(${$self->data}, qr{\bContent-Type:\s*application/json\b}ix, 'got data: ' . ${$self->data});

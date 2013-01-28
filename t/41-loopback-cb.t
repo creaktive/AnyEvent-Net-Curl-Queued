@@ -35,8 +35,8 @@ for my $i (1 .. $n) {
                 my ($self, $result) = @_;
 
                 isa_ok($self, qw(AnyEvent::Net::Curl::Queued::Easy));
-                isa_ok($self->res, qw(HTTP::Response));
-                ok($self->res->code == 200, 'HTTP 200');
+                isa_ok($self->response, qw(HTTP::Response));
+                ok($self->response->code == 200, 'HTTP 200');
 
                 can_ok($self, qw(
                     data
@@ -49,9 +49,9 @@ for my $i (1 .. $n) {
                 ok($self->final_url eq $url, 'initial/final URLs match');
                 ok($result == 0, 'got CURLE_OK');
                 ok(!$self->has_error, "libcurl message: '$result'");
-                ok(ref($self->res) eq 'HTTP::Response', 'returns ' . ref($self->res));
+                ok(ref($self->response) eq 'HTTP::Response', 'returns ' . ref($self->response));
 
-                is($self->res->content, $post, 'got data: ' . $self->res->content);
+                is($self->response->content, $post, 'got data: ' . $self->response->content);
             },
             use_stats   => 1,
         )

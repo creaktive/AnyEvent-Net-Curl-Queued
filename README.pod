@@ -243,6 +243,11 @@ Setting C<allow_dups> to true value disables request checks.
 L<AnyEvent::Net::Curl::Queued::Easy/opts> attribute common to all workers initialized under the same queue.
 You may define C<User-Agent> string here.
 
+=head2 http_response
+
+Encapsulate the response with L<HTTP::Response> (only when the scheme is HTTP/HTTPS); a global version of L<AnyEvent::Net::Curl::Queued::Easy/http_response>.
+Default: disabled.
+
 =head2 completed
 
 Count completed requests.
