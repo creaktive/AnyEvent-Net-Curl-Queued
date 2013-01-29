@@ -159,17 +159,12 @@ around qw(append prepend) => sub {
         }
 
         for my $url (@url) {
-            $self->$orig(
-                sub {
-                    YADA::Worker->new({
-                        initial_url => $url,
-                        %init,
-                    })
-                }
-            );
+            my %copy = %init;
+            $copy{initial_url} = $url;
+            $orig->($self => sub { YADA::Worker->new(\%copy) });
         }
     } else {
-        $self->$orig(@_);
+        $orig->($self => @_);
     }
 
     return $self;

@@ -11,9 +11,7 @@ use strict;
 use utf8;
 use warnings qw(all);
 
-use Any::Moose;
-
-extends 'AnyEvent::Net::Curl::Queued::Easy';
+use base 'AnyEvent::Net::Curl::Queued::Easy';
 
 # VERSION
 
@@ -25,8 +23,5 @@ extends 'AnyEvent::Net::Curl::Queued::Easy';
 * L<YADA>
 
 =cut
-
-no Any::Moose;
-__PACKAGE__->meta->make_immutable;
 
 1;
