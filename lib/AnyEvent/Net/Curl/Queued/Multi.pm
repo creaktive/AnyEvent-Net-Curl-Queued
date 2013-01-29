@@ -182,7 +182,7 @@ around socket_action => sub {
     my $orig = shift;
     my $self = shift;
 
-    $self->set_active($orig->($self => @_));
+    my $active = $orig->($self => @_);
 
     my $i = 0;
     while (my (undef, $easy, $result) = $self->info_read) {
@@ -192,7 +192,7 @@ around socket_action => sub {
         ++$i;
     }
 
-    return $self->set_active($self->active - $i);
+    return $self->set_active($active - $i);
 };
 
 =method add_handle(...)
