@@ -122,7 +122,7 @@ has data        => (is => 'ro', isa => 'ScalarRef', writer => 'set_data');
 
 =attr force
 
-Force request processing, despite uniqueness signature.
+Force request processing, despite the uniqueness signature.
 
 =cut
 
@@ -134,8 +134,7 @@ Header buffer.
 
 =cut
 
-# will be real-only in future releases!
-has header      => (is => 'rw', isa => 'Ref');
+has header      => (is => 'ro', isa => 'ScalarRef', writer => 'set_header');
 
 =attr http_response
 
@@ -328,7 +327,7 @@ sub init {
     my $data = '';
     $self->set_data(\$data);
     my $header = '';
-    $self->header(\$header);
+    $self->set_header(\$header);
 
     # fragment mangling
     my $url = $self->initial_url->clone;
