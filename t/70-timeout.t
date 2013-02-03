@@ -1,5 +1,5 @@
 #!perl
-
+use lib qw(inc);
 use strict;
 use utf8;
 use warnings qw(all);
