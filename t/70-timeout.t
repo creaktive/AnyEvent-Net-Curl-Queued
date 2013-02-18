@@ -8,7 +8,6 @@ use Test::More;
 
 use AnyEvent::Net::Curl::Queued;
 use AnyEvent::Net::Curl::Queued::Easy;
-use Config;
 use Test::HTTP::AnyEvent::Server;
 
 use lib qw(t);
@@ -39,22 +38,12 @@ $q->append(sub {
     )
 });
 
-my @weird = qw(
-    amd64-freebsd-thread-multi
-    i86pc-solaris-64int
+$q->wait;
+
+is(
+    $q->completed,
+    3 + 1,
+    qq(retries detected [@{[ scalar localtime ]}]),
 );
-
-TODO: {
-    local $TODO = "test known to occasionally fail under $Config{archname}"
-        if grep { $_ eq $Config{archname} } @weird;
-
-    $q->wait;
-
-    is(
-        $q->completed,
-        3 + 1,
-        qq(retries detected [@{[ scalar localtime ]}]),
-    );
-}
 
 done_testing 7;
