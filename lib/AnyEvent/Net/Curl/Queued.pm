@@ -495,12 +495,6 @@ sub wait {
 
     # reload
     $self->set_cv(AE::cv);
-    $self->set_multi(
-        AnyEvent::Net::Curl::Queued::Multi->new({
-            max         => $self->max,
-            timeout     => $self->timeout,
-        })
-    );
 
     return;
 }
