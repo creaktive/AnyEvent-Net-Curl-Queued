@@ -159,8 +159,8 @@ use utf8;
 use warnings qw(all);
 
 use AnyEvent;
-use Any::Moose;
-use Any::Moose qw(::Util::TypeConstraints);
+use Moo;
+use MooX::late;
 use Carp qw(confess);
 use Net::Curl::Share;
 
@@ -204,14 +204,16 @@ Count completed requests.
 =cut
 
 has completed  => (
-    traits      => ['Counter'],
     is          => 'ro',
     isa         => 'Int',
     default     => 0,
-    handles     => {qw{
-        inc_completed inc
-    }},
+    writer      => 'set_completed',
 );
+
+sub inc_completed {
+    my ($self) = @_;
+    return $self->set_completed($self->completed + 1);
+}
 
 =attr cv
 
@@ -221,7 +223,8 @@ Also reset automatically after L</wait>, so keep your own reference if you reall
 
 =cut
 
-has cv          => (is => 'ro', isa => 'Maybe[Ref]', default => sub { AE::cv }, lazy => 1, writer => 'set_cv');
+#FIXME
+has cv          => (is => 'ro', default => sub { AE::cv }, lazy => 1, writer => 'set_cv');
 
 =attr max
 
@@ -229,10 +232,11 @@ Maximum number of parallel connections (default: 4; minimum value: 1).
 
 =cut
 
-subtype 'MaxConn'
-    => as Int
-    => where { $_ >= 1 };
-has max         => (is => 'rw', isa => 'MaxConn', default => 4);
+#FIXME
+#subtype 'MaxConn'
+#    => as Int
+#    => where { $_ >= 1 };
+has max         => (is => 'rw', isa => 'Int', default => 4);
 
 =attr multi
 
@@ -323,7 +327,8 @@ The last resort against the non-deterministic chaos of evil lurking sockets.
 
 =cut
 
-has watchdog    => (is => 'ro', isa => 'Maybe[Ref]', writer => 'set_watchdog', clearer => 'clear_watchdog', predicate => 'has_watchdog');
+#FIXME
+has watchdog    => (is => 'ro', writer => 'set_watchdog', clearer => 'clear_watchdog', predicate => 'has_watchdog');
 
 =for Pod::Coverage
 BUILD
@@ -514,8 +519,5 @@ sub wait {
 * L<AnyEvent::Curl::Multi>
 
 =cut
-
-no Any::Moose;
-__PACKAGE__->meta->make_immutable;
 
 1;

@@ -62,9 +62,8 @@ use Digest::SHA;
 use Encode;
 use HTTP::Response;
 use JSON;
-use Any::Moose;
-use Any::Moose qw(::Util::TypeConstraints);
-use Any::Moose qw(X::NonMoose);
+use Moo;
+use MooX::late;
 use Scalar::Util qw(set_prototype);
 use URI;
 
@@ -87,22 +86,24 @@ has json        => (
     lazy        => 1,
 );
 
-subtype 'QueueType'
-    => as 'Object'
-    => where {
-        $_->isa('AnyEvent::Net::Curl::Queued')
-            or
-        $_->isa('YADA')
-    };
+#FIXME
+#subtype 'QueueType'
+#    => as 'Object'
+#    => where {
+#        $_->isa('AnyEvent::Net::Curl::Queued')
+#            or
+#        $_->isa('YADA')
+#    };
 
-subtype 'AnyEvent::Net::Curl::Queued::Easy::URI'
-    => as class_type('URI');
+#FIXME
+#subtype 'AnyEvent::Net::Curl::Queued::Easy::URI'
+#    => as class_type('URI');
 
-coerce 'AnyEvent::Net::Curl::Queued::Easy::URI'
-    => from 'Any'
-        => via { URI->new("$_") }
-    => from 'URI'
-        => via { $_ };
+#coerce 'AnyEvent::Net::Curl::Queued::Easy::URI'
+#    => from 'Any'
+#        => via { URI->new("$_") }
+#    => from 'URI'
+#        => via { $_ };
 
 =attr curl_result
 
@@ -160,7 +161,13 @@ URL to fetch (string).
 
 =cut
 
-has initial_url => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Easy::URI', coerce => 1, required => 1);
+sub URI_type {
+    $_[0]->isa('URI')
+        ? $_[0]
+        : URI->new($_[0])
+}
+
+has initial_url => (is => 'ro', isa => 'URI', coerce => \&URI_type, required => 1);
 
 =attr final_url
 
@@ -168,7 +175,7 @@ Final URL (after redirections).
 
 =cut
 
-has final_url   => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Easy::URI', coerce => 1, writer => 'set_final_url');
+has final_url   => (is => 'ro', isa => 'URI', coerce => \&URI_type, writer => 'set_final_url');
 
 =attr opts
 
@@ -184,7 +191,8 @@ L<AnyEvent::Net::Curl::Queued> circular reference.
 
 =cut
 
-has queue       => (is => 'rw', isa => 'QueueType', weak_ref => 1);
+#FIXME
+has queue       => (is => 'rw', weak_ref => 1);
 
 =attr sha
 
@@ -663,8 +671,5 @@ around getinfo => sub {
 * L<Net::Curl::Easy>
 
 =cut
-
-no Any::Moose;
-__PACKAGE__->meta->make_immutable;
 
 1;

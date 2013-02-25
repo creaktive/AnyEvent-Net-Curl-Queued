@@ -3,7 +3,8 @@ use strict;
 use utf8;
 use warnings qw(all);
 
-use Any::Moose;
+use Moo;
+use MooX::late;
 use Net::Curl::Easy qw(/^CURLOPT_/);
 
 extends 'AnyEvent::Net::Curl::Queued::Easy';
@@ -20,8 +21,5 @@ after init => sub {
 after finish => sub {
     $_[0]->cb->(@_);
 };
-
-no Any::Moose;
-__PACKAGE__->meta->make_immutable;
 
 1;

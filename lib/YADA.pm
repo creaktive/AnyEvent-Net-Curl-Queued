@@ -124,7 +124,7 @@ use warnings qw(all);
 
 use feature qw(switch);
 
-use Any::Moose;
+use Moo;
 
 extends 'AnyEvent::Net::Curl::Queued';
 
@@ -178,8 +178,5 @@ around qw(append prepend) => sub {
 * L<YADA::Worker>
 
 =cut
-
-no Any::Moose;
-__PACKAGE__->meta->make_immutable;
 
 1;

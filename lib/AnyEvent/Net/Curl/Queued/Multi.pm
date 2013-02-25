@@ -22,8 +22,8 @@ use warnings qw(all);
 
 use AnyEvent;
 use Carp qw(confess);
-use Any::Moose;
-use Any::Moose qw(X::NonMoose);
+use Moo;
+use MooX::late;
 use Net::Curl::Multi;
 use Scalar::Util qw(set_prototype);
 
@@ -56,7 +56,8 @@ L<AnyEvent> C<timer()> handler.
 
 =cut
 
-has timer       => (is => 'ro', isa => 'Maybe[Ref]', writer => 'set_timer', clearer => 'clear_timer', predicate => 'has_timer');
+#FIXME
+has timer       => (is => 'ro', writer => 'set_timer', clearer => 'clear_timer', predicate => 'has_timer');
 
 =attr max
 
@@ -236,8 +237,5 @@ around add_handle => sub {
 * L<Net::Curl::Multi>
 
 =cut
-
-no Any::Moose;
-__PACKAGE__->meta->make_immutable;
 
 1;

@@ -27,7 +27,8 @@ use warnings qw(all);
 
 use AnyEvent;
 use Carp qw(confess);
-use Any::Moose;
+use Moo;
+use MooX::late;
 
 use AnyEvent::Net::Curl::Const;
 
@@ -121,8 +122,5 @@ sub sum {
 * L<AnyEvent::Net::Curl::Queued>
 
 =cut
-
-no Any::Moose;
-__PACKAGE__->meta->make_immutable;
 
 1;

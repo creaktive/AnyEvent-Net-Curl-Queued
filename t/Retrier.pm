@@ -3,7 +3,8 @@ use strict;
 use utf8;
 use warnings qw(all);
 
-use Any::Moose;
+use Moo;
+use MooX::late;
 
 extends 'AnyEvent::Net::Curl::Queued::Easy';
 
@@ -30,8 +31,5 @@ around clone => sub {
 around has_error => sub {
     return 1;
 };
-
-no Any::Moose;
-__PACKAGE__->meta->make_immutable;
 
 1;

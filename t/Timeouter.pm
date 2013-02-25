@@ -4,7 +4,8 @@ use utf8;
 use warnings qw(all);
 
 use Data::Dumper;
-use Any::Moose;
+use Moo;
+use MooX::late;
 use Test::More;
 use Time::HiRes qw(time);
 
@@ -24,8 +25,5 @@ around finish => sub {
     diag Dumper $self->stats
         unless 0 + $result;
 };
-
-no Any::Moose;
-__PACKAGE__->meta->make_immutable;
 
 1;
