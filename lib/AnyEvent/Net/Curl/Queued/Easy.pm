@@ -63,6 +63,7 @@ use Encode;
 use HTTP::Response;
 use JSON;
 use Moo;
+use MooX::Types::MooseLike::Base qw(AnyOf InstanceOf);
 use MooX::late;
 use Scalar::Util qw(set_prototype);
 use URI;
@@ -85,25 +86,6 @@ has json        => (
     default     => sub { JSON->new->utf8->allow_blessed->convert_blessed },
     lazy        => 1,
 );
-
-#FIXME
-#subtype 'QueueType'
-#    => as 'Object'
-#    => where {
-#        $_->isa('AnyEvent::Net::Curl::Queued')
-#            or
-#        $_->isa('YADA')
-#    };
-
-#FIXME
-#subtype 'AnyEvent::Net::Curl::Queued::Easy::URI'
-#    => as class_type('URI');
-
-#coerce 'AnyEvent::Net::Curl::Queued::Easy::URI'
-#    => from 'Any'
-#        => via { URI->new("$_") }
-#    => from 'URI'
-#        => via { $_ };
 
 =attr curl_result
 
@@ -164,7 +146,7 @@ URL to fetch (string).
 sub URI_type {
     $_[0]->isa('URI')
         ? $_[0]
-        : URI->new($_[0])
+        : URI->new("$_[0]")
 }
 
 has initial_url => (is => 'ro', isa => 'URI', coerce => \&URI_type, required => 1);
@@ -191,8 +173,14 @@ L<AnyEvent::Net::Curl::Queued> circular reference.
 
 =cut
 
-#FIXME
-has queue       => (is => 'rw', weak_ref => 1);
+has queue       => (
+    is          => 'rw',
+    isa         => AnyOf[
+        InstanceOf['AnyEvent::Net::Curl::Queued'],
+        InstanceOf['YADA'],
+    ],
+    weak_ref    => 1,
+);
 
 =attr sha
 

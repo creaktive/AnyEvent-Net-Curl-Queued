@@ -159,9 +159,10 @@ use utf8;
 use warnings qw(all);
 
 use AnyEvent;
-use Moo;
-use MooX::late;
 use Carp qw(confess);
+use Moo;
+use MooX::Types::MooseLike::Base qw(is_Int);
+use MooX::late;
 use Net::Curl::Share;
 
 use AnyEvent::Net::Curl::Queued::Multi;
@@ -223,8 +224,7 @@ Also reset automatically after L</wait>, so keep your own reference if you reall
 
 =cut
 
-#FIXME
-has cv          => (is => 'ro', default => sub { AE::cv }, lazy => 1, writer => 'set_cv');
+has cv          => (is => 'ro', isa => 'Object', default => sub { AE::cv }, lazy => 1, writer => 'set_cv');
 
 =attr max
 
@@ -232,11 +232,17 @@ Maximum number of parallel connections (default: 4; minimum value: 1).
 
 =cut
 
-#FIXME
-#subtype 'MaxConn'
-#    => as Int
-#    => where { $_ >= 1 };
-has max         => (is => 'rw', isa => 'Int', default => 4);
+has max         => (
+    is          => 'rw',
+    isa         => 'Int',
+    coerce      => sub {
+        confess 'At least 1 connection required'
+            if not is_Int($_[0])
+            or $_[0] < 1;
+        return $_[0];
+    },
+    default     => 4,
+);
 
 =attr multi
 
@@ -327,8 +333,7 @@ The last resort against the non-deterministic chaos of evil lurking sockets.
 
 =cut
 
-#FIXME
-has watchdog    => (is => 'ro', writer => 'set_watchdog', clearer => 'clear_watchdog', predicate => 'has_watchdog');
+has watchdog    => (is => 'ro', isa => 'Object', writer => 'set_watchdog', clearer => 'clear_watchdog', predicate => 'has_watchdog');
 
 =for Pod::Coverage
 BUILD

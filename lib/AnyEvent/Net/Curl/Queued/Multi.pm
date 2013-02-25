@@ -56,8 +56,7 @@ L<AnyEvent> C<timer()> handler.
 
 =cut
 
-#FIXME
-has timer       => (is => 'ro', writer => 'set_timer', clearer => 'clear_timer', predicate => 'has_timer');
+has timer       => (is => 'ro', isa => 'Object', writer => 'set_timer', clearer => 'clear_timer', predicate => 'has_timer');
 
 =attr max
 
