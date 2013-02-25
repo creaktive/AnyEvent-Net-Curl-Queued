@@ -1,5 +1,5 @@
 package AnyEvent::Net::Curl::Queued::Easy;
-# ABSTRACT: Net::Curl::Easy wrapped by Any::Moose
+# ABSTRACT: Net::Curl::Easy wrapped by Moo
 
 =head1 SYNOPSIS
 
@@ -8,7 +8,8 @@ package AnyEvent::Net::Curl::Queued::Easy;
     use utf8;
     use warnings qw(all);
 
-    use Any::Moose;
+    use Moo;
+    use MooX::late;
     use Net::Curl::Easy qw(/^CURLOPT_/);
 
     extends 'AnyEvent::Net::Curl::Queued::Easy';
@@ -39,9 +40,6 @@ package AnyEvent::Net::Curl::Queued::Easy;
         return 1 if $self->$orig(@_);
         return 1 if $self->getinfo(Net::Curl::Easy::CURLINFO_RESPONSE_CODE) =~ m{^5[0-9]{2}$};
     };
-
-    no Any::Moose;
-    __PACKAGE__->meta->make_immutable;
 
     1;
 
@@ -654,8 +652,7 @@ around getinfo => sub {
 =head1 SEE ALSO
 
 =for :list
-* L<Any::Moose>
-* L<MooseX::NonMoose> / L<MouseX::NonMoose>
+* L<Moo>
 * L<Net::Curl::Easy>
 
 =cut

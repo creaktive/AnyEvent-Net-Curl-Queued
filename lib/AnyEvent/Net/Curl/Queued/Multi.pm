@@ -1,5 +1,5 @@
 package AnyEvent::Net::Curl::Queued::Multi;
-# ABSTRACT: Net::Curl::Multi wrapped by Any::Moose
+# ABSTRACT: Net::Curl::Multi wrapped by Moo
 
 =head1 SYNOPSIS
 

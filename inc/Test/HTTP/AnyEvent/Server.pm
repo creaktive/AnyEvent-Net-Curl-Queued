@@ -8,7 +8,6 @@ use utf8;
 use warnings qw(all);
 
 use AnyEvent;
-use Any::Moose;
 use AnyEvent::Handle;
 use AnyEvent::Log;
 use AnyEvent::Socket;
@@ -16,6 +15,8 @@ use AnyEvent::Util;
 use HTTP::Headers;
 use HTTP::Request;
 use HTTP::Response;
+use Moo;
+use MooX::Types::MooseLike::Base qw(:all);
 use POSIX;
 
 #$AnyEvent::Log::FILTER->level('debug');
@@ -25,28 +26,28 @@ our $VERSION = '0.006'; # VERSION
 my %pool;
 
 
-has address     => (is => 'ro', isa => 'Str', default => sub { '127.0.0.1' }, writer => 'set_address');
+has address     => (is => 'ro', isa => Str, default => sub { '127.0.0.1' }, writer => 'set_address');
 
 
-has port        => (is => 'ro', isa => 'Int', writer => 'set_port');
+has port        => (is => 'ro', isa => Int, writer => 'set_port');
 
 
-has maxconn     => (is => 'ro', isa => 'Int', default => sub { 10 });
+has maxconn     => (is => 'ro', isa => Int, default => sub { 10 });
 
 
-has timeout     => (is => 'ro', isa => 'Int', default => sub { 60 });
+has timeout     => (is => 'ro', isa => Int, default => sub { 60 });
 
 
-has disable_proxy => (is => 'ro', isa => 'Bool', default => sub { 1 });
+has disable_proxy => (is => 'ro', isa => Bool, default => sub { 1 });
 
 
-has forked      => (is => 'ro', isa => 'Bool', default => sub { 0 });
+has forked      => (is => 'ro', isa => Bool, default => sub { 0 });
 
 
-has forked_pid  => (is => 'ro', isa => 'Int', writer => 'set_forked_pid');
+has forked_pid  => (is => 'ro', isa => Int, writer => 'set_forked_pid');
 
 
-has server      => (is => 'ro', isa => 'Ref', writer => 'set_server');
+has server      => (is => 'ro', isa => Ref, writer => 'set_server');
 
 
 sub BUILD {
@@ -275,9 +276,6 @@ sub _reply {
     return;
 }
 
-
-no Any::Moose;
-__PACKAGE__->meta->make_immutable;
 
 1;
 

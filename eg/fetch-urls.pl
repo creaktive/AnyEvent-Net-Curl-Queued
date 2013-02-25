@@ -7,7 +7,8 @@ use strict;
 use utf8;
 use warnings qw(all);
 
-use Any::Moose;
+use Moo;
+use MooX::late;
 
 extends 'YADA::Worker';
 
@@ -40,9 +41,6 @@ around has_error => sub {
     return 1 if $self->$orig(@_);
     return 1 if $self->getinfo('response_code') =~ m{^5[0-9]{2}$}x;
 };
-
-no Any::Moose;
-__PACKAGE__->meta->make_immutable;
 
 1;
 

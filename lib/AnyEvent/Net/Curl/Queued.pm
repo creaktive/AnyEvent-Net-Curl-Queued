@@ -1,5 +1,5 @@
 package AnyEvent::Net::Curl::Queued;
-# ABSTRACT: Any::Moose wrapper for queued downloads via Net::Curl & AnyEvent
+# ABSTRACT: Moo wrapper for queued downloads via Net::Curl & AnyEvent
 
 =head1 SYNOPSIS
 
@@ -12,7 +12,8 @@ package AnyEvent::Net::Curl::Queued;
     use warnings qw(all);
 
     use HTML::LinkExtor;
-    use Any::Moose;
+    use Moo;
+    use MooX::late;
 
     extends 'AnyEvent::Net::Curl::Queued::Easy';
 
@@ -41,9 +42,6 @@ package AnyEvent::Net::Curl::Queued;
             }
         }
     };
-
-    no Any::Moose;
-    __PACKAGE__->meta->make_immutable;
 
     1;
 
@@ -518,7 +516,7 @@ sub wait {
 
 =for :list
 * L<AnyEvent>
-* L<Any::Moose>
+* L<Moo>
 * L<Net::Curl>
 * L<WWW::Curl>
 * L<AnyEvent::Curl::Multi>

@@ -4,7 +4,8 @@ use utf8;
 use warnings qw(all);
 use feature qw(say);
 
-use Any::Moose;
+use Moo;
+use MooX::late;
 use Web::Scraper::LibXML;
 
 extends 'YADA::Worker';
@@ -53,8 +54,5 @@ after finish => sub {
         }
     }
 };
-
-no Any::Moose;
-__PACKAGE__->meta->make_immutable;
 
 1;
