@@ -5,14 +5,14 @@ use warnings qw(all);
 use feature qw(say);
 
 use Moo;
-use MooX::late;
+use MooX::Types::MooseLike::Base qw(InstanceOf);
 use Web::Scraper::LibXML;
 
 extends 'YADA::Worker';
 
 has scrap => (
     is      => 'ro',
-    isa     => 'Web::Scraper',
+    isa     => InstanceOf['Web::Scraper'],
     default => sub {
         scraper {
             process q(//a),
@@ -22,7 +22,7 @@ has scrap => (
     lazy    => 1,
 );
 
-has '+use_stats' => (default => 1);
+has '+use_stats' => (default => sub { 1 });
 
 after finish => sub {
     my ($self, $result) = @_;

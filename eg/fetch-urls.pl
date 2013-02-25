@@ -8,12 +8,11 @@ use utf8;
 use warnings qw(all);
 
 use Moo;
-use MooX::late;
 
 extends 'YADA::Worker';
 
-has '+use_stats'=> (default => 1);
-has '+retry'    => (default => 10);
+has '+use_stats'=> (default => sub { 1 });
+has '+retry'    => (default => sub { 10 });
 
 after init => sub {
     my ($self) = @_;

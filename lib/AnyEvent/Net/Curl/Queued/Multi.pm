@@ -23,7 +23,13 @@ use warnings qw(all);
 use AnyEvent;
 use Carp qw(confess);
 use Moo;
-use MooX::late;
+use MooX::Types::MooseLike::Base qw(
+    HashRef
+    Int
+    Num
+    Object
+    Ref
+);
 use Net::Curl::Multi;
 use Scalar::Util qw(set_prototype);
 
@@ -40,7 +46,7 @@ Currently active sockets.
 
 =cut
 
-has active      => (is => 'ro', isa => 'Int', default => -1, writer => 'set_active');
+has active      => (is => 'ro', isa => Int, default => sub { -1 }, writer => 'set_active');
 
 =attr pool
 
@@ -48,7 +54,7 @@ Sockets pool.
 
 =cut
 
-has pool        => (is => 'ro', isa => 'HashRef[Ref]', default => sub { {} });
+has pool        => (is => 'ro', isa => HashRef[Ref], default => sub { {} });
 
 =attr timer
 
@@ -56,7 +62,7 @@ L<AnyEvent> C<timer()> handler.
 
 =cut
 
-has timer       => (is => 'ro', isa => 'Object', writer => 'set_timer', clearer => 'clear_timer', predicate => 'has_timer');
+has timer       => (is => 'ro', isa => Object, writer => 'set_timer', clearer => 'clear_timer', predicate => 'has_timer');
 
 =attr max
 
@@ -64,7 +70,7 @@ Maximum parallel connections limit (default: 4).
 
 =cut
 
-has max         => (is => 'ro', isa => 'Num', default => 4);
+has max         => (is => 'ro', isa => Num, default => sub { 4 });
 
 =attr timeout
 
@@ -72,7 +78,7 @@ Timeout threshold, in seconds (default: 10).
 
 =cut
 
-has timeout     => (is => 'ro', isa => 'Num', default => 60.0);
+has timeout     => (is => 'ro', isa => Num, default => sub { 60.0 });
 
 # VERSION
 

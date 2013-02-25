@@ -5,14 +5,14 @@ use warnings qw(all);
 
 use Data::Dumper;
 use Moo;
-use MooX::late;
+use MooX::Types::MooseLike::Base qw(Num);
 use Test::More;
 use Time::HiRes qw(time);
 
 extends 'AnyEvent::Net::Curl::Queued::Easy';
 
-has started => (is => 'rw', isa => 'Num', default => sub { time });
-has '+use_stats' => (default => 1);
+has started => (is => 'rw', isa => Num, default => sub { time });
+has '+use_stats' => (default => sub { 1 });
 
 around finish => sub {
     my ($class, $self, $result) = @_;

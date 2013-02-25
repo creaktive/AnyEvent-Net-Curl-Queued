@@ -22,7 +22,6 @@ version 0.042
 
     use HTML::LinkExtor;
     use Moo;
-    use MooX::late;
 
     extends 'AnyEvent::Net::Curl::Queued::Easy';
 

@@ -4,14 +4,14 @@ use utf8;
 use warnings qw(all);
 
 use Moo;
-use MooX::late;
+use MooX::Types::MooseLike::Base qw(InstanceOf Int Num Str);
 
 extends 'AnyEvent::Net::Curl::Queued::Easy';
 
-has attr1 => (is => 'ro', isa => 'Num', required => 1);
-has attr2 => (is => 'ro', isa => 'Int', required => 1);
-has attr3 => (is => 'rw', isa => 'URI');
-has attr4 => (is => 'rw', isa => 'Str', default => 'A');
+has attr1 => (is => 'ro', isa => Num, required => 1);
+has attr2 => (is => 'ro', isa => Int, required => 1);
+has attr3 => (is => 'rw', isa => InstanceOf['URI']);
+has attr4 => (is => 'rw', isa => Str, default => sub { 'A' });
 
 around clone => sub {
     my $orig = shift;

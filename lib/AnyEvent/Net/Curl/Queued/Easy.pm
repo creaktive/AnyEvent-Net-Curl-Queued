@@ -9,7 +9,6 @@ package AnyEvent::Net::Curl::Queued::Easy;
     use warnings qw(all);
 
     use Moo;
-    use MooX::late;
     use Net::Curl::Easy qw(/^CURLOPT_/);
 
     extends 'AnyEvent::Net::Curl::Queued::Easy';
@@ -61,8 +60,17 @@ use Encode;
 use HTTP::Response;
 use JSON;
 use Moo;
-use MooX::Types::MooseLike::Base qw(AnyOf InstanceOf);
-use MooX::late;
+use MooX::Types::MooseLike::Base qw(
+    AnyOf
+    Bool
+    CodeRef
+    HashRef
+    InstanceOf
+    Int
+    Object
+    ScalarRef
+    Str
+);
 use Scalar::Util qw(set_prototype);
 use URI;
 
@@ -80,7 +88,7 @@ use AnyEvent::Net::Curl::Queued::Stats;
 
 has json        => (
     is          => 'ro',
-    isa         => 'JSON',
+    isa         => InstanceOf['JSON'],
     default     => sub { JSON->new->utf8->allow_blessed->convert_blessed },
     lazy        => 1,
 );
@@ -91,7 +99,7 @@ libcurl return code (C<Net::Curl::Easy::Code>).
 
 =cut
 
-has curl_result => (is => 'ro', isa => 'Net::Curl::Easy::Code', writer => 'set_curl_result');
+has curl_result => (is => 'ro', isa => Object, writer => 'set_curl_result');
 
 =attr data
 
@@ -99,7 +107,7 @@ Receive buffer.
 
 =cut
 
-has data        => (is => 'ro', isa => 'ScalarRef', writer => 'set_data');
+has data        => (is => 'ro', isa => ScalarRef, writer => 'set_data');
 
 =attr force
 
@@ -107,7 +115,7 @@ Force request processing, despite the uniqueness signature.
 
 =cut
 
-has force       => (is => 'ro', isa => 'Bool', default => 0);
+has force       => (is => 'ro', isa => Bool, default => sub { 0 });
 
 =attr header
 
@@ -115,7 +123,7 @@ Header buffer.
 
 =cut
 
-has header      => (is => 'ro', isa => 'ScalarRef', writer => 'set_header');
+has header      => (is => 'ro', isa => ScalarRef, writer => 'set_header');
 
 =attr http_response
 
@@ -124,8 +132,8 @@ Default: disabled.
 
 =cut
 
-has _autodecoded => (is => 'rw', isa => 'Bool', default => 0);
-has http_response => (is => 'ro', isa => 'Bool', default => 0, writer => 'set_http_response');
+has _autodecoded => (is => 'rw', isa => Bool, default => sub { 0 });
+has http_response => (is => 'ro', isa => Bool, default => sub { 0 }, writer => 'set_http_response');
 
 =attr post_content
 
@@ -133,7 +141,7 @@ Cache POST content to perform retries.
 
 =cut
 
-has post_content => (is => 'ro', isa => 'Str', default => '', writer => 'set_post_content');
+has post_content => (is => 'ro', isa => Str, default => sub { '' }, writer => 'set_post_content');
 
 =attr initial_url
 
@@ -148,7 +156,7 @@ sub _URI_type {
         : URI->new(q...$uri)
 }
 
-has initial_url => (is => 'ro', isa => 'URI', coerce => \&_URI_type, required => 1);
+has initial_url => (is => 'ro', isa => InstanceOf['URI'], coerce => \&_URI_type, required => 1);
 
 =attr final_url
 
@@ -156,7 +164,7 @@ Final URL (after redirections).
 
 =cut
 
-has final_url   => (is => 'ro', isa => 'URI', coerce => \&_URI_type, writer => 'set_final_url');
+has final_url   => (is => 'ro', isa => InstanceOf['URI'], coerce => \&_URI_type, writer => 'set_final_url');
 
 =attr opts
 
@@ -164,7 +172,7 @@ C<HashRef> to be passed to C<setopt()> during initialization (inside C<init()>, 
 
 =cut
 
-has opts        => (is => 'ro', isa => 'HashRef', default => sub { {} });
+has opts        => (is => 'ro', isa => HashRef, default => sub { {} });
 
 =attr queue
 
@@ -188,7 +196,7 @@ Setup via C<sign> and access through C<unique>.
 
 =cut
 
-has sha         => (is => 'ro', isa => 'Digest::SHA', default => sub { Digest::SHA->new(256) }, lazy => 1);
+has sha         => (is => 'ro', isa => InstanceOf['Digest::SHA'], default => sub { Digest::SHA->new(256) }, lazy => 1);
 
 =attr response
 
@@ -200,7 +208,7 @@ Deprecated alias for L</response>.
 
 =cut
 
-has response    => (is => 'ro', isa => 'HTTP::Response', writer => 'set_response');
+has response    => (is => 'ro', isa => InstanceOf['HTTP::Response'], writer => 'set_response');
 sub res { my ($self, @args) = @_; return $self->response(@args) }
 
 =attr retry
@@ -209,7 +217,7 @@ Number of retries (default: 10).
 
 =cut
 
-has retry       => (is => 'ro', isa => 'Int', default => 10);
+has retry       => (is => 'ro', isa => Int, default => sub { 10 });
 
 =attr stats
 
@@ -222,8 +230,8 @@ Note that extracting C<libcurl> time/size data degrades performance slightly.
 
 =cut
 
-has stats       => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Stats', default => sub { AnyEvent::Net::Curl::Queued::Stats->new }, lazy => 1);
-has use_stats   => (is => 'ro', isa => 'Bool', default => 0);
+has stats       => (is => 'ro', isa => InstanceOf['AnyEvent::Net::Curl::Queued::Stats'], default => sub { AnyEvent::Net::Curl::Queued::Stats->new }, lazy => 1);
+has use_stats   => (is => 'ro', isa => Bool, default => sub { 0 });
 
 =attr on_init
 
@@ -237,7 +245,7 @@ Almost the same as C<after finish =E<gt> sub { ... }>
 
 =cut
 
-has [qw(on_init on_finish)] => (is => 'ro', isa => 'CodeRef');
+has [qw(on_init on_finish)] => (is => 'ro', isa => CodeRef);
 
 =for Pod::Coverage
 BUILDARGS

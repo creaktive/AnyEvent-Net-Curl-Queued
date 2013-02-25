@@ -13,7 +13,6 @@ package AnyEvent::Net::Curl::Queued;
 
     use HTML::LinkExtor;
     use Moo;
-    use MooX::late;
 
     extends 'AnyEvent::Net::Curl::Queued::Easy';
 
@@ -159,8 +158,17 @@ use warnings qw(all);
 use AnyEvent;
 use Carp qw(confess);
 use Moo;
-use MooX::Types::MooseLike::Base qw(is_Int);
-use MooX::late;
+use MooX::Types::MooseLike::Base qw(
+    ArrayRef
+    Bool
+    HashRef
+    InstanceOf
+    Int
+    Num
+    Object
+    Str
+    is_Int
+);
 use Net::Curl::Share;
 
 use AnyEvent::Net::Curl::Queued::Multi;
@@ -176,7 +184,7 @@ Setting C<allow_dups> to true value disables request checks.
 
 =cut
 
-has allow_dups  => (is => 'ro', isa => 'Bool', default => 0);
+has allow_dups  => (is => 'ro', isa => Bool, default => sub { 0 });
 
 =attr common_opts
 
@@ -185,7 +193,7 @@ You may define C<User-Agent> string here.
 
 =cut
 
-has common_opts => (is => 'ro', isa => 'HashRef', default => sub { {} });
+has common_opts => (is => 'ro', isa => HashRef, default => sub { {} });
 
 =attr http_response
 
@@ -194,7 +202,7 @@ Default: disabled.
 
 =cut
 
-has http_response => (is => 'ro', isa => 'Bool', default => 0);
+has http_response => (is => 'ro', isa => Bool, default => sub { 0 });
 
 =attr completed
 
@@ -208,8 +216,8 @@ Increment the L</completed> counter.
 
 has completed  => (
     is          => 'ro',
-    isa         => 'Int',
-    default     => 0,
+    isa         => Int,
+    default     => sub { 0 },
     writer      => 'set_completed',
 );
 
@@ -226,7 +234,7 @@ Also reset automatically after L</wait>, so keep your own reference if you reall
 
 =cut
 
-has cv          => (is => 'ro', isa => 'Object', default => sub { AE::cv }, lazy => 1, writer => 'set_cv');
+has cv          => (is => 'ro', isa => Object, default => sub { AE::cv }, lazy => 1, writer => 'set_cv');
 
 =attr max
 
@@ -236,14 +244,14 @@ Maximum number of parallel connections (default: 4; minimum value: 1).
 
 has max         => (
     is          => 'rw',
-    isa         => 'Int',
+    isa         => Int,
     coerce      => sub {
         confess 'At least 1 connection required'
             if not is_Int($_[0])
             or $_[0] < 1;
         return $_[0];
     },
-    default     => 4,
+    default     => sub { 4 },
 );
 
 =attr multi
@@ -252,7 +260,7 @@ L<Net::Curl::Multi> instance.
 
 =cut
 
-has multi       => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Multi', writer => 'set_multi');
+has multi       => (is => 'ro', isa => InstanceOf['AnyEvent::Net::Curl::Queued::Multi'], writer => 'set_multi');
 
 =attr queue
 
@@ -279,7 +287,7 @@ Number of items in queue.
 
 has queue       => (
     is          => 'ro',
-    isa         => 'ArrayRef[Any]',
+    isa         => ArrayRef[Object],
     default     => sub { [] },
 );
 
@@ -300,7 +308,7 @@ L<Net::Curl::Share> instance.
 
 has share       => (
     is      => 'ro',
-    isa     => 'Net::Curl::Share',
+    isa     => InstanceOf['Net::Curl::Share'],
     default => sub { Net::Curl::Share->new({ stamp => time }) },
     lazy    => 1,
 );
@@ -311,7 +319,7 @@ L<AnyEvent::Net::Curl::Queued::Stats> instance.
 
 =cut
 
-has stats       => (is => 'ro', isa => 'AnyEvent::Net::Curl::Queued::Stats', default => sub { AnyEvent::Net::Curl::Queued::Stats->new }, lazy => 1);
+has stats       => (is => 'ro', isa => InstanceOf['AnyEvent::Net::Curl::Queued::Stats'], default => sub { AnyEvent::Net::Curl::Queued::Stats->new }, lazy => 1);
 
 =attr timeout
 
@@ -319,7 +327,7 @@ Timeout (default: 60 seconds).
 
 =cut
 
-has timeout     => (is => 'ro', isa => 'Num', default => 60.0);
+has timeout     => (is => 'ro', isa => Num, default => sub { 60.0 });
 
 =attr unique
 
@@ -327,7 +335,7 @@ Signature cache.
 
 =cut
 
-has unique      => (is => 'ro', isa => 'HashRef[Str]', default => sub { {} });
+has unique      => (is => 'ro', isa => HashRef[Str], default => sub { {} });
 
 =attr watchdog
 
@@ -335,7 +343,7 @@ The last resort against the non-deterministic chaos of evil lurking sockets.
 
 =cut
 
-has watchdog    => (is => 'ro', isa => 'Object', writer => 'set_watchdog', clearer => 'clear_watchdog', predicate => 'has_watchdog');
+has watchdog    => (is => 'ro', isa => Object, writer => 'set_watchdog', clearer => 'clear_watchdog', predicate => 'has_watchdog');
 
 =for Pod::Coverage
 BUILD

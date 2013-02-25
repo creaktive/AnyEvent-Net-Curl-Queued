@@ -28,7 +28,7 @@ use warnings qw(all);
 use AnyEvent;
 use Carp qw(confess);
 use Moo;
-use MooX::late;
+use MooX::Types::MooseLike::Base qw(HashRef Num);
 
 use AnyEvent::Net::Curl::Const;
 
@@ -40,7 +40,7 @@ Unix timestamp for statistics update.
 
 =cut
 
-has stamp       => (is => 'ro', isa => 'Num', default => sub { AE::time }, writer => 'set_stamp');
+has stamp       => (is => 'ro', isa => Num, default => sub { AE::time }, writer => 'set_stamp');
 
 =attr stats
 
@@ -66,7 +66,7 @@ Variable names are from respective L<curl_easy_getinfo()|http://curl.haxx.se/lib
 
 has stats       => (
     is          => 'ro',
-    isa         => 'HashRef[Num]',
+    isa         => HashRef[Num],
     default     => sub { {
         appconnect_time     => 0,
         connect_time        => 0,
