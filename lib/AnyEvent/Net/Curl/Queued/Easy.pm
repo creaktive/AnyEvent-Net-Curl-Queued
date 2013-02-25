@@ -141,13 +141,14 @@ URL to fetch (string).
 
 =cut
 
-sub URI_type {
-    $_[0]->isa('URI')
-        ? $_[0]
-        : URI->new("$_[0]")
+sub _URI_type {
+    my $uri = shift;
+    return $uri->isa('URI')
+        ? $uri
+        : URI->new(q...$uri)
 }
 
-has initial_url => (is => 'ro', isa => 'URI', coerce => \&URI_type, required => 1);
+has initial_url => (is => 'ro', isa => 'URI', coerce => \&_URI_type, required => 1);
 
 =attr final_url
 
@@ -155,7 +156,7 @@ Final URL (after redirections).
 
 =cut
 
-has final_url   => (is => 'ro', isa => 'URI', coerce => \&URI_type, writer => 'set_final_url');
+has final_url   => (is => 'ro', isa => 'URI', coerce => \&_URI_type, writer => 'set_final_url');
 
 =attr opts
 

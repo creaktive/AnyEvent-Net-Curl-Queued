@@ -200,6 +200,10 @@ has http_response => (is => 'ro', isa => 'Bool', default => 0);
 
 Count completed requests.
 
+=method inc_completed
+
+Increment the L</completed> counter.
+
 =cut
 
 has completed  => (

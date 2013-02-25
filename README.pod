@@ -4,11 +4,11 @@
 
 =head1 NAME
 
-AnyEvent::Net::Curl::Queued - Any::Moose wrapper for queued downloads via Net::Curl & AnyEvent
+AnyEvent::Net::Curl::Queued - Moo wrapper for queued downloads via Net::Curl & AnyEvent
 
 =head1 VERSION
 
-version 0.041
+version 0.042
 
 =head1 SYNOPSIS
 
@@ -21,7 +21,8 @@ version 0.041
     use warnings qw(all);
 
     use HTML::LinkExtor;
-    use Any::Moose;
+    use Moo;
+    use MooX::late;
 
     extends 'AnyEvent::Net::Curl::Queued::Easy';
 
@@ -50,9 +51,6 @@ version 0.041
             }
         }
     };
-
-    no Any::Moose;
-    __PACKAGE__->meta->make_immutable;
 
     1;
 
@@ -309,6 +307,10 @@ The last resort against the non-deterministic chaos of evil lurking sockets.
 
 =head1 METHODS
 
+=head2 inc_completed
+
+Increment the L</completed> counter.
+
 =head2 start()
 
 Populate empty request slots with workers from the queue.
@@ -366,7 +368,7 @@ L<AnyEvent>
 
 =item *
 
-L<Any::Moose>
+L<Moo>
 
 =item *
 
