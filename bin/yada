@@ -1,12 +1,12 @@
 #!/usr/bin/env perl
 # ABSTRACT: Yet Another Download Accelerator CLI wrapper
 # PODNAME: yada
-use autodie;
 use strict;
 use utf8;
 use warnings qw(all);
 
 use Config;
+use Fcntl;
 use File::Copy;
 use Getopt::Long;
 use Pod::Usage;
@@ -145,8 +145,10 @@ for my $url (@urls) {
 
                 $name = get_filename($self->initial_url);
 
-                ## no critic (RequireBriefOpen)
-                open($fh, q(>:raw), $name);
+                # will die() later
+                sysopen(my $fh, $name, O_CREAT | O_NONBLOCK | O_WRONLY);
+                binmode $fh;
+
                 $self->setopt(
                     encoding            => $encoding // q(),
                     followlocation      => $followlocation // 1,
@@ -167,7 +169,10 @@ for my $url (@urls) {
             },
             on_finish   => sub {
                 my ($self) = @_;
-                close $fh;
+
+                close $fh if q(GLOB) eq ref $fh;
+                undef $fh;
+
                 ## no critic (ProhibitComplexRegexes)
                 #if ($self->has_error or $self->getinfo(q(response_code)) =~ m{^5[0-9]{2}$}) {
                 if ($self->has_error) {
