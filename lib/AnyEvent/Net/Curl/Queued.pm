@@ -81,8 +81,7 @@ So, this is what L<CPAN> offers to fulfill my needs:
 
 =for :list
 * L<Net::Curl>: Perl interface to the all-mighty L<libcurl|http://curl.haxx.se/libcurl/>, is well-documented (opposite to L<WWW::Curl>);
-* L<AnyEvent>: the L<DBI> of event loops. L<Net::Curl> also provides a nice and well-documented example of L<AnyEvent> usage (L<03-multi-event.pl|Net::Curl::examples/Multi::Event>);
-* L<MooseX::NonMoose>: L<Net::Curl> uses a Pure-Perl object implementation, which is lightweight, but a bit messy for my L<Moose>-based projects. L<MooseX::NonMoose> patches this gap.
+* L<AnyEvent>: the L<DBI> of event loops. L<Net::Curl> also provides a nice and well-documented example of L<AnyEvent> usage (L<03-multi-event.pl|Net::Curl::examples/Multi::Event>).
 
 L<AnyEvent::Net::Curl::Queued> is a glue module to wrap it all together.
 It offers no callbacks and (almost) no default handlers.
@@ -291,8 +290,6 @@ has queue       => (
     default     => sub { [] },
 );
 
-# Mouse traits are utterly broken!!!
-
 ## no critic (RequireArgUnpacking)
 
 sub queue_push      { return 0 + push @{shift->queue}, @_ }
@@ -460,7 +457,7 @@ sub add {
 =method append($worker)
 
 Put the worker (instance of L<AnyEvent::Net::Curl::Queued::Easy>) at the end of the queue.
-For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you do with the L<Moose> C<default =E<gt> sub { ... }>:
+For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you do with the L<Moo> C<default =E<gt> sub { ... }>:
 
     $queue->append(sub {
         AnyEvent::Net::Curl::Queued::Easy->new({ initial_url => 'http://.../' })
@@ -480,7 +477,7 @@ sub append {
 =method prepend($worker)
 
 Put the worker (instance of L<AnyEvent::Net::Curl::Queued::Easy>) at the beginning of the queue.
-For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you do with the L<Moose> C<default =E<gt> sub { ... }>:
+For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you do with the L<Moo> C<default =E<gt> sub { ... }>:
 
     $queue->prepend(sub {
         AnyEvent::Net::Curl::Queued::Easy->new({ initial_url => 'http://.../' })

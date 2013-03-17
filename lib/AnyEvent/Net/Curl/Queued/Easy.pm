@@ -263,7 +263,7 @@ sub BUILDARGS {
 =func FOREIGNBUILDARGS
 
 Internal.
-Required for L<MooseX::NonMoose> to operate properly on C<new> parameters.
+Required for L<Moo> to operate properly on C<new> parameters.
 
 =cut
 

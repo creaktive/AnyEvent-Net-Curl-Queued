@@ -12,7 +12,7 @@ package AnyEvent::Net::Curl::Queued::Multi;
 
 =head1 DESCRIPTION
 
-This module extends the L<Net::Curl::Multi> class through L<MooseX::NonMoose> and adds L<AnyEvent> handlers.
+This module extends the L<Net::Curl::Multi> class through L<Moo> and adds L<AnyEvent> handlers.
 
 =cut
 
@@ -238,7 +238,7 @@ around add_handle => sub {
 =for :list
 * L<AnyEvent>
 * L<AnyEvent::Net::Curl::Queued>
-* L<MooseX::NonMoose> / L<MouseX::NonMoose>
+* L<Moo>
 * L<Net::Curl::Multi>
 
 =cut

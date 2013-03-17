@@ -107,11 +107,7 @@ L<Net::Curl>: Perl interface to the all-mighty L<libcurl|http://curl.haxx.se/lib
 
 =item *
 
-L<AnyEvent>: the L<DBI> of event loops. L<Net::Curl> also provides a nice and well-documented example of L<AnyEvent> usage (L<03-multi-event.pl|Net::Curl::examples/Multi::Event>);
-
-=item *
-
-L<MooseX::NonMoose>: L<Net::Curl> uses a Pure-Perl object implementation, which is lightweight, but a bit messy for my L<Moose>-based projects. L<MooseX::NonMoose> patches this gap.
+L<AnyEvent>: the L<DBI> of event loops. L<Net::Curl> also provides a nice and well-documented example of L<AnyEvent> usage (L<03-multi-event.pl|Net::Curl::examples/Multi::Event>).
 
 =back
 
@@ -325,7 +321,7 @@ Activate a worker.
 =head2 append($worker)
 
 Put the worker (instance of L<AnyEvent::Net::Curl::Queued::Easy>) at the end of the queue.
-For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you do with the L<Moose> C<default =E<gt> sub { ... }>:
+For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you do with the L<Moo> C<default =E<gt> sub { ... }>:
 
     $queue->append(sub {
         AnyEvent::Net::Curl::Queued::Easy->new({ initial_url => 'http://.../' })
@@ -334,7 +330,7 @@ For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you d
 =head2 prepend($worker)
 
 Put the worker (instance of L<AnyEvent::Net::Curl::Queued::Easy>) at the beginning of the queue.
-For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you do with the L<Moose> C<default =E<gt> sub { ... }>:
+For lazy initialization, wrap the worker in a C<sub { ... }>, the same way you do with the L<Moo> C<default =E<gt> sub { ... }>:
 
     $queue->prepend(sub {
         AnyEvent::Net::Curl::Queued::Easy->new({ initial_url => 'http://.../' })
