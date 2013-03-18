@@ -86,7 +86,7 @@ Or L<MouseX::NonMoose>:
     extends 'AnyEvent::Net::Curl::Queued::Easy';
     ...
 
-Or the C<Any::Moose> equivalent:
+Or the L<Any::Moose> equivalent:
 
     package YourSubclassingModule;
     use Any::Moose;
@@ -94,7 +94,7 @@ Or the C<Any::Moose> equivalent:
     extends 'AnyEvent::Net::Curl::Queued::Easy';
     ...
 
-However, the recommended approach is to switch your subclassing module to L<Moo>, altogether (you can use L<MooX::late> to smoothen the transition):
+However, the recommended approach is to switch your subclassing module to L<Moo> altogether (you can use L<MooX::late> to smoothen the transition):
 
     package YourSubclassingModule;
     use Moo;

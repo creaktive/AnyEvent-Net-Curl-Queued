@@ -32,7 +32,7 @@ Or L<MouseX::NonMoose>:
     extends 'AnyEvent::Net::Curl::Queued::Easy';
     ...
 
-Or the C<Any::Moose> equivalent:
+Or the L<Any::Moose> equivalent:
 
     package YourSubclassingModule;
     use Any::Moose;
