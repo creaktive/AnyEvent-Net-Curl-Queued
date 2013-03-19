@@ -24,6 +24,8 @@ use AnyEvent;
 use Carp qw(confess);
 use Moo;
 use MooX::Types::MooseLike::Base qw(
+    AnyOf
+    ArrayRef
     HashRef
     Int
     Num
@@ -62,7 +64,7 @@ L<AnyEvent> C<timer()> handler.
 
 =cut
 
-has timer       => (is => 'ro', isa => Object, writer => 'set_timer', clearer => 'clear_timer', predicate => 'has_timer');
+has timer       => (is => 'ro', isa => AnyOf[ArrayRef, Object], writer => 'set_timer', clearer => 'clear_timer', predicate => 'has_timer');
 
 =attr max
 

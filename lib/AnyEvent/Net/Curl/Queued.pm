@@ -158,6 +158,7 @@ use AnyEvent;
 use Carp qw(confess);
 use Moo;
 use MooX::Types::MooseLike::Base qw(
+    AnyOf
     ArrayRef
     Bool
     HashRef
@@ -340,7 +341,7 @@ The last resort against the non-deterministic chaos of evil lurking sockets.
 
 =cut
 
-has watchdog    => (is => 'ro', isa => Object, writer => 'set_watchdog', clearer => 'clear_watchdog', predicate => 'has_watchdog');
+has watchdog    => (is => 'ro', isa => AnyOf[ArrayRef, Object], writer => 'set_watchdog', clearer => 'clear_watchdog', predicate => 'has_watchdog');
 
 =for Pod::Coverage
 BUILD
