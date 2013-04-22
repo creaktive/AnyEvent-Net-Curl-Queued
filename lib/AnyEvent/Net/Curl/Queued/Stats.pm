@@ -20,7 +20,6 @@ Tracks statistics for L<AnyEvent::Net::Curl::Queued> and L<AnyEvent::Net::Curl::
 
 =cut
 
-use feature qw(switch);
 use strict;
 use utf8;
 use warnings qw(all);
@@ -94,15 +93,7 @@ It is supposed to be an instance of L<AnyEvent::Net::Curl::Queued::Easy> or L<An
 sub sum {
     my ($self, $from) = @_;
 
-    my $is_stats;
-    for (ref $from) {
-        when ('AnyEvent::Net::Curl::Queued::Easy') {
-            $is_stats = 0;
-        } when (__PACKAGE__) {
-            $is_stats = 1;
-        }
-    }
-
+    my $is_stats = (__PACKAGE__ eq ref $from) ? 1 : 0;
     for my $type (keys %{$self->stats}) {
         $self->stats->{$type} +=
             $is_stats

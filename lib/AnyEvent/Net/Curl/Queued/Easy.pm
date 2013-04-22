@@ -48,11 +48,10 @@ The class you should overload to fetch stuff your own way.
 
 =cut
 
+use feature qw(switch);
 use strict;
 use utf8;
 use warnings qw(all);
-
-use feature qw(switch);
 
 use Carp qw(carp confess);
 use Digest::SHA;
@@ -83,6 +82,8 @@ extends 'Net::Curl::Easy';
 
 use AnyEvent::Net::Curl::Const;
 use AnyEvent::Net::Curl::Queued::Stats;
+
+no if ($] >= 5.017010), warnings => q(experimental);
 
 # VERSION
 

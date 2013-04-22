@@ -118,17 +118,18 @@ At least, RTFC if you seriously attempt to do that.
 
 =cut
 
+use feature qw(switch);
 use strict;
 use utf8;
 use warnings qw(all);
-
-use feature qw(switch);
 
 use Moo;
 
 extends 'AnyEvent::Net::Curl::Queued';
 
 use YADA::Worker;
+
+no if ($] >= 5.017010), warnings => q(experimental);
 
 # VERSION
 

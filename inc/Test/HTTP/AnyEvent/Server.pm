@@ -19,9 +19,11 @@ use Moo;
 use MooX::Types::MooseLike::Base qw(:all);
 use POSIX;
 
+no if ($] >= 5.017010), warnings => q(experimental);
+
 #$AnyEvent::Log::FILTER->level('debug');
 
-our $VERSION = '0.006'; # VERSION
+our $VERSION = '0.007'; # VERSION
 
 my %pool;
 
@@ -291,7 +293,7 @@ Test::HTTP::AnyEvent::Server - the async counterpart to Test::HTTP::Server
 
 =head1 VERSION
 
-version 0.006
+version 0.007
 
 =head1 SYNOPSIS
 
