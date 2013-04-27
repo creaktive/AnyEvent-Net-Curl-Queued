@@ -64,7 +64,7 @@ L<AnyEvent> C<timer()> handler.
 
 =cut
 
-has timer       => (is => 'ro', isa => AnyOf[ArrayRef, Object], writer => 'set_timer', clearer => 'clear_timer', predicate => 'has_timer', weak_ref => 1);
+has timer       => (is => 'ro', isa => AnyOf[ArrayRef, Object], writer => 'set_timer', clearer => 'clear_timer', predicate => 'has_timer', weak_ref => 0);
 
 =attr max
 

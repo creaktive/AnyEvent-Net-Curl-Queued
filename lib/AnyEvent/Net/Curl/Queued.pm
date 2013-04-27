@@ -341,7 +341,7 @@ The last resort against the non-deterministic chaos of evil lurking sockets.
 
 =cut
 
-has watchdog    => (is => 'ro', isa => AnyOf[ArrayRef, Object], writer => 'set_watchdog', clearer => 'clear_watchdog', predicate => 'has_watchdog', weak_ref => 1);
+has watchdog    => (is => 'ro', isa => AnyOf[ArrayRef, Object], writer => 'set_watchdog', clearer => 'clear_watchdog', predicate => 'has_watchdog', weak_ref => 0);
 
 =for Pod::Coverage
 BUILD
