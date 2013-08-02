@@ -8,6 +8,8 @@ use Test::More;
 use AnyEvent::Net::Curl::Queued;
 use AnyEvent::Net::Curl::Queued::Easy;
 
+local $ENV{no_proxy} = '*';
+
 my $q = AnyEvent::Net::Curl::Queued->new;
 
 $q->append(
