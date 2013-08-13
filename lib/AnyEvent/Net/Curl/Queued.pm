@@ -101,7 +101,7 @@ As there's more than one way to do it, I'll list the alternatives which can be u
 * L<Furl>: no parallelism, no queueing. B<Very> fast, despite being pure-Perl;
 * L<Mojo::UserAgent>: capable of non-blocking parallel requests, no queueing;
 * L<AnyEvent::Curl::Multi>: queued parallel downloads via L<WWW::Curl>. Queues are non-lazy, thus large ones can use many RAM;
-* L<Parallel::Downloader>: queued parallel downloads via L<AnyEvent::HTTP>. Very fast and is pure-Perl (compiling event driver is optional). You only access results when the whole batch is done; so huge batches will require lots of RAM to store contents.
+* L<Parallel::Downloader>: queued parallel downloads via L<AnyEvent::HTTP>. Very fast and is pure-Perl (compiling event driver is optional). No queue modification possible while batch is being processed.
 
 =head2 BENCHMARK
 
