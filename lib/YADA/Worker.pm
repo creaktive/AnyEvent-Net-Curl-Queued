@@ -16,6 +16,9 @@ extends 'AnyEvent::Net::Curl::Queued::Easy';
 
 # VERSION
 
+## no critic (ProtectPrivateSubs)
+after finish => sub { shift->queue->_shift_worker };
+
 =head1 SEE ALSO
 
 =for :list

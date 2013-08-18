@@ -124,6 +124,12 @@ use utf8;
 use warnings qw(all);
 
 use Moo;
+use MooX::Types::MooseLike::Base qw(
+    ArrayRef
+    HashRef
+    Object
+    Str
+);
 
 extends 'AnyEvent::Net::Curl::Queued';
 
@@ -133,8 +139,26 @@ no if ($] >= 5.017010), warnings => q(experimental);
 
 # VERSION
 
+has _queue      => (
+    is          => 'ro',
+    isa         => ArrayRef[Object],
+    default     => sub { [] },
+);
+
+has _unique_url => (
+    is          => 'ro',
+    isa         => HashRef[Str],
+    default     => sub { {} },
+);
+
 # serious DWIMmery ahead!
-around qw(append prepend) => sub {
+
+## no critic (RequireArgUnpacking)
+around append   => sub { _dwim(append => @_) };
+around prepend  => sub { _dwim(prepend => @_) };
+
+sub _dwim {
+    my $type = shift;
     my $orig = shift;
     my $self = shift;
 
@@ -160,16 +184,37 @@ around qw(append prepend) => sub {
         }
 
         for my $url (@url) {
+            next
+                if not $self->allow_dups
+                and ++$self->_unique_url->{q...$url} > 1;
+
             my %copy = %init;
             $copy{initial_url} = $url;
-            $orig->($self => sub { YADA::Worker->new(\%copy) });
+            if ($type eq q(append)) {
+                push    @{$self->_queue} => [ $type => \%copy ];
+            } elsif ($type eq q(prepend)) {
+                unshift @{$self->_queue} => [ $type => \%copy ];
+            }
         }
     } else {
         $orig->($self => @_);
     }
 
     return $self;
-};
+}
+
+sub _shift_worker {
+    my ($self) = @_;
+    my $queue = $self->_queue;
+    my $max = $self->max << 2;
+    while (@{$queue} and ($self->count < $max)) {
+        my ($type, $params) = @{shift @{$queue}};
+        $self->$type(sub { YADA::Worker->new($params) });
+    }
+    return;
+}
+
+before wait => sub { shift->_shift_worker };
 
 =head1 SEE ALSO
 
