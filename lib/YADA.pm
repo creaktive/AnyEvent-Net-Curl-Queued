@@ -123,6 +123,7 @@ use strict;
 use utf8;
 use warnings qw(all);
 
+use Digest::SHA qw(sha256_base64);
 use Moo;
 use MooX::Types::MooseLike::Base qw(
     ArrayRef
@@ -130,6 +131,7 @@ use MooX::Types::MooseLike::Base qw(
     Object
     Str
 );
+use URI;
 
 extends 'AnyEvent::Net::Curl::Queued';
 
@@ -184,9 +186,10 @@ sub _dwim {
         }
 
         for my $url (@url) {
+            $url = URI->new($url);
             next
                 if not $self->allow_dups
-                and ++$self->_unique_url->{q...$url} > 1;
+                and ++$self->_unique_url->{sha256_base64($url->canonical->as_string)} > 1;
 
             my %copy = %init;
             $copy{initial_url} = $url;

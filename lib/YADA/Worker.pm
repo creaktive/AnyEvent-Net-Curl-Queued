@@ -16,7 +16,10 @@ extends 'AnyEvent::Net::Curl::Queued::Easy';
 
 # VERSION
 
+has '+opts' => (default => sub { { encoding => '', maxredirs => 5 } });
+
 ## no critic (ProtectPrivateSubs)
+after init  => sub { shift->setopt(followlocation => 1) };
 after finish => sub { shift->queue->_shift_worker };
 
 =head1 SEE ALSO

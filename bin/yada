@@ -45,13 +45,6 @@ Sets the contents of the C<Accept-Encoding:> header sent in a HTTP request, and 
 Three encodings are supported: I<identity>, which does nothing, I<deflate> which requests the server to compress its response using the L<zlib> algorithm, and I<gzip> which requests the L<gzip> algorithm.
 If a zero-length string is set, then an C<Accept-Encoding:> header containing all supported encodings is sent (default).
 
-=item --[no]followlocation
-
-A parameter set to 1 (default) tells the utility to follow any C<Location:> header that the server sends as part of a HTTP header.
-
-This means that the utility will re-send the same request on the new location and follow new C<Location:> headers all the way until no more such headers are returned.
-C<--maxredirs> can be used to limit the number of redirects utility will follow.
-
 =item --max
 
 Download that many files in parallel (default: 4).
@@ -60,7 +53,6 @@ Download that many files in parallel (default: 4).
 
 Redirection limit (default: 5).
 If that many redirections have been followed, the next redirect will cause an error.
-This option only makes sense if the C<--followlocation> is used at the same time.
 
 =item --proxy
 
@@ -111,7 +103,6 @@ GetOptions(
     q(help)             => \my $help,
     q(dups!)            => \my $dups,
     q(encoding=s)       => \my $encoding,
-    q(followlocation!)  => \my $followlocation,
     q(max=i)            => \my $max,
     q(maxredirs=i)      => \my $maxredirs,
     q(proxy=s)          => \my $proxy,
@@ -137,59 +128,56 @@ my $q = YADA->new({
 
 for my $url (@urls) {
     my ($fh, $name);
-    $q->append(sub {
-        YADA::Worker->new({
-            initial_url => $url,
-            on_init     => sub {
-                my ($self) = @_;
+    $q->append(
+        $url,
+        sub {
+            my ($self) = @_;
 
-                $name = get_filename($self->initial_url);
+            $name = get_filename($self->initial_url);
 
-                # will die() later
-                sysopen($fh, $name, O_CREAT | O_NONBLOCK | O_WRONLY);
-                binmode $fh;
+            # will die() later
+            sysopen($fh, $name, O_CREAT | O_NONBLOCK | O_WRONLY);
+            binmode $fh;
 
-                $self->setopt(
-                    encoding            => $encoding // q(),
-                    followlocation      => $followlocation // 1,
-                    maxredirs           => $maxredirs // 5,
-                    noprogress          => $quiet,
-                    proxy               => $proxy,
-                    referer             => $referer,
-                    tcp_nodelay         => $tcp_nodelay // 0,
-                    useragent           => $useragent // qq(yada/$VERSION ($Config{archname}; Perl/$Config{version}) @{[ Net::Curl::version() ]}),
-                    verbose             => $verbose,
+            $self->setopt(
+                encoding            => $encoding // q(),
+                maxredirs           => $maxredirs // 5,
+                noprogress          => $quiet,
+                proxy               => $proxy,
+                referer             => $referer,
+                tcp_nodelay         => $tcp_nodelay // 0,
+                useragent           => $useragent // qq(yada/$VERSION ($Config{archname}; Perl/$Config{version}) @{[ Net::Curl::version() ]}),
+                verbose             => $verbose,
 
-                    autoreferer         => 1,
-                    ssl_verifyhost      => 0,
-                    ssl_verifypeer      => 0,
-                    unrestricted_auth   => 1,
-                    writedata           => $fh,
-                );
-            },
-            on_finish   => sub {
-                my ($self) = @_;
-                close $fh;
-                ## no critic (ProhibitComplexRegexes)
-                #if ($self->has_error or $self->getinfo(q(response_code)) =~ m{^5[0-9]{2}$}) {
-                if ($self->has_error) {
-                    unlink $name;
-                } elsif (${$self->header} =~ m{\bContent-Disposition:\s*attachment;\s*filename=("?[\w\.\-]+"?);?}isx) {
-                    my $filename = $1;
-                    $filename =~ s/^"//x;
-                    $filename =~ s/"$//x;
+                autoreferer         => 1,
+                ssl_verifyhost      => 0,
+                ssl_verifypeer      => 0,
+                unrestricted_auth   => 1,
+                writedata           => $fh,
+            );
+        },
+        sub {
+            my ($self) = @_;
+            close $fh;
+            ## no critic (ProhibitComplexRegexes)
+            #if ($self->has_error or $self->getinfo(q(response_code)) =~ m{^5[0-9]{2}$}) {
+            if ($self->has_error) {
+                unlink $name;
+            } elsif (${$self->header} =~ m{\bContent-Disposition:\s*attachment;\s*filename=("?[\w\.\-]+"?);?}isx) {
+                my $filename = $1;
+                $filename =~ s/^"//x;
+                $filename =~ s/"$//x;
 
-                    move($name, $name . q(.tmp));
-                    my $new_name = get_filename(URI->new(q(file:///) . $filename));
-                    move($name . q(.tmp), $new_name);
-                } elsif ($self->final_url ne $self->initial_url) {
-                    move($name, $name . q(.tmp));
-                    my $new_name = get_filename($self->final_url);
-                    move($name . q(.tmp), $new_name);
-                }
-            },
-        })
-    });
+                move($name, $name . q(.tmp));
+                my $new_name = get_filename(URI->new(q(file:///) . $filename));
+                move($name . q(.tmp), $new_name);
+            } elsif ($self->final_url ne $self->initial_url) {
+                move($name, $name . q(.tmp));
+                my $new_name = get_filename($self->final_url);
+                move($name . q(.tmp), $new_name);
+            }
+        },
+    );
 }
 
 $q->wait;
