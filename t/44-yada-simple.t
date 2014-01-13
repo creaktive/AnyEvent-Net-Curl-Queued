@@ -26,7 +26,7 @@ for my $i (1 .. 10) {
 
 my @urls = ($server->uri . 'echo/head') x 2;
 $urls[-1] =~ s{\b127\.0\.0\.1\b}{localhost}x;
-my @opts = (referer => 'http://www.cpan.org/');
+my @opts = (referer => 'http://www.cpan.org/', ipresolve => Net::Curl::Easy::CURL_IPRESOLVE_V4);
 my $on_finish = sub {
     my ($self, $r) = @_;
     isa_ok($self->response, qw(HTTP::Response));
