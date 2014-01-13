@@ -87,6 +87,7 @@ has timeout     => (is => 'ro', isa => Num, default => sub { 60.0 });
 =for Pod::Coverage
 BUILD
 BUILDARGS
+has_timer
 =cut
 
 sub BUILD {

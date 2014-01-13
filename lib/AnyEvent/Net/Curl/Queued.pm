@@ -346,6 +346,7 @@ has watchdog    => (is => 'ro', isa => AnyOf[ArrayRef, Object], writer => 'set_w
 =for Pod::Coverage
 BUILD
 BUILDARGS
+has_watchdog
 =cut
 
 sub BUILD {
