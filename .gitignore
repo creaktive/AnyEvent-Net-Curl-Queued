@@ -6,4 +6,3 @@ blib/*
 Makefile
 pm_to_blib
 nytprof*
-Changes
