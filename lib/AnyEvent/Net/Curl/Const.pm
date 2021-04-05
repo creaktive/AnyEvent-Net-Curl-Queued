@@ -1,10 +1,10 @@
 package AnyEvent::Net::Curl::Const;
 # ABSTRACT: Access Net::Curl::* constants by name
 
-=for test_synopsis
-my ($easy);
-
 =head1 SYNOPSIS
+
+=for test_synopsis
+my $easy;
 
     $easy->setopt(AnyEvent::Net::Curl::Const::opt('verbose'), 1);
     ...;
