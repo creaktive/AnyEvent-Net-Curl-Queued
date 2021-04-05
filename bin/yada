@@ -143,7 +143,7 @@ my $q = YADA->new({
 my $c = 0;
 for my $url (@urls) {
     my $fh;
-    my $name = get_filename(URI->new($url), 1);
+    my $name = get_filename(URI->new($url), $skip_existing);
     next if $skip_existing && -e $name;
     $q->append(
         $url,
