@@ -3,11 +3,8 @@ package AnyEvent::Net::Curl::Const;
 
 =head1 SYNOPSIS
 
-=for test_synopsis
-my $easy;
-
+    my $easy = shift;
     $easy->setopt(AnyEvent::Net::Curl::Const::opt('verbose'), 1);
-    ...;
     $easy->getinfo(AnyEvent::Net::Curl::Const::info('size_download'));
 
 =head1 DESCRIPTION
